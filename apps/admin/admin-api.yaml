@@ -1,0 +1,43 @@
+# DRAFT admin endpoints requested for the Tasalli admin console (apps/admin).
+# Not part of packages/contracts/openapi.yaml until the founder approves.
+# Today apps/admin reads Postgres directly and runs the writes in src/lib/writes.ts;
+# those four functions map 1:1 to the write endpoints below.
+openapi: 3.0.3
+info: { title: Tasalli admin API (draft), version: 0.1.0 }
+security: [{ adminSession: [] }]
+components:
+  securitySchemes:
+    adminSession: { type: http, scheme: bearer, description: Founder-only token. }
+  schemas:
+    Error: { type: object, required: [error], properties: { error: { type: string } } }
+paths:
+  /admin/blocked-numbers:
+    post:
+      summary: Block a number across all accounts (reason 'admin'). Idempotent.
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [phone_e164], properties: { phone_e164: { type: string, pattern: '^\+[1-9]\d{7,14}$' } } } } }
+      responses: { '204': { description: Blocked }, '400': { description: Invalid number } }
+  /admin/blocked-numbers/{phoneRef}:
+    delete:
+      summary: Unblock an admin-blocked number. Key 9 and stop-phrase blocks cannot be removed.
+      parameters: [{ name: phoneRef, in: path, required: true, schema: { type: string }, description: sha256 hex of the E.164 number }]
+      responses: { '204': { description: Unblocked }, '409': { description: Block was not created by an admin } }
+  /admin/people/{personId}/pause:
+    post:
+      summary: Pause reminder calls for a person. The call engine skips paused people (flag only; no dose rows change).
+      parameters: [{ name: personId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { '204': { description: Paused } }
+  /admin/people/{personId}/unpause:
+    post:
+      summary: Resume reminder calls for a person.
+      parameters: [{ name: personId, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { '204': { description: Resumed } }
+  /admin/families/{userId}/notes:
+    post:
+      summary: Add a support note (max 2000 chars). Needs a support_notes table (see PR).
+      parameters: [{ name: userId, in: path, required: true, schema: { type: string, format: uuid } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, required: [text], properties: { text: { type: string, maxLength: 2000 }, person_id: { type: string, format: uuid, nullable: true } } } } }
+      responses: { '201': { description: Added } }
