@@ -1,0 +1,17 @@
+node_modules
+dist
+build
+coverage
+.expo
+.next
+.terraform
+pnpm-lock.yaml
+*.tfstate*
+packages/contracts/schema.sql
+packages/contracts/openapi.yaml
+# Owned by the lead; formatted by hand and frozen once approved.
+packages/contracts/src
+docs
+.claude
+CLAUDE.md
+README.md

@@ -1,0 +1,9 @@
+{
+  "name": "@tasalli/infra",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Local stack, Dockerfiles, backup scripts and free monitoring scripts. Not deployed anywhere yet.",
+  "scripts": {
+    "test": "bash monitoring/test/check-uptime.test.sh && bash monitoring/test/check-call-failures.test.sh && bash scripts/test/backup-restore.test.sh"
+  }
+}

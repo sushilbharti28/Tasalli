@@ -9,3 +9,7 @@ dist/
 .terraform/
 *.tfstate*
 *.rdb
+coverage/
+*.tsbuildinfo
+.terraform.lock.hcl.bak
+backups/

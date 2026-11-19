@@ -3,5 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "main": "src/index.ts",
-  "types": "src/index.ts"
+  "types": "src/index.ts",
+  "files": [
+    "dist",
+    "src",
+    "openapi.yaml",
+    "schema.sql"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.3"
+  }
 }

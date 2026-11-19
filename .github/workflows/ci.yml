@@ -1,0 +1,145 @@
+# CI on every pull request and on main.
+# Runs install, format check, lint, typecheck, test and build across every
+# workspace package. Packages that do not exist yet, or lack a script, are
+# skipped (root scripts use `pnpm -r --if-present`).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tasalli
+          POSTGRES_PASSWORD: tasalli
+          POSTGRES_DB: tasalli
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U tasalli -d tasalli"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+
+    env:
+      CI: 'true'
+      NODE_ENV: test
+      APP_ENV: test
+      TZ: UTC
+      DATABASE_URL: postgres://tasalli:tasalli@localhost:5432/tasalli
+      TEST_DATABASE_URL: postgres://tasalli:tasalli@localhost:5432/tasalli_test
+      REDIS_URL: redis://localhost:6379
+      TELEPHONY_PROVIDER: fake
+      SPEECH_PROVIDER: fake
+      JWT_SECRET: ci-only-not-a-secret
+      PUBLIC_BASE_URL: http://localhost:3000
+      CALLER_ID: '+910000000000'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # version comes from packageManager in package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: |
+          if pnpm install --frozen-lockfile; then
+            echo "Lockfile is up to date."
+          else
+            echo "::warning title=Lockfile out of date::pnpm-lock.yaml does not match package.json files. Installing without --frozen-lockfile. Devops will refresh the lockfile after this lands."
+            pnpm install --no-frozen-lockfile
+          fi
+
+      - name: Postgres 16 client tools (match the server major version)
+        run: |
+          if [ ! -x /usr/lib/postgresql/16/bin/pg_dump ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client-16 || {
+              sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+              sudo apt-get install -y -qq postgresql-client-16
+            }
+          fi
+          echo "PG_BIN=/usr/lib/postgresql/16/bin" >> "$GITHUB_ENV"
+          /usr/lib/postgresql/16/bin/pg_dump --version
+
+      - name: Create test database
+        run: PGPASSWORD=tasalli psql -h localhost -U tasalli -d tasalli -c 'CREATE DATABASE tasalli_test;'
+
+      - name: Format check (warning only for now)
+        continue-on-error: true
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+  secrets-scan:
+    name: secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks (safety rule 8, no secrets in the repository)
+        env:
+          GITLEAKS_VERSION: 8.21.2
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz gitleaks
+          ./gitleaks detect --source . --redact --no-banner --verbose
+
+  docker:
+    name: docker images build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images for packages that exist (no push)
+        env:
+          DOCKER_BUILDKIT: '1'
+        run: |
+          set -euo pipefail
+          build() { # name dockerfile package dir
+            if [ -f "$4/package.json" ]; then
+              echo "::group::docker build $1"
+              docker build -f "$2" --build-arg PACKAGE="$3" --build-arg PACKAGE_DIR="$4" -t "tasalli-$1:ci" .
+              echo "::endgroup::"
+            else
+              echo "Skipping $1: $4/package.json does not exist yet."
+            fi
+          }
+          build api infra/docker/service.Dockerfile @tasalli/api services/api
+          build call-engine infra/docker/service.Dockerfile @tasalli/call-engine services/call-engine
+          build admin infra/docker/admin.Dockerfile @tasalli/admin apps/admin

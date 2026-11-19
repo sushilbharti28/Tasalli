@@ -1,4 +1,6 @@
 packages:
-  - "apps/*"
-  - "services/*"
-  - "packages/*"
+  - 'apps/*'
+  - 'services/*'
+  - 'packages/*'
+  - 'tests'
+  - 'infra'
