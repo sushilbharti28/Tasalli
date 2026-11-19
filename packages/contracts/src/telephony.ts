@@ -37,7 +37,7 @@ export type CallEvent =
   | { type: 'input'; eventId: string; callId: string; providerCallId: string;
       kind: 'key'; value: string; at: string }
   | { type: 'input'; eventId: string; callId: string; providerCallId: string;
-      kind: 'speech'; audioUrl?: string; transcript?: string; at: string };
+      kind: 'speech'; audioUrl?: string; transcript?: string; confidence?: number; at: string };
 
 /** Our reply to an input event: what the call does next. */
 export type NextAction =
@@ -45,12 +45,12 @@ export type NextAction =
   | { action: 'hangup'; finalAudioUrl?: string };
 
 export interface TelephonyProvider {
-  readonly name: 'exotel' | 'plivo' | 'fake';
+  readonly name: 'twilio' | 'exotel' | 'plivo' | 'fake';
   placeCall(req: PlaceCallRequest): Promise<PlaceCallResult>;
   /** Verify the signature and normalise a raw webhook into a CallEvent. Throws if the signature is invalid. */
   parseWebhook(headers: Record<string, string>, body: unknown): CallEvent;
   /** Turn our NextAction into the provider's response format (e.g. Exotel flow JSON, Plivo XML). */
-  renderNextAction(next: NextAction): { contentType: string; body: string };
+  renderNextAction(next: NextAction, ctx?: { callId: string }): { contentType: string; body: string };
 }
 
 export interface SpeechProvider {
