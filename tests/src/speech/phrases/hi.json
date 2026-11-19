@@ -1,0 +1,71 @@
+{
+  "language": "hi",
+  "review": { "status": "draft" },
+  "phrases": [
+    { "id": "hi-confirm-001", "text": "le li", "intent": "confirm", "tags": ["romanized"], "gloss": "took it" },
+    { "id": "hi-confirm-002", "text": "le liya", "intent": "confirm", "tags": ["romanized"] },
+    { "id": "hi-confirm-003", "text": "haan", "intent": "confirm", "tags": ["romanized"], "gloss": "yes" },
+    { "id": "hi-confirm-004", "text": "haan le li", "intent": "confirm", "tags": ["romanized"] },
+    { "id": "hi-confirm-005", "text": "kha li", "intent": "confirm", "tags": ["romanized"], "gloss": "ate (took) it" },
+    { "id": "hi-confirm-006", "text": "ho gaya", "intent": "confirm", "tags": ["romanized"], "gloss": "done" },
+    { "id": "hi-confirm-007", "text": "ले ली", "intent": "confirm", "tags": ["native"] },
+    { "id": "hi-confirm-008", "text": "ले लिया", "intent": "confirm", "tags": ["native"] },
+    { "id": "hi-confirm-009", "text": "हाँ", "intent": "confirm", "tags": ["native"] },
+    { "id": "hi-confirm-010", "text": "हां ले ली", "intent": "confirm", "tags": ["native"] },
+    { "id": "hi-confirm-011", "text": "खा ली", "intent": "confirm", "tags": ["native"] },
+    { "id": "hi-confirm-012", "text": "हो गया", "intent": "confirm", "tags": ["native"] },
+    { "id": "hi-confirm-013", "text": "Haan beta, le li.", "intent": "confirm", "tags": ["romanized"], "gloss": "yes child, took it (punctuation, capitals)" },
+    { "id": "hi-confirm-014", "text": "maine dawai le li", "intent": "confirm", "tags": ["romanized"] },
+    { "id": "hi-confirm-015", "text": "ji haan", "intent": "confirm", "tags": ["romanized"] },
+    { "id": "hi-confirm-016", "text": "yes le li", "intent": "confirm", "tags": ["code-mixed"] },
+
+    { "id": "hi-neg-001", "text": "nahi", "intent": "decline", "tags": ["romanized", "negative"], "gloss": "no" },
+    { "id": "hi-neg-002", "text": "nahi li", "intent": "decline", "tags": ["romanized", "negative"], "gloss": "didn't take" },
+    { "id": "hi-neg-003", "text": "abhi nahi", "intent": "decline", "alsoAccept": ["snooze"], "tags": ["romanized", "negative"], "gloss": "not now" },
+    { "id": "hi-neg-004", "text": "नहीं", "intent": "decline", "tags": ["native", "negative"] },
+    { "id": "hi-neg-005", "text": "नहीं ली", "intent": "decline", "tags": ["native", "negative"] },
+    { "id": "hi-neg-006", "text": "अभी नहीं", "intent": "decline", "alsoAccept": ["snooze"], "tags": ["native", "negative"] },
+    { "id": "hi-neg-007", "text": "नही ली", "intent": "decline", "tags": ["native", "negative", "tricky"], "gloss": "common STT spelling without the nasal mark" },
+    { "id": "hi-neg-008", "text": "haan nahi li", "intent": "decline", "tags": ["romanized", "negative", "tricky"], "gloss": "yes... no, didn't take" },
+    { "id": "hi-neg-009", "text": "le li nahi", "intent": "decline", "alsoAccept": ["unclear"], "tags": ["romanized", "negative", "tricky"], "gloss": "took... no (ambiguous): never a yes" },
+    { "id": "hi-neg-010", "text": "nahin le li abhi", "intent": "decline", "alsoAccept": ["unclear"], "tags": ["romanized", "negative", "tricky"] },
+    { "id": "hi-neg-011", "text": "हाँ, नहीं ली", "intent": "decline", "tags": ["native", "negative", "tricky"] },
+    { "id": "hi-neg-012", "text": "nahi beta, kha nahi li", "intent": "decline", "tags": ["romanized", "negative", "tricky"] },
+    { "id": "hi-neg-013", "text": "nai", "intent": "decline", "tags": ["romanized", "negative"], "gloss": "colloquial no" },
+    { "id": "hi-neg-014", "text": "na", "intent": "decline", "tags": ["romanized", "negative"] },
+    { "id": "hi-neg-015", "text": "no", "intent": "decline", "tags": ["code-mixed", "negative"] },
+
+    { "id": "hi-future-001", "text": "le lungi", "intent": "unclear", "alsoAccept": ["snooze"], "tags": ["romanized", "future", "tricky"], "gloss": "I will take it" },
+    { "id": "hi-future-002", "text": "abhi le leta hoon", "intent": "unclear", "alsoAccept": ["snooze"], "tags": ["romanized", "future", "tricky"], "gloss": "I'll take it now" },
+    { "id": "hi-future-003", "text": "ले लूंगी", "intent": "unclear", "alsoAccept": ["snooze"], "tags": ["native", "future", "tricky"] },
+
+    { "id": "hi-snooze-001", "text": "baad mein", "intent": "snooze", "alsoAccept": ["decline"], "tags": ["romanized"], "gloss": "later" },
+    { "id": "hi-snooze-002", "text": "thodi der mein", "intent": "snooze", "alsoAccept": ["decline"], "tags": ["romanized"] },
+    { "id": "hi-snooze-003", "text": "बाद में", "intent": "snooze", "alsoAccept": ["decline"], "tags": ["native"] },
+    { "id": "hi-snooze-004", "text": "haan haan baad mein", "intent": "snooze", "alsoAccept": ["decline", "unclear"], "tags": ["romanized", "tricky"], "gloss": "yes yes, later: not a confirmation" },
+
+    { "id": "hi-repeat-001", "text": "phir se", "intent": "repeat", "tags": ["romanized"] },
+    { "id": "hi-repeat-002", "text": "dobara boliye", "intent": "repeat", "tags": ["romanized"] },
+    { "id": "hi-repeat-003", "text": "samajh nahi aaya", "intent": "repeat", "alsoAccept": ["decline", "unclear"], "tags": ["romanized", "tricky"], "gloss": "didn't understand" },
+    { "id": "hi-repeat-004", "text": "दोबारा", "intent": "repeat", "tags": ["native"] },
+
+    { "id": "hi-doctor-001", "text": "doctor ne badli", "intent": "doctor_changed", "alsoAccept": ["unclear"], "tags": ["romanized"] },
+    { "id": "hi-doctor-002", "text": "doctor ne dawai badal di", "intent": "doctor_changed", "alsoAccept": ["unclear"], "tags": ["romanized"] },
+
+    { "id": "hi-stop-001", "text": "band karo", "intent": "stop", "tags": ["romanized"] },
+    { "id": "hi-stop-002", "text": "mat karo phone", "intent": "stop", "tags": ["romanized"] },
+    { "id": "hi-stop-003", "text": "बंद करो", "intent": "stop", "tags": ["native"] },
+    { "id": "hi-stop-004", "text": "band mat karo", "intent": "unclear", "alsoAccept": ["decline"], "mustNot": ["stop"], "tags": ["romanized", "tricky"], "gloss": "don't stop: must never block the number" },
+
+    { "id": "hi-noise-001", "text": "", "intent": "unclear", "tags": ["noise"], "gloss": "silence" },
+    { "id": "hi-noise-002", "text": "hello hello", "intent": "unclear", "tags": ["noise"] },
+    { "id": "hi-noise-003", "text": "haan bolo", "intent": "unclear", "mustNot": ["confirm"], "tags": ["romanized", "tricky", "noise"], "gloss": "yes, go on (said when picking up): not a confirmation" },
+    { "id": "hi-noise-004", "text": "kaun bol raha hai", "intent": "unclear", "tags": ["romanized", "noise"], "gloss": "who is speaking" },
+    { "id": "hi-noise-005", "text": "hmm", "intent": "unclear", "tags": ["noise"] },
+
+    { "id": "hi-consent-001", "text": "haan", "intent": "confirm", "context": "consent" },
+    { "id": "hi-consent-002", "text": "हाँ ठीक है", "intent": "confirm", "context": "consent", "tags": ["native"] },
+    { "id": "hi-consent-003", "text": "nahi", "intent": "decline", "alsoAccept": ["stop"], "context": "consent", "tags": ["negative"] },
+    { "id": "hi-consent-004", "text": "mat karo phone", "intent": "stop", "context": "consent" }
+  ]
+}

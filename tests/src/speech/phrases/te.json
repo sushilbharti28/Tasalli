@@ -1,0 +1,243 @@
+{
+ "language": "te",
+ "review": {
+  "status": "draft"
+ },
+ "phrases": [
+  {
+   "id": "te-confirm-001",
+   "text": "avunu",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "yes"
+  },
+  {
+   "id": "te-confirm-002",
+   "text": "అవును",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "te-confirm-003",
+   "text": "vesukunnanu",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "I took it"
+  },
+  {
+   "id": "te-confirm-004",
+   "text": "వేసుకున్నాను",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "te-confirm-005",
+   "text": "టాబ్లెట్ వేసుకున్నా",
+   "intent": "confirm",
+   "tags": [
+    "native",
+    "code-mixed"
+   ]
+  },
+  {
+   "id": "te-confirm-006",
+   "text": "అయింది",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ],
+   "gloss": "done"
+  },
+  {
+   "id": "te-neg-001",
+   "text": "ledu",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "romanized"
+   ]
+  },
+  {
+   "id": "te-neg-002",
+   "text": "లేదు",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ]
+  },
+  {
+   "id": "te-neg-003",
+   "text": "కాదు",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ]
+  },
+  {
+   "id": "te-neg-004",
+   "text": "వేసుకోలేదు",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ],
+   "gloss": "didn't take: same stem as the confirm word"
+  },
+  {
+   "id": "te-neg-005",
+   "text": "vesukoledu",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "romanized",
+    "tricky"
+   ]
+  },
+  {
+   "id": "te-neg-006",
+   "text": "ఇంకా వేసుకోలేదు",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ],
+   "gloss": "not taken yet"
+  },
+  {
+   "id": "te-neg-007",
+   "text": "అవును, వేసుకోలేదు",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ]
+  },
+  {
+   "id": "te-future-001",
+   "text": "వేసుకుంటా",
+   "intent": "unclear",
+   "alsoAccept": [
+    "snooze"
+   ],
+   "tags": [
+    "native",
+    "future",
+    "tricky"
+   ],
+   "gloss": "I will take"
+  },
+  {
+   "id": "te-snooze-001",
+   "text": "తర్వాత",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "native"
+   ],
+   "gloss": "later"
+  },
+  {
+   "id": "te-snooze-002",
+   "text": "కొంచెం సేపు ఆగి",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline",
+    "unclear"
+   ],
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "te-repeat-001",
+   "text": "మళ్ళీ చెప్పండి",
+   "intent": "repeat",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "te-repeat-002",
+   "text": "అర్థం కాలేదు",
+   "intent": "repeat",
+   "alsoAccept": [
+    "decline",
+    "unclear"
+   ],
+   "tags": [
+    "native",
+    "tricky"
+   ],
+   "gloss": "didn't understand"
+  },
+  {
+   "id": "te-stop-001",
+   "text": "ఆపండి",
+   "intent": "stop",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "te-stop-002",
+   "text": "ఫోన్ చేయకండి",
+   "intent": "stop",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "native"
+   ],
+   "gloss": "don't call"
+  },
+  {
+   "id": "te-noise-001",
+   "text": "",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "te-noise-002",
+   "text": "హలో",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "te-consent-001",
+   "text": "అవును",
+   "intent": "confirm",
+   "context": "consent"
+  },
+  {
+   "id": "te-consent-002",
+   "text": "వద్దు",
+   "intent": "decline",
+   "alsoAccept": [
+    "stop"
+   ],
+   "context": "consent",
+   "tags": [
+    "negative"
+   ],
+   "gloss": "don't want"
+  }
+ ]
+}

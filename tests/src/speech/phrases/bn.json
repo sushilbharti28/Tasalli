@@ -1,0 +1,253 @@
+{
+ "language": "bn",
+ "review": {
+  "status": "draft"
+ },
+ "phrases": [
+  {
+   "id": "bn-confirm-001",
+   "text": "hyan",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "yes"
+  },
+  {
+   "id": "bn-confirm-002",
+   "text": "হ্যাঁ",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "bn-confirm-003",
+   "text": "kheyechi",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "have taken (eaten)"
+  },
+  {
+   "id": "bn-confirm-004",
+   "text": "খেয়েছি",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "bn-confirm-005",
+   "text": "হ্যাঁ খেয়েছি",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "bn-confirm-006",
+   "text": "ওষুধ খেয়েছি",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ],
+   "gloss": "took the medicine"
+  },
+  {
+   "id": "bn-confirm-007",
+   "text": "নিয়েছি",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "bn-neg-001",
+   "text": "na",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "romanized"
+   ]
+  },
+  {
+   "id": "bn-neg-002",
+   "text": "না",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ]
+  },
+  {
+   "id": "bn-neg-003",
+   "text": "খাইনি",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ],
+   "gloss": "didn't take: negation is a suffix"
+  },
+  {
+   "id": "bn-neg-004",
+   "text": "khaini",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "romanized",
+    "tricky"
+   ]
+  },
+  {
+   "id": "bn-neg-005",
+   "text": "এখনো খাইনি",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ],
+   "gloss": "not taken yet"
+  },
+  {
+   "id": "bn-neg-006",
+   "text": "হ্যাঁ, খাইনি",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ]
+  },
+  {
+   "id": "bn-neg-007",
+   "text": "খাই নি",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ],
+   "alsoAccept": [
+    "unclear"
+   ],
+   "gloss": "suffix split by STT"
+  },
+  {
+   "id": "bn-future-001",
+   "text": "খাবো",
+   "intent": "unclear",
+   "alsoAccept": [
+    "snooze"
+   ],
+   "tags": [
+    "native",
+    "future",
+    "tricky"
+   ],
+   "gloss": "I will take"
+  },
+  {
+   "id": "bn-snooze-001",
+   "text": "পরে",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "native"
+   ],
+   "gloss": "later"
+  },
+  {
+   "id": "bn-snooze-002",
+   "text": "একটু পরে",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "bn-repeat-001",
+   "text": "আবার বলুন",
+   "intent": "repeat",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "bn-repeat-002",
+   "text": "বুঝিনি",
+   "intent": "repeat",
+   "alsoAccept": [
+    "decline",
+    "unclear"
+   ],
+   "tags": [
+    "native",
+    "tricky"
+   ],
+   "gloss": "didn't understand"
+  },
+  {
+   "id": "bn-stop-001",
+   "text": "বন্ধ করুন",
+   "intent": "stop",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "bn-stop-002",
+   "text": "ফোন করবেন না",
+   "intent": "stop",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "native"
+   ],
+   "gloss": "don't call"
+  },
+  {
+   "id": "bn-noise-001",
+   "text": "",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "bn-noise-002",
+   "text": "হ্যালো",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "bn-consent-001",
+   "text": "হ্যাঁ",
+   "intent": "confirm",
+   "context": "consent"
+  },
+  {
+   "id": "bn-consent-002",
+   "text": "না",
+   "intent": "decline",
+   "alsoAccept": [
+    "stop"
+   ],
+   "context": "consent",
+   "tags": [
+    "negative"
+   ]
+  }
+ ]
+}

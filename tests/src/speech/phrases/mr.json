@@ -1,0 +1,266 @@
+{
+ "language": "mr",
+ "review": {
+  "status": "draft"
+ },
+ "phrases": [
+  {
+   "id": "mr-confirm-001",
+   "text": "ho",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "yes"
+  },
+  {
+   "id": "mr-confirm-002",
+   "text": "होय",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ],
+   "gloss": "yes"
+  },
+  {
+   "id": "mr-confirm-003",
+   "text": "हो",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "mr-confirm-004",
+   "text": "ghetli",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "took it"
+  },
+  {
+   "id": "mr-confirm-005",
+   "text": "गोळी घेतली",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ],
+   "gloss": "took the tablet"
+  },
+  {
+   "id": "mr-confirm-006",
+   "text": "हो, घेतली",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "mr-confirm-007",
+   "text": "घेतली आहे",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ],
+   "gloss": "have taken"
+  },
+  {
+   "id": "mr-neg-001",
+   "text": "nahi",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "romanized"
+   ]
+  },
+  {
+   "id": "mr-neg-002",
+   "text": "नाही",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ]
+  },
+  {
+   "id": "mr-neg-003",
+   "text": "नाही घेतली",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ],
+   "gloss": "didn't take"
+  },
+  {
+   "id": "mr-neg-004",
+   "text": "घेतली नाही",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ],
+   "gloss": "took... not: didn't take"
+  },
+  {
+   "id": "mr-neg-005",
+   "text": "ghetli nahi",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "romanized",
+    "tricky"
+   ]
+  },
+  {
+   "id": "mr-neg-006",
+   "text": "अजून नाही",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ],
+   "alsoAccept": [
+    "snooze"
+   ],
+   "gloss": "not yet"
+  },
+  {
+   "id": "mr-neg-007",
+   "text": "हो, नाही घेतली",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ]
+  },
+  {
+   "id": "mr-future-001",
+   "text": "घेईन",
+   "intent": "unclear",
+   "alsoAccept": [
+    "snooze"
+   ],
+   "tags": [
+    "native",
+    "future",
+    "tricky"
+   ],
+   "gloss": "I will take"
+  },
+  {
+   "id": "mr-snooze-001",
+   "text": "nantar",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "later"
+  },
+  {
+   "id": "mr-snooze-002",
+   "text": "नंतर",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "mr-snooze-003",
+   "text": "थोड्या वेळाने",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "mr-repeat-001",
+   "text": "पुन्हा सांगा",
+   "intent": "repeat",
+   "tags": [
+    "native"
+   ],
+   "gloss": "say again"
+  },
+  {
+   "id": "mr-repeat-002",
+   "text": "कळलं नाही",
+   "intent": "repeat",
+   "alsoAccept": [
+    "decline",
+    "unclear"
+   ],
+   "tags": [
+    "native",
+    "tricky"
+   ],
+   "gloss": "didn't understand"
+  },
+  {
+   "id": "mr-stop-001",
+   "text": "बंद करा",
+   "intent": "stop",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "mr-stop-002",
+   "text": "फोन करू नका",
+   "intent": "stop",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "native"
+   ],
+   "gloss": "don't call"
+  },
+  {
+   "id": "mr-noise-001",
+   "text": "",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "mr-noise-002",
+   "text": "हॅलो",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "mr-consent-001",
+   "text": "होय",
+   "intent": "confirm",
+   "context": "consent"
+  },
+  {
+   "id": "mr-consent-002",
+   "text": "नाही",
+   "intent": "decline",
+   "alsoAccept": [
+    "stop"
+   ],
+   "context": "consent",
+   "tags": [
+    "negative"
+   ]
+  }
+ ]
+}
