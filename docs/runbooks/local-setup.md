@@ -23,6 +23,38 @@ The Postgres container creates two databases on first start: `tasalli` (dev) and
 
 Reset all local data: `docker compose down -v` (deletes the volumes).
 
+## Whole system with one command
+
+```sh
+cp .env.example .env    # if you have not already
+pnpm stack:up           # docker compose --profile app up --build
+```
+
+| Service | URL | Image |
+| --- | --- | --- |
+| api | http://localhost:3000 (health: `/health`) | `infra/docker/service.Dockerfile` |
+| call-engine | http://localhost:3001 | `infra/docker/service.Dockerfile` |
+| admin | http://localhost:3002 | `infra/docker/admin.Dockerfile` |
+| postgres | localhost:5432 | `postgres:16-alpine` |
+| redis | localhost:6379 | `redis:7-alpine` |
+
+Ports can be moved with `API_PORT`, `CALL_ENGINE_PORT`, `ADMIN_PORT`, `POSTGRES_PORT`, `REDIS_PORT`.
+App containers read `.env`, then compose points them at the compose Postgres and Redis.
+Telephony and speech stay on the fake providers unless you set `TELEPHONY_PROVIDER` /
+`SPEECH_PROVIDER`. Stop with `pnpm stack:down`.
+
+A service is built only once its package exists (`services/api`, `services/call-engine`,
+`apps/admin`). Until then, start just the data stores with `pnpm db:up`.
+
+Image contract (what the Dockerfiles expect from each package):
+
+- Package name `@tasalli/api`, `@tasalli/call-engine`, `@tasalli/admin`.
+- `build` script. Services emit to `dist/` and start with `node dist/main.js`
+  (override with `--build-arg ENTRY=...`). Admin emits `.next/` and runs `next start`.
+- Runtime dependencies in `dependencies`, build tools in `devDependencies`
+  (the image keeps only production dependencies).
+- api answers `GET /health` with 2xx (compose healthcheck and uptime check use it).
+
 ## Day to day
 
 | Task | Command |

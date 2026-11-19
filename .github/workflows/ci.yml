@@ -107,3 +107,27 @@ jobs:
         run: |
           curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" | tar -xz gitleaks
           ./gitleaks detect --source . --redact --no-banner --verbose
+
+  docker:
+    name: docker images build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build images for packages that exist (no push)
+        env:
+          DOCKER_BUILDKIT: '1'
+        run: |
+          set -euo pipefail
+          build() { # name dockerfile package dir
+            if [ -f "$4/package.json" ]; then
+              echo "::group::docker build $1"
+              docker build -f "$2" --build-arg PACKAGE="$3" --build-arg PACKAGE_DIR="$4" -t "tasalli-$1:ci" .
+              echo "::endgroup::"
+            else
+              echo "Skipping $1: $4/package.json does not exist yet."
+            fi
+          }
+          build api infra/docker/service.Dockerfile @tasalli/api services/api
+          build call-engine infra/docker/service.Dockerfile @tasalli/call-engine services/call-engine
+          build admin infra/docker/admin.Dockerfile @tasalli/admin apps/admin

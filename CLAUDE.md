@@ -63,6 +63,7 @@ pnpm test                         # all unit tests
 pnpm format                       # prettier --write
 pnpm --filter @tasalli/api dev
 pnpm --filter @tasalli/call-engine dev   # uses FakeProvider unless TELEPHONY_PROVIDER is set
+pnpm stack:up                     # whole system in Docker: postgres, redis, api, call-engine, admin
 ```
 
 Package conventions (CI relies on them):
