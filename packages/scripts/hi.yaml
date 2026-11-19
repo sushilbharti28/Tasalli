@@ -18,7 +18,7 @@ meta:
 
 templates:
   consent:
-    ask: 'नमस्ते {person_name} जी। यह तसल्ली की तरफ़ से फ़ोन है। यह कॉल रिकॉर्ड की जाएगी। {child_name} आपको दवाई की याद दिलाने के लिए फ़ोन करवाना चाहते हैं। अगर आप हाँ कहना चाहते हैं, तो "हाँ" बोलिए, या 1 दबाइए। अगर आप ये फ़ोन नहीं चाहते, तो 9 दबाइए। फिर हम कभी फ़ोन नहीं करेंगे।'
+    ask: 'नमस्ते {person_name} जी। यह तसल्ली की तरफ़ से फ़ोन है। {relation_phrase} {child_name} आपको दवाई की याद दिलाने के लिए फ़ोन करवाना चाहते हैं। यह कॉल रिकॉर्ड की जाएगी। अगर आप हाँ कहना चाहते हैं, तो "हाँ" बोलिए, या 1 दबाइए। अगर आप ये फ़ोन नहीं चाहते, तो 9 दबाइए। फिर हम कभी फ़ोन नहीं करेंगे।'
     agreed: 'धन्यवाद जी। अब दवाई के समय पर हम फ़ोन करेंगे। हर बार "ले ली" बोलिए, या 1 दबाइए। कभी भी 9 दबाकर फ़ोन बंद करवा सकते हैं। नमस्ते।'
     declined: 'ठीक है जी। हम आपको फ़ोन नहीं करेंगे। नमस्ते।'
     stopped: 'ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। नमस्ते।'
@@ -72,11 +72,11 @@ engine_extra:
 # One medicine at a time (call engine v1.3): the call goes through the due medicines in order and confirms each one.
 # {ordinal} already says "medicine" (see blocks.ordinals). Not in the other languages yet: the engine falls back to its built-in lines.
 reminder_steps:
-  # Variables: {person_name} {relation_phrase} {child_name} {meal_phrase} {count_word} {count} {ordinal} {spoken_name} {amount_text}
+  # Variables (reminder lines never name the child; {relation_phrase} {child_name} are for the consent call): {person_name} {meal_phrase} {count_word} {count} {ordinal} {spoken_name} {amount_text}
   # {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}. {ordinal} already says "medicine" (blocks.ordinals).
   # The food timing is said once in the intro ({meal_phrase}), so the item lines leave it out. A call only groups doses with the same food timing.
-  intro_many: 'नमस्ते {person_name} जी। {relation_phrase} {child_name} की तरफ़ से याद दिला रहे हैं। आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
-  intro_one: 'नमस्ते {person_name} जी। {relation_phrase} {child_name} की तरफ़ से याद दिला रहे हैं। आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
+  intro_many: 'नमस्ते {person_name} जी। आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
+  intro_one: 'नमस्ते {person_name} जी। आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
   short_intro_many: '{person_name} जी, आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
   short_intro_one: '{person_name} जी, आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
   item: '{ordinal}: {spoken_name}। {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'

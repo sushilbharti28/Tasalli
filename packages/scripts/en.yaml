@@ -16,7 +16,7 @@ meta:
 
 templates:
   consent:
-    ask: 'Namaste {person_name} ji. This is a call from Tasalli. This call will be recorded. {child_name} wants us to call you at medicine time, to remind you. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.'
+    ask: 'Namaste {person_name} ji. This is a call from Tasalli. {relation_phrase} {child_name} wants us to call you at medicine time, to remind you. This call will be recorded. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.'
     agreed: 'Thank you. We will call you at medicine time. Each time, say "taken", or press 1. You can press 9 at any time to stop the calls. Namaste.'
     declined: 'Okay. We will not call you. Namaste.'
     stopped: 'Okay. We will never call you again. Namaste.'
@@ -70,8 +70,8 @@ engine_extra:
 # One medicine at a time (call engine v1.3). {ordinal} already says "medicine" (see blocks.ordinals).
 reminder_steps:
   # Same variables as hi.yaml. Food timing is said once in the intro; item lines leave it out.
-  intro_many: 'Namaste {person_name} ji. {relation_phrase} {child_name} asked us to remind you. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
-  intro_one: 'Namaste {person_name} ji. {relation_phrase} {child_name} asked us to remind you. It is time for your {meal_phrase} medicine.'
+  intro_many: 'Namaste {person_name} ji. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
+  intro_one: 'Namaste {person_name} ji. It is time for your {meal_phrase} medicine.'
   short_intro_many: '{person_name} ji, it is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
   short_intro_one: '{person_name} ji, it is time for your {meal_phrase} medicine.'
   item: '{ordinal}: {spoken_name}. {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'

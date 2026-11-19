@@ -91,7 +91,7 @@ describe.each(LANGUAGES)('%s composition', (lang) => {
   });
 
   it('every fixed template renders with sample names', () => {
-    const v = { person_name: 'Kamla Devi', child_name: 'Ravi' };
+    const v = { person_name: 'Kamla Devi', child_name: 'Ravi', relation_phrase: 'aapke bete' };
     for (const group of ['consent', 'reply_ack', 'unclear', 'repeat', 'test_call'] as const) {
       for (const tpl of Object.values(script.templates[group])) {
         expect(render(tpl, v)).not.toBe('');

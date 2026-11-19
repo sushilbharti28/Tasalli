@@ -229,18 +229,17 @@ describe('test-reminder medicines and wording placeholders', () => {
     const w = three();
     const meds = [...w.store.state.medicines.values()];
     const scheds = [...w.store.state.schedules.values()];
-    const open = (n: number, food: 'before' | 'after' | 'with' | 'any', hour: number, rel: any = 'son', fullName: string | null = 'Ramesh Sharma') =>
-      buildReminderSteps({ templates, person: { nickname: 'Papa', fullName }, childName: 'Rahul', callerRelation: rel,
+    const open = (n: number, food: 'before' | 'after' | 'with' | 'any', hour: number, fullName: string | null = 'Ramesh Sharma') =>
+      buildReminderSteps({ templates, person: { nickname: 'Papa', fullName }, childName: 'Rahul', 
         items: meds.slice(0, n).map((m, i) => ({ medicine: m, schedule: { ...scheds[i]!, food } })),
         mode: 'full', isSunday: false, announcedTodayMedicineIds: [], localHour: hour }).opening;
-    expect(open(3, 'after', 13)).toMatch(/^Namaste Ramesh ji\. aapke bete Rahul ki taraf se yaad dila rahe hain\. Aapki dopahar ke khane ke baad wali teen dawaiyon ka samay ho gaya hai\. Ek-ek karke batate hain\./i);
+    expect(open(3, 'after', 13)).toMatch(/^Namaste Ramesh ji\. Aapki dopahar ke khane ke baad wali teen dawaiyon ka samay ho gaya hai\. Ek-ek karke batate hain\./i);
     expect(open(1, 'before', 8)).toMatch(/Aapki nashte se pehle wali dawai ka samay ho gaya hai\. BP wali:/);
     expect(open(2, 'with', 20)).toMatch(/Aapki raat ke khane ke saath wali do dawaiyon/);
     expect(open(2, 'any', 17)).toMatch(/Aapki shaam ki wali do dawaiyon/);
     expect(open(2, 'any', 11)).toMatch(/Aapki dopahar ki wali/);
-    expect(open(1, 'after', 15, 'daughter_in_law')).toMatch(/aapki bahu Rahul ki taraf se/);
-    expect(open(1, 'after', 15, null, null)).toMatch(/^Namaste Papa ji\. Rahul ki taraf se yaad dila rahe hain/); // no relation, no full name
-    expect(open(1, 'after', 15, 'other')).toMatch(/^Namaste Ramesh ji\. Rahul ki taraf se/);
+    expect(open(3, 'after', 13)).not.toMatch(/Rahul|bete|taraf se/); // reminder calls never name the child or the relation
+    expect(open(1, 'after', 15, null)).toMatch(/^Namaste Papa ji\. Aapki dopahar ke khane ke baad wali dawai/); // no full name: nickname
   });
 });
 
@@ -265,5 +264,20 @@ describe('grouping by food timing', () => {
     expect(second).toMatch(/nashte se pehle/);
     expect(second).toMatch(/Sugar wali/);
     expect(Object.values(status(w))).toEqual(['confirmed', 'confirmed', 'confirmed']);
+  });
+});
+
+describe('consent call names the child and the relation', () => {
+  it.each([['son', /^Namaste Ramesh ji\. Yeh Tasalli ki taraf se phone hai\. aapke bete Rohit aapko dawai ki yaad dilane/],
+    ['daughter_in_law', /aapki bahu Rohit aapko/], ['other', /phone hai\. Rohit aapko/], [null, /phone hai\. Rohit aapko/]])('%s', async (rel, re) => {
+    const w = world();
+    w.store.state.people.get(w.mom.id)!.fullName = 'Ramesh Sharma';
+    (w.store.state.people.get(w.mom.id) as any).callerRelation = rel;
+    w.store.state.people.get(w.mom.id)!.consent = 'pending';
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }] });
+    await w.queue.add('consent.call', { personId: w.mom.id });
+    await w.settle();
+    expect(w.playedText(0)[0]).toMatch(re);
+    expect(w.playedText(0)[0]).toMatch(/Yeh call record ki jayegi/);
   });
 });

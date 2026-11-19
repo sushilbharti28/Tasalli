@@ -20,8 +20,6 @@ export interface ReminderScriptInput {
   announcedTodayMedicineIds: string[];
   /** Parent's local hour (0-23) of the dose time: picks the meal name and the day part. */
   localHour: number;
-  /** Relation of the caller (child) to the parent; unknown means "{child} ki taraf se" alone. */
-  callerRelation?: CallerRelation | null;
 }
 
 export function personName(t: ScriptTemplates, person: Pick<PersonRow, 'nickname' | 'fullName'>): string {
@@ -150,6 +148,11 @@ export interface ReminderSteps {
   items: Array<{ first: string; full: string }>;
 }
 
+/** {relation_phrase} for the consent call only ("aapke bete"); empty when the relation is unknown or "other". */
+export function relationPhrase(t: ScriptTemplates, rel: CallerRelation | null | undefined): string {
+  return (rel && t.reminder.step_relations?.[rel as keyof ScriptTemplates['reminder']['step_relations']]) || '';
+}
+
 /** {meal_phrase}: "dopahar ke khane ke baad" for food rules, "dopahar ki" when the dose has no food rule. */
 export function mealPhrase(t: ScriptTemplates, food: ScheduleRow['food'], hour: number): string {
   const r = t.reminder;
@@ -164,10 +167,9 @@ export function mealPhrase(t: ScriptTemplates, food: ScheduleRow['food'], hour: 
  */
 export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const t = input.templates, r = t.reminder;
-  const person_name = personName(t, input.person), child_name = childName(t, input.childName);
+  const person_name = personName(t, input.person);
   const count = input.items.length;
   const count_word = r.step_count_words[count - 1] ?? String(count);
-  const relation_phrase = (input.callerRelation && r.step_relations[input.callerRelation as keyof typeof r.step_relations]) || '';
   const meal_phrase = mealPhrase(t, input.items[0]?.schedule.food ?? 'any', input.localHour);
   const seenNumbers = new Set(input.announcedTodayMedicineIds);
   const items = input.items.map((it, i) => {
@@ -183,7 +185,7 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
     if (sunday) seenNumbers.add(m.id);
     return { first: joinSentences([sunday, input.mode === 'full' ? full : short]), full };
   });
-  const vars = { person_name, relation_phrase, child_name, meal_phrase, count_word, count };
+  const vars = { person_name, meal_phrase, count_word, count }; // reminder calls never name the child or the relation
   const intro = input.mode === 'full' ? render(count === 1 ? r.step_intro_one : r.step_intro, vars)
     : render(count === 1 ? r.step_short_intro_one : r.step_short_intro, vars);
   return { opening: joinSentences([intro, items[0]?.first ?? '']), items };
@@ -203,6 +205,6 @@ export function sundayLines(input: ReminderScriptInput): string[] {
 }
 
 /** Any other template line with the standard variables. */
-export function line(template: string, vars: { person_name?: string; child_name?: string; minutes?: number }): string {
+export function line(template: string, vars: { person_name?: string; child_name?: string; minutes?: number; relation_phrase?: string }): string {
   return render(template, vars);
 }

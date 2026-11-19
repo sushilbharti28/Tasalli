@@ -33,7 +33,7 @@ function keyPaths(obj: unknown, prefix = ''): string[] {
 /** Variables each section may use. Anything else would be a value the family never entered. */
 const ALLOWED: Record<string, string[]> = {
   'engine_extra.child_fallback': [], 'engine_extra.list_and': [], 'engine_extra.declined_ack': ['child_name'],
-  'templates.consent': ['person_name', 'child_name'],
+  'templates.consent': ['person_name', 'child_name', 'relation_phrase'],
   'templates.reminder_full': ['person_name', 'child_name', 'count', 'ordinal', 'spoken_name', 'amount_text',
     'appearance_phrase', 'pack_phrase', 'disambiguator', 'food_phrase', 'extra_instruction'],
   'templates.reminder_short': ['person_name', 'spoken_name', 'amount_text', 'food_phrase'],
@@ -91,8 +91,9 @@ describe.each(LANGUAGES)('%s.yaml', (lang) => {
       const allowed = ALLOWED[section];
       expect(allowed, `no allow-list for ${section}`).toBeDefined();
       for (const v of templateVariables(tpl)) expect(allowed, `${path} uses {${v}}`).toContain(v);
-      const enVars = new Set(templateVariables(enMap.get(path)!));
-      expect(new Set(templateVariables(tpl)), `${path} must say the same family values as en`).toEqual(enVars);
+      // {relation_phrase} is optional per language: only the active languages (hi, en) use it in the consent prompt for now.
+      const enVars = new Set(templateVariables(enMap.get(path)!).filter((v) => v !== 'relation_phrase'));
+      expect(new Set(templateVariables(tpl).filter((v) => v !== 'relation_phrase')), `${path} must say the same family values as en`).toEqual(enVars);
     }
   });
 

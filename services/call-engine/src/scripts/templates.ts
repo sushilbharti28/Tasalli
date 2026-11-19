@@ -40,8 +40,8 @@ export interface ScriptTemplates {
      * One-medicine-at-a-time flow (v1.3). {ordinal} may already include the word for medicine (yaml) or not (built-in: "Pehli").
      * step_item_one / step_intro_one are used when exactly one medicine is due; step_short_* after the first call of the day.
      */
-    step_intro: string;       // {person_name} {relation_phrase} {child_name} {meal_phrase} {count_word} {count}
-    step_intro_one: string;   // {person_name} {relation_phrase} {child_name} {meal_phrase}
+    step_intro: string;       // {person_name} {meal_phrase} {count_word} {count}; reminder calls never name the child
+    step_intro_one: string;   // {person_name} {meal_phrase}
     step_short_intro: string; // later calls of the day: {person_name} {meal_phrase} {count_word} {count}
     step_short_intro_one: string;
     /** The food timing is said once, in the intro, so the item lines leave it out. */
@@ -67,7 +67,7 @@ export interface ScriptTemplates {
     step_some_left_one: string;
   };
   consent: {
-    prompt: string;          // {person_name} {child_name}
+    prompt: string;          // {person_name} {relation_phrase} {child_name}
     unclear: string;
     keypad_only: string;
     yes_ack: string;
@@ -127,8 +127,8 @@ export const HI_TEMPLATES: ScriptTemplates = {
     unwell_ack: 'Apna khayal rakhiye. Hum {child_name} ko abhi bata rahe hain.',
     stop_ack: 'Theek hai. Ab hum aapko phone nahi karenge. Namaste.',
     no_input_goodbye: 'Hum thodi der mein phir phone karenge. Namaste.',
-    step_intro: 'Namaste {person_name}. {relation_phrase} {child_name} ki taraf se yaad dila rahe hain. Aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
-    step_intro_one: 'Namaste {person_name}. {relation_phrase} {child_name} ki taraf se yaad dila rahe hain. Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
+    step_intro: 'Namaste {person_name}. Aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
+    step_intro_one: 'Namaste {person_name}. Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
     step_short_intro: '{person_name}, aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
     step_short_intro_one: '{person_name}, aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
     step_item: '{ordinal} dawai: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
@@ -150,7 +150,7 @@ export const HI_TEMPLATES: ScriptTemplates = {
     step_some_left_one: 'Dhanyavaad. Dawai ke liye thodi der mein phir phone karenge.',
   },
   consent: {
-    prompt: 'Namaste {person_name}. Is call ko behtar seva ke liye record kiya ja sakta hai. {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.',
+    prompt: 'Namaste {person_name}. Yeh Tasalli ki taraf se phone hai. {relation_phrase} {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Yeh call record ki jayegi. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.',
     unclear: 'Maaf kijiye, samajh nahi aaya. Haan ke liye 1 dabaiye. Phone nahi chahiye to 9 dabaiye.',
     keypad_only: 'Haan ke liye 1 dabaiye. Phone nahi chahiye to 9 dabaiye.',
     yes_ack: 'Dhanyavaad. Ab hum dawai ke samay par phone karenge. Namaste.',
@@ -210,8 +210,8 @@ export const EN_TEMPLATES: ScriptTemplates = {
     unwell_ack: 'Please take care. We are letting {child_name} know now.',
     stop_ack: 'All right. We will not call you again. Goodbye.',
     no_input_goodbye: 'We will call again in a little while. Goodbye.',
-    step_intro: 'Namaste {person_name}. {relation_phrase} {child_name} asked us to remind you. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
-    step_intro_one: 'Namaste {person_name}. {relation_phrase} {child_name} asked us to remind you. It is time for your {meal_phrase} medicine.',
+    step_intro: 'Namaste {person_name}. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
+    step_intro_one: 'Namaste {person_name}. It is time for your {meal_phrase} medicine.',
     step_short_intro: '{person_name}, it is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
     step_short_intro_one: '{person_name}, it is time for your {meal_phrase} medicine.',
     step_item: '{ordinal} medicine: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
