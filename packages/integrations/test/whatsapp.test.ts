@@ -8,12 +8,12 @@ import {
   TemplateParamError,
 } from '../src';
 
-const missed = { person_name: 'Papa', time: '9:00 am', medicines: 'BP wali, Sugar wali', attempts: '3' };
+const missed = { person_name: 'Papa', time: '9:00 am', medicines: 'BP wali, Sugar wali' };
 
 describe('WhatsApp templates', () => {
   it('renders the missed-dose alert in both languages, values verbatim', () => {
     expect(renderTemplate('missed_dose_alert', 'en', missed)).toBe(
-      'Tasalli: Papa did not confirm the 9:00 am medicine reminder (BP wali, Sugar wali). We called 3 times. You may want to check on them.',
+      'Tasalli: Papa did not confirm the 9:00 am medicine reminder (BP wali, Sugar wali). You may want to check on them.',
     );
     expect(renderTemplate('missed_dose_alert', 'hi', missed)).toContain('BP wali, Sugar wali');
   });
@@ -30,7 +30,7 @@ describe('WhatsApp templates', () => {
   });
 
   it('rejects missing, extra or multi-line params', () => {
-    expect(() => renderTemplate('missed_dose_alert', 'en', { ...missed, attempts: '' })).toThrow(TemplateParamError);
+    expect(() => renderTemplate('missed_dose_alert', 'en', { ...missed, time: '' })).toThrow(TemplateParamError);
     expect(() => renderTemplate('missed_dose_alert', 'en', { ...missed, dose: '2' })).toThrow(/unexpected \[dose\]/);
     expect(() => renderTemplate('missed_dose_alert', 'en', { ...missed, medicines: 'a\nb' })).toThrow(/newlines/);
   });

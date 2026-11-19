@@ -21,24 +21,24 @@ these two templates under the names below, in `en` and `hi`.
 
 ## 1. `missed_dose_alert`
 
-Sent once per missed reminder call group, after the call and its 2 retries were not confirmed.
+Sent once per missed reminder call group: after the call and its 2 retries were not confirmed,
+or when the parent said they had not taken it after the snooze.
 
 | Variable | Filled with | Example |
 | --- | --- | --- |
 | `person_name` | Nickname the child entered | Papa |
 | `time` | Due time in the parent's time zone (time zone name added if it differs from the child's) | 9:00 am |
 | `medicines` | "What the parent calls it" for each medicine in that call, comma separated | BP wali, Sugar wali |
-| `attempts` | Number of calls placed (1 + retries) | 3 |
 
 **English (`en`)**
 
-> Tasalli: {{person_name}} did not confirm the {{time}} medicine reminder ({{medicines}}). We called {{attempts}} times. You may want to check on them.
+> Tasalli: {{person_name}} did not confirm the {{time}} medicine reminder ({{medicines}}). You may want to check on them.
 
 **Hindi (`hi`)**
 
-> तसल्ली: {{person_name}} ने {{time}} की दवाई की याद वाली कॉल पर पुष्टि नहीं की ({{medicines}})। हमने {{attempts}} बार कॉल किया। एक बार उनसे बात कर लीजिए।
+> तसल्ली: {{person_name}} ने {{time}} की दवाई की याद वाली कॉल पर पुष्टि नहीं की ({{medicines}})। एक बार उनसे बात कर लीजिए।
 
-Example (en): *Tasalli: Papa did not confirm the 9:00 am medicine reminder (BP wali, Sugar wali). We called 3 times. You may want to check on them.*
+Example (en): *Tasalli: Papa did not confirm the 9:00 am medicine reminder (BP wali, Sugar wali). You may want to check on them.*
 
 ## 2. `evening_summary`
 
