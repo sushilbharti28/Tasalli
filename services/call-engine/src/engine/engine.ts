@@ -1,4 +1,4 @@
-import type { CallEvent } from '@tasalli/contracts';
+import type { CallEvent, NextAction } from '@tasalli/contracts';
 import type { CallRow } from '../types.js';
 import type { EngineJobName, EngineJobs } from '../queue/jobs.js';
 import { afterNoConfirmation, consentUnanswered, placeConsent, placeReminder, placeTest } from './calls.js';
@@ -66,20 +66,20 @@ export class Engine {
     return this.locked(ev.callId, async () => {
       const call = await d.store.getCall(ev.callId);
       const first = await d.store.recordWebhookEvent(d.provider.name, ev.eventId, d.clock.now());
-      if (!call) return plain(200, 'unknown call');
+      if (!call) return ev.type === 'input' ? render(d, { action: 'hangup' }, ev.callId) : plain(200, 'unknown call');
       if (ev.type === 'status') {
         if (first) await this.onStatus(call, ev);
         return plain(200, 'ok');
       }
       const session = await d.sessions.get(call.id);
-      if (!session) return render(d, { action: 'hangup' });
+      if (!session) return render(d, { action: 'hangup' }, call.id);
       const replay = session.responses[ev.eventId];
-      if (replay) return render(d, replay);
-      if (!first || call.endedAt) return render(d, { action: 'hangup' }); // duplicate whose reply was lost: end safely
+      if (replay) return render(d, replay, call.id);
+      if (!first || call.endedAt) return render(d, { action: 'hangup' }, call.id); // duplicate whose reply was lost: end safely
       const next = await handleInput(d, call, session, ev);
       session.responses[ev.eventId] = next;
       await d.sessions.set(session);
-      return render(d, next);
+      return render(d, next, call.id);
     });
   }
 
@@ -101,5 +101,8 @@ export class Engine {
 }
 
 const plain = (status: number, body: string): HttpResult => ({ status, contentType: 'text/plain', body });
-const render = (d: Deps, next: Parameters<Deps['provider']['renderNextAction']>[0]): HttpResult => ({ status: 200, ...d.provider.renderNextAction(next) });
+/** Some providers (Twilio) need the call id to build the next webhook URL: an optional second argument. */
+type Render = (next: NextAction, ctx?: { callId: string }) => { contentType: string; body: string };
+const render = (d: Deps, next: NextAction, callId: string): HttpResult =>
+  ({ status: 200, ...(d.provider.renderNextAction as Render).call(d.provider, next, { callId }) });
 export { decodeAttempt };
