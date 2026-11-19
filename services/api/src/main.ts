@@ -11,7 +11,7 @@ async function main() {
   const config = loadConfig();
   const logger = new RedactingLogger();
   if (process.env.MIGRATE_ON_START !== 'false') await migrate(config.databaseUrl, (m) => logger.log(m, 'migrate'));
-  const app = configureApp(await NestFactory.create(AppModule.forRoot(config), { logger }));
+  const app = configureApp(await NestFactory.create(AppModule.forRoot(config), { logger, rawBody: true }));
   await app.listen(config.port);
   new Logger('main').log(`api listening on ${config.port} (${config.env})`);
 }

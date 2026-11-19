@@ -49,3 +49,11 @@ The API never places calls. call-engine re-checks consent, the block list and th
 - `schema.sql` has no devices table: push tokens (`POST /devices`) are kept in a Redis set `tasalli:devices:<userId>`. Proposal: add a `devices` table.
 - Queue names above could move into `packages/contracts`.
 - Errors on conflicts return `{ statusCode, code, message }` with codes such as `limit_reached`, `number_blocked`, `already_consented`.
+
+## v1.1 notes
+
+- `BILLING_WEBHOOK_SECRET` signs `POST /webhooks/billing` (HMAC-SHA256 hex of the raw body in `X-Signature`). Unset means every billing webhook is rejected.
+- Entitlement in `GET /subscription` (`entitled`, `graceEndsAt`): trialing, active, past_due for at most 3 days after `past_due_since` (paid plans), cancelled until `currentPeriodEnd`.
+- `POST /doses/{id}/remind` queues `dose.remind {doseId}` on the `call-engine` queue. call-engine has no handler yet (not in `EngineJobs`); it must re-check consent, block list and the 6/day cap.
+- Push tokens are stored in `devices` (the old Redis set `tasalli:devices:*` is no longer written or read).
+- New people must be `hi` (400 `language_not_supported`); existing rows are untouched.

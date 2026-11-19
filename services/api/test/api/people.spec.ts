@@ -70,7 +70,7 @@ describe('auth, people, consent', () => {
 
   it('self person is consented immediately with no consent call', async () => {
     const a = await h.login('+919999900001');
-    const p = (await h.http().post('/people').set(auth(a)).send({ isSelf: true, nickname: 'Me', language: 'en' }).expect(201)).body;
+    const p = (await h.http().post('/people').set(auth(a)).send({ isSelf: true, nickname: 'Me', language: 'hi' }).expect(201)).body;
     expect(p.consent).toBe('consented');
     expect(h.publisher.named('consent.call')).toHaveLength(0);
   });

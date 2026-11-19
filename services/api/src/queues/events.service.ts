@@ -28,6 +28,11 @@ export class EventsService {
     await this.publisher.publish(QUEUES.callEngine, JOBS.testCall, { userId: job.userId }, { jobId: `test_${job.userId}_${this.clock.now().getTime()}` });
   }
 
+  /** One extra reminder call for a dose. call-engine re-checks consent, block list and the 6/day cap. */
+  async doseRemindRequested(doseId: string) {
+    await this.publisher.publish(QUEUES.callEngine, JOBS.doseRemind, { doseId }, { jobId: `remind_${doseId}_${this.clock.now().getTime()}` });
+  }
+
   /**
    * Doses, medicines, pause or time zone changed: call-engine re-plans this person.
    * Best effort: call-engine also re-plans hourly, so a lost event is logged, not fatal.
