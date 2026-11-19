@@ -1,0 +1,144 @@
+# NEEDS NATIVE-SPEAKER REVIEW (Marathi). Draft written without a native speaker. Not approved for real calls.
+# Tasalli call script: Marathi (mr). Same keys as en.yaml. Format: see README.md.
+# {name} = value, {name|f} = gendered form (m, f, n, obl), [ ... ] = optional segment.
+# Rules: plain spoken Marathi, short sentences, "tumhi" forms. No medical advice or claims.
+
+meta:
+  language: mr
+  name: मराठी
+  version: 1
+  review_status: needs_native_speaker_review
+  approved_by: null
+  approved_on: null
+  reviewer_notes:
+    - 'गोळी स्त्रीलिंगी, कॅप्सूल नपुंसकलिंगी, औषध नपुंसकलिंगी, बाटली स्त्रीलिंगी, झाकण नपुंसकलिंगी मानले आहे. तपासा.'
+    - 'Strip साठी "पाकीट" वापरले आहे. "स्ट्रिप" किंवा "पत्ता" जास्त वापरले जात असेल तर बदला.'
+    - 'नावानंतर "जी" लावले आहे. ग्रामीण श्रोत्यांना योग्य वाटते का ते तपासा.'
+    - '"संपलं" (ran out) नकारात्मक यादीत आहे, म्हणजे "औषध संपलं" कधीच "घेतलं" धरले जाणार नाही.'
+
+templates:
+  consent:
+    ask: 'नमस्कार {person_name} जी. हा तसल्लीकडून फोन आहे. औषधाची आठवण करून देण्यासाठी आम्ही तुम्हाला फोन करावा, असं {child_name} यांना वाटतं. चालणार असेल, तर "हो" म्हणा, किंवा 1 दाबा. हे फोन नको असतील, तर 9 दाबा. मग आम्ही कधीच फोन करणार नाही.'
+    agreed: 'धन्यवाद. औषधाच्या वेळी आम्ही फोन करू. प्रत्येक वेळी "घेतलं" म्हणा, किंवा 1 दाबा. कधीही 9 दाबून फोन बंद करू शकता. नमस्कार.'
+    declined: 'ठीक आहे. आम्ही तुम्हाला फोन करणार नाही. नमस्कार.'
+    stopped: 'ठीक आहे. आता आम्ही तुम्हाला कधीच फोन करणार नाही. नमस्कार.'
+    unclear: 'माफ करा, समजलं नाही. चालणार असेल, तर 1 दाबा. फोन नको असतील, तर 9 दाबा.'
+    no_answer_goodbye: 'उत्तर मिळालं नाही. नमस्कार.'
+
+  reminder_full:
+    greeting: 'नमस्कार {person_name} जी. औषधाची वेळ झाली आहे. {child_name} यांनी आठवण करून द्यायला सांगितलं आहे.'
+    count_one: 'आता एक औषध घ्यायचं आहे.'
+    count_many: 'आता {count} औषधं घ्यायची आहेत.'
+    item: '{ordinal}, {spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {food_phrase}.][ {extra_instruction}]'
+    ask: 'औषध घ्या, मग "घेतलं" म्हणा, किंवा 1 दाबा. पुन्हा ऐकण्यासाठी 0. पंधरा मिनिटांनी आठवण करून देण्यासाठी 2.'
+    more_options: 'डॉक्टरांनी औषध बदललं असेल, तर 3 दाबा.'
+
+  reminder_short:
+    single: '{person_name} जी, {spoken_name} घ्यायची वेळ झाली. {amount_text}[, {food_phrase}]. घेतलं असेल, तर "घेतलं" म्हणा, किंवा 1 दाबा.'
+    group_greeting: '{person_name} जी, औषधाची वेळ झाली.'
+    group_item: '{spoken_name}: {amount_text}[, {food_phrase}].'
+    ask: 'घेतलं असेल, तर "घेतलं" म्हणा, किंवा 1 दाबा.'
+
+  test_call:
+    intro: 'हा तसल्लीचा टेस्ट फोन आहे. तुमच्या घरच्यांना असाच फोन येईल.'
+
+  repeat:
+    intro: 'पुन्हा ऐका.'
+
+  unclear:
+    first: 'माफ करा, समजलं नाही. पुन्हा सांगा.'
+    keypad: 'औषध घेतलं असेल, तर 1 दाबा. नंतर आठवण हवी असेल, तर 2. पुन्हा ऐकण्यासाठी 0.'
+    final: 'उत्तर मिळालं नाही. नमस्कार.'
+
+  reply_ack:
+    confirmed: 'धन्यवाद. {child_name} यांना कळवू. नमस्कार.'
+    snoozed: 'ठीक आहे. पंधरा मिनिटांनी पुन्हा आठवण करून देऊ. नमस्कार.'
+    snooze_used_up: 'पंधरा मिनिटांची आठवण एकदाच मिळते. औषध घेतलं की "घेतलं" म्हणा, किंवा 1 दाबा.'
+    not_taken: 'ठीक आहे. औषध घेतलं की "घेतलं" म्हणा, किंवा 1 दाबा. पंधरा मिनिटांनी आठवण हवी असेल, तर 2 दाबा.'
+    doctor_changed: 'ठीक आहे. डॉक्टरांनी औषध बदललं आहे, हे {child_name} यांना कळवू. नमस्कार.'
+    unwell: 'ठीक आहे. {child_name} यांना कळवू. गरज असेल, तर तुमच्या डॉक्टरांशी बोला. नमस्कार.'
+    stop: 'ठीक आहे. आता आम्ही कधीच फोन करणार नाही. {child_name} यांनाही कळवू. नमस्कार.'
+    goodbye: 'नमस्कार.'
+
+  sunday:
+    new_strip: '{spoken_name} चं नवं पाकीट उघडलं असेल, तर त्यावर {number} लिहा.'
+
+# Lines the call engine needs that the sections above do not cover (see README, "Call engine format").
+engine_extra:
+  child_fallback: 'तुमचे कुटुंब'   # said when the account holder gave no name
+  list_and: ' आणि '
+  declined_ack: 'ठीक आहे. {child_name} यांना कळवू. नमस्कार.'   # not taken and the 15 minute reminder already used
+
+building:
+  appearance:
+    tablet: '[{colour_primary|f} ][{shape|f} ]गोळी[, {size|f}][, {marking}]'
+    capsule: '[{colour_primary|n} ]कॅप्सूल[, {size|n}]'
+    capsule_two_colour: 'अर्धं {colour_primary|n}, अर्धं {colour_secondary|n} कॅप्सूल[, {size|n}]'
+  pack:
+    strip: '{pack_colour|n} पाकीट'
+    strip_with_print: '{pack_colour|n} पाकीट, {print_colour|obl} रंगाची अक्षरं'
+    loose: 'डब्यात सुटी ठेवलेली'
+    bottle: '{pack_colour|f} बाटली'
+    bottle_with_cap: '{pack_colour|f} बाटली, {cap_colour|n} झाकण'
+  disambiguator:
+    number: 'ज्यावर {number} लिहिलं आहे'
+    printed_name: 'ज्या पाकिटावर {strip_name_spelled} लिहिलं आहे'
+
+blocks:
+  colours:
+    white: { m: 'पांढरा', f: 'पांढरी', n: 'पांढरं', obl: 'पांढऱ्या' }
+    cream: { m: 'क्रीम रंगाचा', f: 'क्रीम रंगाची', n: 'क्रीम रंगाचं', obl: 'क्रीम' }
+    yellow: { m: 'पिवळा', f: 'पिवळी', n: 'पिवळं', obl: 'पिवळ्या' }
+    orange: 'नारिंगी'
+    pink: 'गुलाबी'
+    red: 'लाल'
+    maroon: 'गडद लाल'
+    brown: 'तपकिरी'
+    green: { m: 'हिरवा', f: 'हिरवी', n: 'हिरवं', obl: 'हिरव्या' }
+    blue: { m: 'निळा', f: 'निळी', n: 'निळं', obl: 'निळ्या' }
+    purple: { m: 'जांभळा', f: 'जांभळी', n: 'जांभळं', obl: 'जांभळ्या' }
+    grey: 'राखाडी'
+    black: { m: 'काळा', f: 'काळी', n: 'काळं', obl: 'काळ्या' }
+    silver: 'चंदेरी'
+    golden: 'सोनेरी'
+    transparent: { m: 'काचेसारखा', f: 'काचेसारखी', n: 'काचेसारखं', obl: 'काचेसारख्या' }
+  shapes:
+    round: 'गोल'
+    oval: { m: 'अंड्यासारखा', f: 'अंड्यासारखी', n: 'अंड्यासारखं', obl: 'अंड्यासारख्या' }
+    long: 'लांब'
+    square: 'चौकोनी'
+  sizes:
+    rai: { m: 'मोहरीएवढा लहान', f: 'मोहरीएवढी लहान', n: 'मोहरीएवढं लहान' }
+    dal: { m: 'डाळीच्या दाण्याएवढा', f: 'डाळीच्या दाण्याएवढी', n: 'डाळीच्या दाण्याएवढं' }
+    matar: { m: 'वाटाण्याएवढा', f: 'वाटाण्याएवढी', n: 'वाटाण्याएवढं' }
+    badam: { m: 'बदामाएवढा', f: 'बदामाएवढी', n: 'बदामाएवढं' }
+    bigger: { m: 'बदामापेक्षा मोठा', f: 'बदामापेक्षा मोठी', n: 'बदामापेक्षा मोठं' }
+  markings:
+    plain: ''
+    line: 'मध्ये रेघ'
+    letters: 'वर काहीतरी लिहिलेलं'
+    unknown: ''
+  food:
+    before: 'जेवणाआधी'
+    after: 'जेवणानंतर'
+    with: 'जेवणासोबत'
+    any: ''
+  kinds:
+    tablet: 'गोळी'
+    capsule: 'कॅप्सूल'
+    syrup: 'सिरप'
+    other: 'औषध'
+  ordinals: ['पहिलं औषध', 'दुसरं औषध', 'तिसरं औषध', 'चौथं औषध', 'पाचवं औषध', 'सहावं औषध', 'सातवं औषध', 'आठवं औषध', 'नववं औषध', 'दहावं औषध']
+  counts: ['एक', 'दोन', 'तीन', 'चार', 'पाच', 'सहा', 'सात', 'आठ', 'नऊ', 'दहा']
+
+replies:
+  confirm: ['घेतलं', 'घेतली', 'घेतले', 'घेतल्या', 'हो', 'हो घेतलं', 'हो घेतली', 'झालं', 'खाल्ली', 'yes', 'ghetla', 'ghetla ahe', 'ghetli', 'ghetle', 'ho', 'ho ghetla', 'zala', 'jhala', 'khalli']
+  # "Not taken", plus "ran out" (संपलं): never a confirmation.
+  negative: ['नाही', 'नाही घेतलं', 'नाही घेतली', 'अजून नाही', 'संपलं', 'संपली', 'संपल्या', 'nahi', 'nahi ghetla', 'ajun nahi', 'sampla', 'sampli', 'no']
+  snooze: ['नंतर', 'थोड्या वेळाने', 'नंतर घेतो', 'नंतर घेते', 'nantar', 'thodya velane', 'nantar gheto', 'nantar ghete']
+  repeat: ['पुन्हा', 'पुन्हा सांगा', 'परत सांगा', 'समजलं नाही', 'काय', 'punha', 'punha sanga', 'parat sanga', 'samajla nahi', 'kay']
+  doctor_changed: ['डॉक्टरांनी बदललं', 'डॉक्टरांनी बदलली', 'औषध बदललं', 'डॉक्टरांनी बंद केलं', 'doctoranni badalla', 'doctor ne badalla', 'aushadh badalla', 'doctoranni band kela']
+  unwell: ['बरं नाही', 'बरं वाटत नाही', 'तब्येत बरी नाही', 'bara nahi', 'bara vatat nahi', 'tabyet bari nahi']
+  stop: ['फोन बंद करा', 'फोन करू नका', 'परत फोन करू नका', 'बंद करा', 'phone band kara', 'phone karu naka', 'band kara', 'stop']
+  consent_yes: ['हो', 'हो चालेल', 'चालेल', 'ठीक आहे', 'ho', 'chalel', 'ho chalel', 'thik ahe', 'theek aahe', 'yes', 'ok']
+  consent_no: ['नाही', 'नको', 'नको आहे', 'nahi', 'nako', 'nako ahe', 'no']

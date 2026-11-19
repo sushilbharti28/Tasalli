@@ -1,0 +1,232 @@
+# GENERATED from ta.yaml by scripts/build-engine.ts. Do not edit by hand.
+# NEEDS NATIVE-SPEAKER REVIEW.
+language: ta
+status: needs native-speaker review
+reminder:
+  full_intro: வணக்கம் {person_name}. மருந்து சாப்பிடற நேரம். {child_name} நினைவுபடுத்தச் சொன்னாங்க. இப்போ {count} மருந்து சாப்பிடணும்.
+  full_intro_one: வணக்கம் {person_name}. மருந்து சாப்பிடற நேரம். {child_name} நினைவுபடுத்தச் சொன்னாங்க. இப்போ ஒரு மருந்து சாப்பிடணும்.
+  full_item: "{ordinal}, {spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}"
+  full_outro: மருந்து சாப்பிட்டதும், "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க. மறுபடி கேட்க 0. பதினைந்து நிமிஷம் கழிச்சு நினைவுபடுத்த 2. டாக்டர் மருந்தை மாத்தியிருந்தா 3 அழுத்துங்க.
+  short_intro: "{person_name}, மருந்து சாப்பிடற நேரம்."
+  short_item: "{spoken_name}: {amount_text}, {food_phrase}."
+  short_outro: சாப்பிட்டதும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க.
+  short_single: '{person_name}, {spoken_name} சாப்பிடற நேரம். {amount_text}, {food_phrase}. சாப்பிட்டதும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க.'
+  sunday_line: "{spoken_name} புது அட்டை திறந்திருந்தா, அதுல {number}ன்னு எழுதிடுங்க."
+  unclear: மன்னிக்கணும், புரியல. மறுபடி சொல்லுங்க.
+  keypad_only: மருந்து சாப்பிட்டிருந்தா 1 அழுத்துங்க. அப்புறம் நினைவுபடுத்த 2. மறுபடி கேட்க 0.
+  confirm_ack: நன்றி. {child_name}கிட்ட சொல்லிடறோம். வணக்கம்.
+  snooze_ack: சரிங்க. பதினைந்து நிமிஷம் கழிச்சு மறுபடி நினைவுபடுத்தறோம். வணக்கம்.
+  snooze_used: பதினைந்து நிமிஷ நினைவூட்டல் ஒரு தடவை மட்டும் தான். மருந்து சாப்பிட்டதும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க.
+  declined_ack: சரிங்க. {child_name}கிட்ட சொல்லிடறோம். வணக்கம்.
+  not_taken_ack: சரிங்க. மருந்து சாப்பிட்டதும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க. பதினைந்து நிமிஷம் கழிச்சு நினைவுபடுத்த 2 அழுத்துங்க.
+  doctor_changed_ack: சரிங்க. டாக்டர் மருந்தை மாத்தினதை {child_name}கிட்ட சொல்லிடறோம். வணக்கம்.
+  unwell_ack: சரிங்க. {child_name}கிட்ட சொல்லிடறோம். தேவைப்பட்டா உங்க டாக்டர்கிட்ட பேசுங்க. வணக்கம்.
+  stop_ack: சரிங்க. இனிமே நாங்க எப்பவும் ஃபோன் பண்ண மாட்டோம். {child_name}கிட்டயும் சொல்லிடறோம். வணக்கம்.
+  no_input_goodbye: பதில் கிடைக்கல. வணக்கம்.
+consent:
+  prompt: வணக்கம் {person_name}. இது தசல்லியிலிருந்து வரும் ஃபோன். மருந்து நேரத்தை நினைவுபடுத்த நாங்க உங்களுக்கு ஃபோன் பண்ணணும்னு {child_name} விரும்பறாங்க. சம்மதம்னா "ஆமா"ன்னு சொல்லுங்க, அல்லது 1 அழுத்துங்க. இந்த ஃபோன் வேண்டாம்னா 9 அழுத்துங்க. அப்புறம் நாங்க எப்பவும் ஃபோன் பண்ண மாட்டோம்.
+  unclear: மன்னிக்கணும், புரியல. சம்மதம்னா 1 அழுத்துங்க. ஃபோன் வேண்டாம்னா 9 அழுத்துங்க.
+  keypad_only: மன்னிக்கணும், புரியல. சம்மதம்னா 1 அழுத்துங்க. ஃபோன் வேண்டாம்னா 9 அழுத்துங்க.
+  yes_ack: நன்றி. மருந்து நேரத்துல நாங்க ஃபோன் பண்ணுவோம். ஒவ்வொரு தடவையும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க. எப்ப வேணும்னாலும் 9 அழுத்தி ஃபோனை நிறுத்தலாம். வணக்கம்.
+  no_ack: சரிங்க. நாங்க உங்களுக்கு ஃபோன் பண்ண மாட்டோம். வணக்கம்.
+  stop_ack: சரிங்க. இனிமே நாங்க எப்பவும் ஃபோன் பண்ண மாட்டோம். வணக்கம்.
+  no_input_goodbye: பதில் கிடைக்கல. வணக்கம்.
+test:
+  prompt: இது தசல்லியின் சோதனை ஃபோன். உங்க வீட்டுப் பெரியவங்களுக்கு இதே மாதிரி ஃபோன் வரும்.
+  ack: வணக்கம்.
+words:
+  person_suffix: ""
+  child_fallback: உங்க குடும்பம்
+  dose_unit:
+    one: ""
+    many: ""
+  ordinals:
+    - முதல் மருந்து
+    - இரண்டாவது மருந்து
+    - மூன்றாவது மருந்து
+    - நான்காவது மருந்து
+    - ஐந்தாவது மருந்து
+    - ஆறாவது மருந்து
+    - ஏழாவது மருந்து
+    - எட்டாவது மருந்து
+  list_joiner: ", "
+  list_last_joiner: " மற்றும் "
+  food:
+    before: சாப்பாட்டுக்கு முன்னாடி
+    after: சாப்பாட்டுக்கு அப்புறம்
+    with: சாப்பாட்டோட
+    any: ""
+  appearance: "{colour} {shape} {kind}, {size}, {marking}"
+  two_colour: பாதி {colour}, பாதி {colour2}
+  colours:
+    white: வெள்ளை
+    cream: க்ரீம் கலர்
+    yellow: மஞ்சள்
+    orange: ஆரஞ்சு
+    pink: ரோஸ் கலர்
+    red: சிவப்பு
+    maroon: அடர் சிவப்பு
+    brown: பழுப்பு
+    green: பச்சை
+    blue: நீல
+    purple: ஊதா
+    grey: சாம்பல் கலர்
+    black: கருப்பு
+    silver: வெள்ளி கலர்
+    golden: தங்க கலர்
+    transparent: கண்ணாடி மாதிரி
+  sizes:
+    rai: கடுகு அளவு சின்னது
+    dal: பருப்பு அளவு
+    matar: பட்டாணி அளவு
+    badam: பாதாம் அளவு
+    bigger: பாதாமை விடப் பெரியது
+  shapes:
+    round: உருண்டையான
+    oval: முட்டை வடிவ
+    long: நீளமான
+    square: சதுரமான
+  kinds:
+    tablet: மாத்திரை
+    capsule: கேப்சூல்
+    syrup: சிரப்
+    other: மருந்து
+  markings:
+    plain: ""
+    line: நடுவுல கோடு
+    letters: மேல எழுத்து இருக்கும்
+    unknown: ""
+  pack:
+    strip: "{pack_colour} அட்டையில"
+    bottle: "{pack_colour} பாட்டில்ல"
+    loose: டப்பாவுல தனியா வச்சது
+  cap_phrase: "{cap_colour} மூடி"
+  print_phrase: "{print_colour} எழுத்து"
+  disambiguator_number: "{number}ன்னு எழுதியிருக்கறது"
+  disambiguator_printed_name: "{strip_letters}ன்னு எழுதியிருக்கற அட்டை"
+words_gendered:
+  colours: {}
+  shapes: {}
+  sizes: {}
+phrases:
+  negation_words:
+    - இல்ல
+    - இல்லை
+    - சாப்பிடல
+    - சாப்பிடலை
+    - போடல
+    - எடுக்கல
+    - தீர்ந்துடுச்சு
+    - illa
+    - illai
+    - saapidala
+    - theernduduchu
+    - no
+    - வேண்டாம்
+    - vendaam
+    - vendam
+  reminder:
+    confirm:
+      - சாப்பிட்டேன்
+      - சாப்டேன்
+      - போட்டுக்கிட்டேன்
+      - எடுத்துக்கிட்டேன்
+      - குடிச்சேன்
+      - ஆமா
+      - ஆமாம்
+      - ஆமா சாப்பிட்டேன்
+      - yes
+      - saapitten
+      - saapten
+      - sapten
+      - pottukitten
+      - eduthukitten
+      - kudichen
+      - aama
+      - aamaa
+      - aamam
+    decline:
+      - இல்ல
+      - இல்லை
+      - சாப்பிடல
+      - சாப்பிடலை
+      - இன்னும் இல்ல
+      - இன்னும் சாப்பிடல
+      - போடல
+      - எடுக்கல
+      - தீர்ந்துடுச்சு
+      - தீர்ந்து போச்சு
+      - illa
+      - illai
+      - saapidala
+      - innum illa
+      - innum saapidala
+      - theernduduchu
+      - no
+    snooze:
+      - அப்புறம்
+      - அப்பறம்
+      - அப்புறமா
+      - கொஞ்ச நேரம் கழிச்சு
+      - appuram
+      - appurama
+      - konja neram kazhichu
+    repeat: &a2
+      - மறுபடி
+      - மறுபடியும்
+      - திரும்ப சொல்லுங்க
+      - புரியல
+      - என்ன
+      - marupadi
+      - marupadiyum
+      - thirumba sollunga
+      - puriyala
+      - enna
+    doctor_changed:
+      - டாக்டர் மாத்திட்டாரு
+      - டாக்டர் மருந்தை மாத்திட்டாரு
+      - மருந்து மாறிடுச்சு
+      - டாக்டர் நிறுத்திட்டாரு
+      - doctor maathittaru
+      - doctor marundha maathittaru
+      - marundhu maariduchu
+      - doctor niruthittaru
+    unwell:
+      - உடம்பு சரியில்ல
+      - உடம்பு சரியில்லை
+      - முடியல
+      - udambu sariyilla
+      - mudiyala
+    stop: &a1
+      - ஃபோன் பண்ணாதீங்க
+      - போன் பண்ணாதீங்க
+      - நிறுத்துங்க
+      - ஃபோனை நிறுத்துங்க
+      - phone pannaatheenga
+      - phone pannadheenga
+      - niruthunga
+      - stop
+  consent:
+    confirm:
+      - ஆமா
+      - ஆமாம்
+      - சரி
+      - சரிங்க
+      - சம்மதம்
+      - aama
+      - aamaa
+      - sari
+      - sammadham
+      - yes
+      - ok
+    decline:
+      - இல்ல
+      - இல்லை
+      - வேண்டாம்
+      - illa
+      - illai
+      - vendaam
+      - vendam
+      - no
+    stop: *a1
+    repeat: *a2

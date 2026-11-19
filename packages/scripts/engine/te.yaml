@@ -1,0 +1,219 @@
+# GENERATED from te.yaml by scripts/build-engine.ts. Do not edit by hand.
+# NEEDS NATIVE-SPEAKER REVIEW.
+language: te
+status: needs native-speaker review
+reminder:
+  full_intro: నమస్కారం {person_name} గారు. మందు వేసుకునే సమయం అయింది. {child_name} గుర్తు చేయమన్నారు. ఇప్పుడు {count} మందులు వేసుకోవాలి.
+  full_intro_one: నమస్కారం {person_name} గారు. మందు వేసుకునే సమయం అయింది. {child_name} గుర్తు చేయమన్నారు. ఇప్పుడు ఒక మందు వేసుకోవాలి.
+  full_item: "{ordinal}, {spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}"
+  full_outro: మందు వేసుకున్నాక, "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి. మళ్ళీ వినడానికి 0. పదిహేను నిమిషాల తర్వాత గుర్తు చేయడానికి 2. డాక్టర్ గారు మందు మార్చి ఉంటే 3 నొక్కండి.
+  short_intro: "{person_name} గారు, మందుల సమయం అయింది."
+  short_item: "{spoken_name}: {amount_text}, {food_phrase}."
+  short_outro: వేసుకున్నాక "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి.
+  short_single: '{person_name} గారు, {spoken_name} వేసుకునే సమయం. {amount_text}, {food_phrase}. వేసుకున్నాక "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి.'
+  sunday_line: "{spoken_name} కొత్త అట్ట తెరిస్తే, దాని మీద {number} అని రాయండి."
+  unclear: క్షమించండి, అర్థం కాలేదు. మళ్ళీ చెప్పండి.
+  keypad_only: మందు వేసుకుని ఉంటే 1 నొక్కండి. తర్వాత గుర్తు చేయడానికి 2. మళ్ళీ వినడానికి 0.
+  confirm_ack: ధన్యవాదాలు. {child_name}కి చెబుతాము. నమస్కారం.
+  snooze_ack: సరేనండి. పదిహేను నిమిషాల తర్వాత మళ్ళీ గుర్తు చేస్తాము. నమస్కారం.
+  snooze_used: పదిహేను నిమిషాల తర్వాత గుర్తు చేయడం ఒక్కసారే. మందు వేసుకున్నాక "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి.
+  declined_ack: సరేనండి. {child_name}కి చెబుతాము. నమస్కారం.
+  not_taken_ack: సరేనండి. మందు వేసుకున్నాక "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి. పదిహేను నిమిషాల తర్వాత గుర్తు చేయడానికి 2 నొక్కండి.
+  doctor_changed_ack: సరేనండి. డాక్టర్ గారు మందు మార్చారని {child_name}కి చెబుతాము. నమస్కారం.
+  unwell_ack: సరేనండి. {child_name}కి చెబుతాము. అవసరమైతే మీ డాక్టర్ గారితో మాట్లాడండి. నమస్కారం.
+  stop_ack: సరేనండి. ఇకపై మేము ఎప్పుడూ ఫోన్ చేయము. {child_name}కి కూడా చెబుతాము. నమస్కారం.
+  no_input_goodbye: సమాధానం రాలేదు. నమస్కారం.
+consent:
+  prompt: నమస్కారం {person_name} గారు. ఇది తసల్లి నుంచి ఫోన్. మందుల సమయం గుర్తు చేయడానికి మేము మీకు ఫోన్ చేయాలని {child_name} కోరుకుంటున్నారు. మీకు సమ్మతమైతే "అవును" అనండి, లేదా 1 నొక్కండి. ఈ ఫోన్లు వద్దనుకుంటే 9 నొక్కండి. అప్పుడు మేము ఇంకెప్పుడూ ఫోన్ చేయము.
+  unclear: క్షమించండి, అర్థం కాలేదు. సమ్మతమైతే 1 నొక్కండి. ఫోన్లు వద్దనుకుంటే 9 నొక్కండి.
+  keypad_only: క్షమించండి, అర్థం కాలేదు. సమ్మతమైతే 1 నొక్కండి. ఫోన్లు వద్దనుకుంటే 9 నొక్కండి.
+  yes_ack: ధన్యవాదాలు. మందుల సమయంలో మేము ఫోన్ చేస్తాము. ప్రతిసారీ "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి. ఎప్పుడైనా 9 నొక్కి ఫోన్లు ఆపవచ్చు. నమస్కారం.
+  no_ack: సరేనండి. మేము మీకు ఫోన్ చేయము. నమస్కారం.
+  stop_ack: సరేనండి. ఇకపై మేము ఎప్పుడూ ఫోన్ చేయము. నమస్కారం.
+  no_input_goodbye: సమాధానం రాలేదు. నమస్కారం.
+test:
+  prompt: ఇది తసల్లి పరీక్ష ఫోన్. మీ ఇంటి పెద్దవాళ్ళకు ఇలాంటి ఫోనే వస్తుంది.
+  ack: నమస్కారం.
+words:
+  person_suffix: ""
+  child_fallback: మీ కుటుంబం
+  dose_unit:
+    one: ""
+    many: ""
+  ordinals:
+    - మొదటి మందు
+    - రెండో మందు
+    - మూడో మందు
+    - నాలుగో మందు
+    - ఐదో మందు
+    - ఆరో మందు
+    - ఏడో మందు
+    - ఎనిమిదో మందు
+  list_joiner: ", "
+  list_last_joiner: " మరియు "
+  food:
+    before: భోజనానికి ముందు
+    after: భోజనం తర్వాత
+    with: భోజనంతో పాటు
+    any: ""
+  appearance: "{colour} {shape} {kind}, {size}, {marking}"
+  two_colour: సగం {colour}, సగం {colour2}
+  colours:
+    white: తెల్లని
+    cream: క్రీమ్ రంగు
+    yellow: పసుపు రంగు
+    orange: నారింజ రంగు
+    pink: గులాబీ రంగు
+    red: ఎర్రని
+    maroon: ముదురు ఎరుపు
+    brown: గోధుమ రంగు
+    green: ఆకుపచ్చ
+    blue: నీలి రంగు
+    purple: ఊదా రంగు
+    grey: బూడిద రంగు
+    black: నల్లని
+    silver: వెండి రంగు
+    golden: బంగారు రంగు
+    transparent: గాజు లాంటి
+  sizes:
+    rai: ఆవగింజ అంత చిన్నది
+    dal: పప్పు గింజ అంత
+    matar: బఠాణీ అంత
+    badam: బాదం అంత
+    bigger: బాదం కంటే పెద్దది
+  shapes:
+    round: గుండ్రని
+    oval: కోడిగుడ్డు ఆకారంలో ఉన్న
+    long: పొడవాటి
+    square: చదరపు
+  kinds:
+    tablet: మాత్ర
+    capsule: క్యాప్సూల్
+    syrup: సిరప్
+    other: మందు
+  markings:
+    plain: ""
+    line: మధ్యలో గీత
+    letters: పైన అక్షరాలు ఉంటాయి
+    unknown: ""
+  pack:
+    strip: "{pack_colour} అట్టలో"
+    bottle: "{pack_colour} సీసాలో"
+    loose: డబ్బాలో విడిగా ఉంచినది
+  cap_phrase: "{cap_colour} మూత"
+  print_phrase: "{print_colour} అక్షరాలు"
+  disambiguator_number: "{number} అని రాసి ఉన్నది"
+  disambiguator_printed_name: "{strip_letters} అని రాసి ఉన్న అట్ట"
+words_gendered:
+  colours: {}
+  shapes: {}
+  sizes: {}
+phrases:
+  negation_words:
+    - లేదు
+    - వేసుకోలేదు
+    - తీసుకోలేదు
+    - కాదు
+    - అయిపోయింది
+    - అయిపోయాయి
+    - ledu
+    - vesukoledu
+    - teesukoledu
+    - kaadu
+    - ayipoyindi
+    - no
+    - వద్దు
+    - వద్దండి
+    - vaddu
+    - vaddandi
+  reminder:
+    confirm:
+      - వేసుకున్నాను
+      - వేసుకున్నా
+      - తీసుకున్నాను
+      - తాగాను
+      - అవును
+      - అవును వేసుకున్నాను
+      - yes
+      - vesukunnanu
+      - vesukunna
+      - teesukunnanu
+      - tagaanu
+      - avunu
+    decline:
+      - లేదు
+      - వేసుకోలేదు
+      - ఇంకా లేదు
+      - ఇంకా వేసుకోలేదు
+      - తీసుకోలేదు
+      - కాదు
+      - అయిపోయింది
+      - అయిపోయాయి
+      - ledu
+      - vesukoledu
+      - inka ledu
+      - teesukoledu
+      - kaadu
+      - ayipoyindi
+      - no
+    snooze:
+      - తర్వాత
+      - కాసేపాగి
+      - కొంచెం సేపటి తర్వాత
+      - tarvata
+      - taruvata
+      - kaasepaagi
+    repeat: &a2
+      - మళ్ళీ
+      - మళ్ళీ చెప్పండి
+      - అర్థం కాలేదు
+      - ఏమిటి
+      - ఏంటి
+      - malli
+      - malli cheppandi
+      - artham kaaledu
+      - enti
+    doctor_changed:
+      - డాక్టర్ మార్చారు
+      - డాక్టర్ గారు మార్చారు
+      - మందు మారింది
+      - డాక్టర్ ఆపేశారు
+      - doctor maarchaaru
+      - mandu maarindi
+      - doctor aapesaru
+    unwell:
+      - ఒంట్లో బాగాలేదు
+      - ఆరోగ్యం బాగాలేదు
+      - బాగా లేదు
+      - ontlo bagaledu
+      - aarogyam bagaledu
+    stop: &a1
+      - ఫోన్ చేయకండి
+      - ఫోన్లు ఆపండి
+      - ఫోన్ ఆపండి
+      - ఆపండి
+      - phone cheyakandi
+      - phone aapandi
+      - aapandi
+      - stop
+  consent:
+    confirm:
+      - అవును
+      - సరే
+      - సరేనండి
+      - ఒప్పుకుంటున్నాను
+      - avunu
+      - sare
+      - sarenandi
+      - yes
+      - ok
+    decline:
+      - వద్దు
+      - లేదు
+      - వద్దండి
+      - vaddu
+      - vaddandi
+      - ledu
+      - no
+    stop: *a1
+    repeat: *a2

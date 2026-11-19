@@ -1,0 +1,145 @@
+# NEEDS NATIVE-SPEAKER REVIEW (Bengali). Draft written without a native speaker. Not approved for real calls.
+# Tasalli call script: Bengali (bn). Same keys as en.yaml. Format: see README.md.
+# {name} = value, [ ... ] = optional segment. Bengali adjectives do not change with gender, so no |forms.
+# Rules: plain spoken Bengali, short sentences, "apni" forms. No medical advice or claims.
+
+meta:
+  language: bn
+  name: বাংলা
+  version: 1
+  review_status: needs_native_speaker_review
+  approved_by: null
+  approved_on: null
+  reviewer_notes:
+    - 'Register: everyday Kolkata Bengali with "আপনি". Check it suits older listeners in small towns.'
+    - 'No neutral honorific like "ji" was found, so the name is said alone. Add one if it sounds rude.'
+    - '"পাতা" is used for a tablet strip. Check this is the common word.'
+    - 'Ordinals use প্রথম, দ্বিতীয় ... because "এক নম্বর" would clash with the strip-number feature.'
+    - '"শেষ" (ran out) is in the negative list so "ওষুধ শেষ হয়ে গেছে" never counts as taken.'
+
+templates:
+  consent:
+    ask: 'নমস্কার {person_name}। এটা তসল্লি থেকে ফোন। {child_name} চান, ওষুধের সময় মনে করাতে আমরা আপনাকে ফোন করি। রাজি থাকলে "হ্যাঁ" বলুন, বা 1 টিপুন। এই ফোন না চাইলে 9 টিপুন। তাহলে আমরা আর কখনও ফোন করব না।'
+    agreed: 'ধন্যবাদ। ওষুধের সময় আমরা ফোন করব। প্রতিবার "খেয়েছি" বলুন, বা 1 টিপুন। যে কোনও সময় 9 টিপে ফোন বন্ধ করতে পারেন। নমস্কার।'
+    declined: 'ঠিক আছে। আমরা আপনাকে ফোন করব না। নমস্কার।'
+    stopped: 'ঠিক আছে। আমরা আর কখনও ফোন করব না। নমস্কার।'
+    unclear: 'মাফ করবেন, বুঝতে পারলাম না। রাজি থাকলে 1 টিপুন। ফোন না চাইলে 9 টিপুন।'
+    no_answer_goodbye: 'উত্তর পেলাম না। নমস্কার।'
+
+  reminder_full:
+    greeting: 'নমস্কার {person_name}। ওষুধের সময় হয়েছে। {child_name} মনে করিয়ে দিতে বলেছেন।'
+    count_one: 'এখন একটা ওষুধ খেতে হবে।'
+    count_many: 'এখন {count} ওষুধ খেতে হবে।'
+    item: '{ordinal}, {spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {food_phrase}।][ {extra_instruction}]'
+    ask: 'ওষুধ খেয়ে নিন, তারপর "খেয়েছি" বলুন, বা 1 টিপুন। আবার শুনতে 0। পনেরো মিনিট পরে মনে করাতে 2।'
+    more_options: 'ডাক্তার ওষুধ বদলে দিলে 3 টিপুন।'
+
+  reminder_short:
+    single: '{person_name}, {spoken_name} খাওয়ার সময়। {amount_text}[, {food_phrase}]। খেয়ে নিলে "খেয়েছি" বলুন, বা 1 টিপুন।'
+    group_greeting: '{person_name}, ওষুধের সময় হয়েছে।'
+    group_item: '{spoken_name}: {amount_text}[, {food_phrase}]।'
+    ask: 'খেয়ে নিলে "খেয়েছি" বলুন, বা 1 টিপুন।'
+
+  test_call:
+    intro: 'এটা তসল্লির পরীক্ষার ফোন। আপনার বাড়ির লোক এরকমই ফোন পাবেন।'
+
+  repeat:
+    intro: 'আবার শুনুন।'
+
+  unclear:
+    first: 'মাফ করবেন, বুঝতে পারলাম না। আবার বলুন।'
+    keypad: 'ওষুধ খেয়ে থাকলে 1 টিপুন। পরে মনে করাতে 2। আবার শুনতে 0।'
+    final: 'উত্তর পেলাম না। নমস্কার।'
+
+  reply_ack:
+    confirmed: 'ধন্যবাদ। {child_name}-কে জানিয়ে দেব। নমস্কার।'
+    snoozed: 'ঠিক আছে। পনেরো মিনিট পরে আবার মনে করাব। নমস্কার।'
+    snooze_used_up: 'পনেরো মিনিট পরে মনে করানো একবারই হয়। ওষুধ খেয়ে নিলে "খেয়েছি" বলুন, বা 1 টিপুন।'
+    not_taken: 'ঠিক আছে। ওষুধ খেয়ে নিলে "খেয়েছি" বলুন, বা 1 টিপুন। পনেরো মিনিট পরে মনে করাতে 2 টিপুন।'
+    doctor_changed: 'ঠিক আছে। ডাক্তার ওষুধ বদলেছেন, এটা {child_name}-কে জানিয়ে দেব। নমস্কার।'
+    unwell: 'ঠিক আছে। {child_name}-কে জানিয়ে দেব। দরকার হলে আপনার ডাক্তারের সঙ্গে কথা বলুন। নমস্কার।'
+    stop: 'ঠিক আছে। আমরা আর কখনও ফোন করব না। {child_name}-কেও জানিয়ে দেব। নমস্কার।'
+    goodbye: 'নমস্কার।'
+
+  sunday:
+    new_strip: '{spoken_name}-এর নতুন পাতা খুললে, তার ওপর {number} লিখে দিন।'
+
+# Lines the call engine needs that the sections above do not cover (see README, "Call engine format").
+engine_extra:
+  child_fallback: 'আপনার পরিবার'   # said when the account holder gave no name
+  list_and: ' আর '
+  declined_ack: 'ঠিক আছে। {child_name}-কে জানিয়ে দেব। নমস্কার।'   # not taken and the 15 minute reminder already used
+
+building:
+  appearance:
+    tablet: '[{colour_primary} ][{shape} ]ট্যাবলেট[, {size}][, {marking}]'
+    capsule: '[{colour_primary} ]ক্যাপসুল[, {size}]'
+    capsule_two_colour: 'আধা {colour_primary}, আধা {colour_secondary} ক্যাপসুল[, {size}]'
+  pack:
+    strip: '{pack_colour} পাতায়'
+    strip_with_print: '{pack_colour} পাতায়, {print_colour} লেখা'
+    loose: 'কৌটোয় খোলা রাখা'
+    bottle: '{pack_colour} বোতলে'
+    bottle_with_cap: '{pack_colour} বোতলে, {cap_colour} ঢাকনা'
+  disambiguator:
+    number: 'যেটার গায়ে {number} লেখা'
+    printed_name: 'যে পাতায় {strip_name_spelled} লেখা আছে'
+
+blocks:
+  colours:
+    white: 'সাদা'
+    cream: 'ক্রিম রঙের'
+    yellow: 'হলুদ'
+    orange: 'কমলা'
+    pink: 'গোলাপি'
+    red: 'লাল'
+    maroon: 'গাঢ় লাল'
+    brown: 'খয়েরি'
+    green: 'সবুজ'
+    blue: 'নীল'
+    purple: 'বেগুনি'
+    grey: 'ছাই রঙের'
+    black: 'কালো'
+    silver: 'রুপোলি'
+    golden: 'সোনালি'
+    transparent: 'কাচের মতো'
+  shapes:
+    round: 'গোল'
+    oval: 'ডিমের মতো'
+    long: 'লম্বা'
+    square: 'চৌকো'
+  sizes:
+    rai: 'সর্ষে দানার মতো ছোট'
+    dal: 'ডালের দানার মতো'
+    matar: 'মটরের দানার মতো'
+    badam: 'বাদামের মতো'
+    bigger: 'বাদামের চেয়ে বড়'
+  markings:
+    plain: ''
+    line: 'মাঝখানে দাগ'
+    letters: 'ওপরে কিছু লেখা আছে'
+    unknown: ''
+  food:
+    before: 'খাওয়ার আগে'
+    after: 'খাওয়ার পরে'
+    with: 'খাওয়ার সঙ্গে'
+    any: ''
+  kinds:
+    tablet: 'ট্যাবলেট'
+    capsule: 'ক্যাপসুল'
+    syrup: 'সিরাপ'
+    other: 'ওষুধ'
+  ordinals: ['প্রথম ওষুধ', 'দ্বিতীয় ওষুধ', 'তৃতীয় ওষুধ', 'চতুর্থ ওষুধ', 'পঞ্চম ওষুধ', 'ষষ্ঠ ওষুধ', 'সপ্তম ওষুধ', 'অষ্টম ওষুধ', 'নবম ওষুধ', 'দশম ওষুধ']
+  counts: ['একটা', 'দুটো', 'তিনটে', 'চারটে', 'পাঁচটা', 'ছটা', 'সাতটা', 'আটটা', 'নটা', 'দশটা']
+
+replies:
+  confirm: ['খেয়েছি', 'খেয়ে নিয়েছি', 'নিয়েছি', 'হ্যাঁ', 'হ্যাঁ খেয়েছি', 'হয়ে গেছে', 'yes', 'kheyechi', 'kheye niyechi', 'niyechi', 'haan', 'ha', 'hoye geche']
+  # "Not taken", plus "ran out" (শেষ): never a confirmation.
+  negative: ['না', 'খাইনি', 'খাই নি', 'এখনও খাইনি', 'এখন না', 'শেষ', 'na', 'khaini', 'khai ni', 'ekhono khaini', 'ekhon na', 'shesh', 'no']
+  snooze: ['পরে', 'একটু পরে', 'পরে খাব', 'pore', 'ektu pore', 'pore khabo']
+  repeat: ['আবার', 'আবার বলুন', 'বুঝতে পারিনি', 'কী বললেন', 'abar', 'abar bolun', 'bujhte parini', 'ki bollen']
+  doctor_changed: ['ডাক্তার বদলে দিয়েছে', 'ডাক্তার বদলেছে', 'ডাক্তার ওষুধ বদলেছে', 'ওষুধ বদলে গেছে', 'ডাক্তার বন্ধ করে দিয়েছে', 'daktar bodle diyeche', 'doctor bodle diyeche', 'oshudh bodle geche', 'doctor bondho kore diyeche']
+  unwell: ['শরীর খারাপ', 'শরীর ভালো নেই', 'শরীরটা ভালো নেই', 'sharir kharap', 'shorir kharap', 'shorir bhalo nei']
+  stop: ['ফোন বন্ধ করুন', 'ফোন করবেন না', 'আর ফোন করবেন না', 'বন্ধ করুন', 'phone bondho korun', 'phone korben na', 'bondho korun', 'stop']
+  consent_yes: ['হ্যাঁ', 'রাজি', 'হ্যাঁ রাজি', 'ঠিক আছে', 'haan', 'ha', 'raji', 'thik ache', 'yes', 'ok']
+  consent_no: ['না', 'চাই না', 'দরকার নেই', 'na', 'chai na', 'dorkar nei', 'no']
