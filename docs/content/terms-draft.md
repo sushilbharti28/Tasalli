@@ -15,11 +15,14 @@ Tasalli places automated reminder calls to a person you name, at times you enter
 ## 3. Consent and stopping
 No reminder is scheduled before the person agrees on the consent call. If a person presses 9 or asks to stop, we stop at once and block the number for all accounts. We cannot undo that for you.
 
+## 3A. Call recordings
+Consent calls and reminder calls are recorded, and the call says so at the start. Test calls are not recorded. Recordings are copied to storage in India, deleted from the telephony provider, used for support and quality checks, kept for [RETENTION PERIOD] and deleted on request. You must tell the person called that calls are recorded. See the Privacy Policy. [Lawyer: review.]
+
 ## 4. Limits of the service
 Calls depend on phone networks, the person's phone and whether they pick up. We may fail to connect, retry, or report wrongly. A call, a "taken" answer or an alert is not a record that a medicine was taken. Do not rely on Tasalli as your only way to look after someone. In an emergency, call 112. Limits per number: at most 6 calls a day; at most 4 people per account.
 
 ## 5. Plans and payment
-7-day trial: one person, 3 calls a day. Then Rs 299 a month (one parent), Rs 499 a month (two parents) or Rs 4,999 a year (family), charged by UPI autopay through Razorpay. You can cancel any time; it ends at the end of the paid period. Refunds: [policy to be set by founder and lawyer]. Prices include/exclude GST: [confirm].
+7-day trial: one person, 3 calls a day. Then Rs 299 a month (one parent), Rs 499 a month (two parents) or Rs 4,999 a year (family), charged by UPI autopay through Razorpay. You can cancel any time; it ends at the end of the paid period. **If a plan lapses** (payment fails or the plan is not renewed), reminder calls continue for a 3-day grace period and then pause. We notify you in the app and by message when this happens. Calls resume when the plan is active again, and the consent already given by the person called stays valid unless they pressed 9. Refunds: [policy to be set by founder and lawyer]. Prices include/exclude GST: [confirm].
 
 ## 6. Our liability
 [Lawyer: limit liability to the fees paid in the last 12 months to the extent allowed by law; exclude liability for missed or wrong calls caused by networks, providers, wrong entries or the person not answering; confirm this does not conflict with consumer law.]

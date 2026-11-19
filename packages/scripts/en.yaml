@@ -16,7 +16,7 @@ meta:
 
 templates:
   consent:
-    ask: 'Namaste {person_name} ji. This is a call from Tasalli. This call may be recorded to improve the service. {child_name} wants us to call you at medicine time, to remind you. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.'
+    ask: 'Namaste {person_name} ji. This is a call from Tasalli. This call will be recorded. {child_name} wants us to call you at medicine time, to remind you. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.'
     agreed: 'Thank you. We will call you at medicine time. Each time, say "taken", or press 1. You can press 9 at any time to stop the calls. Namaste.'
     declined: 'Okay. We will not call you. Namaste.'
     stopped: 'Okay. We will never call you again. Namaste.'
@@ -77,7 +77,8 @@ building:
     strip_with_print: 'in the {pack_colour} strip with {print_colour} writing'
     loose: 'kept loose in a box'
     bottle: 'in the {pack_colour} bottle'
-    bottle_with_cap: 'in the {pack_colour} bottle with the {cap_colour} cap'
+    bottle_with_cap: 'in the {pack_colour} bottle {cap_phrase}'
+    cap_phrase: 'with the {cap_colour} cap'
   disambiguator:
     number: 'the one marked number {number}'
     printed_name: 'the strip that says {strip_name_spelled}'

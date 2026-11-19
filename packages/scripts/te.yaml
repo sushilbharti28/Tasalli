@@ -78,7 +78,8 @@ building:
     strip_with_print: '{pack_colour} అట్టలో, {print_colour} అక్షరాలు'
     loose: 'డబ్బాలో విడిగా ఉంచినది'
     bottle: '{pack_colour} సీసాలో'
-    bottle_with_cap: '{pack_colour} సీసాలో, {cap_colour} మూత'
+    bottle_with_cap: '{pack_colour} సీసాలో, {cap_phrase}'
+    cap_phrase: '{cap_colour} మూత'
   disambiguator:
     number: '{number} అని రాసి ఉన్నది'
     printed_name: '{strip_name_spelled} అని రాసి ఉన్న అట్ట'

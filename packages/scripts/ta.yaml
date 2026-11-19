@@ -80,7 +80,8 @@ building:
     strip_with_print: '{pack_colour} அட்டையில, {print_colour} எழுத்து'
     loose: 'டப்பாவுல தனியா வச்சது'
     bottle: '{pack_colour} பாட்டில்ல'
-    bottle_with_cap: '{pack_colour} பாட்டில்ல, {cap_colour} மூடி'
+    bottle_with_cap: '{pack_colour} பாட்டில்ல, {cap_phrase}'
+    cap_phrase: '{cap_colour} மூடி'
   disambiguator:
     number: '{number}ன்னு எழுதியிருக்கறது'
     printed_name: '{strip_name_spelled}ன்னு எழுதியிருக்கற அட்டை'

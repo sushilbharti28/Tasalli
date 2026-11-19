@@ -98,7 +98,7 @@ words:
     unknown: ""
   pack:
     strip: "{pack_colour} అట్టలో"
-    bottle: "{pack_colour} సీసాలో"
+    bottle: "{pack_colour} సీసాలో, {cap_phrase}"
     loose: డబ్బాలో విడిగా ఉంచినది
   cap_phrase: "{cap_colour} మూత"
   print_phrase: "{print_colour} అక్షరాలు"

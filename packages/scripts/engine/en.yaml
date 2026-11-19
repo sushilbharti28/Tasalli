@@ -24,7 +24,7 @@ reminder:
   stop_ack: Okay. We will never call you again. We will tell {child_name} too. Namaste.
   no_input_goodbye: We did not get an answer. Namaste.
 consent:
-  prompt: Namaste {person_name} ji. This is a call from Tasalli. This call may be recorded to improve the service. {child_name} wants us to call you at medicine time, to remind you. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.
+  prompt: Namaste {person_name} ji. This is a call from Tasalli. This call will be recorded. {child_name} wants us to call you at medicine time, to remind you. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.
   unclear: Sorry, I did not understand. To say yes, press 1. If you do not want these calls, press 9.
   keypad_only: Sorry, I did not understand. To say yes, press 1. If you do not want these calls, press 9.
   yes_ack: Thank you. We will call you at medicine time. Each time, say "taken", or press 1. You can press 9 at any time to stop the calls. Namaste.
@@ -98,7 +98,7 @@ words:
     unknown: ""
   pack:
     strip: in the {pack_colour} strip
-    bottle: in the {pack_colour} bottle
+    bottle: in the {pack_colour} bottle {cap_phrase}
     loose: kept loose in a box
   cap_phrase: with the {cap_colour} cap
   print_phrase: with {print_colour} writing

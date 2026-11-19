@@ -31,7 +31,7 @@ Your parents may not use a smartphone. They do have a phone. Tasalli calls them 
 7-day free trial for one person. Then Rs 299 a month for one parent, Rs 499 a month for two parents, or Rs 4,999 a year for the family. Paid by UPI autopay through Razorpay. Cancel any time.
 
 **Your data**
-Stays in India. You can ask us to delete it at any time from the app or by writing to support. See the privacy policy.
+Stays in India. Consent and reminder calls are recorded (the call says so) for support and quality, stored in India and deleted on request. You can ask us to delete it at any time from the app or by writing to support. See the privacy policy.
 
 **Important**
 Tasalli is a reminder service. It is not medical advice and does not suggest, check or change any medicine or dose. It only repeats what your family entered. Please ask a doctor or pharmacist about any medicine.
@@ -46,8 +46,15 @@ Category: Lifestyle (not Medical). Tags: reminder, family, parents, calls.
 4. See today's doses and who confirmed
 5. A missed dose reaches you at once
 
-## Data safety form notes (to verify with the backend before submitting)
-Collected: phone numbers (yours and the parent's), names, medicine details you enter, call outcomes. Purpose: app function. Encrypted in transit. Deletion on request. Not sold. Data stored in India.
+## Data safety form answers (to verify with the backend before submitting)
+- Data collected and shared: no data sold. Third parties (telephony, SMS, WhatsApp, payments, notifications) act as service providers for app function; confirm each one's Play "shared" classification with the lawyer.
+- Personal info: name, phone number (yours and the parent's). Purpose: app functionality, account management.
+- Health info: medicine details you enter (names, amounts, times, appearance). Purpose: app functionality. Not used for advertising.
+- Audio: **voice or sound recordings** of consent calls and reminder calls with the person called (made by our servers and telephony provider, not by the app on your phone; test calls are not recorded). Collected: yes. Purposes: app functionality, support and quality (select "Analytics" only if the lawyer advises; we do not use them for advertising). Recordings are copied to storage in India, deleted from the telephony provider and kept for [RETENTION PERIOD].
+- App activity and financial info: call outcomes and plan status; payments handled by Razorpay (no card or UPI details stored by us).
+- Device or other IDs: Firebase push token.
+- Security: data encrypted in transit and at rest. Users can request deletion (in the app or by writing to support); this includes call recordings. Data is stored in India.
+- Declare that the app does not access the phone's microphone; recording happens on the call servers. [Verify with mobile agent: no RECORD_AUDIO permission.]
 
 ## Release notes (first release)
 First version: reminder calls in six languages, consent call, today and history, test call.

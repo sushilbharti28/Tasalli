@@ -98,7 +98,7 @@ words:
     unknown: ""
   pack:
     strip: "{pack_colour} அட்டையில"
-    bottle: "{pack_colour} பாட்டில்ல"
+    bottle: "{pack_colour} பாட்டில்ல, {cap_phrase}"
     loose: டப்பாவுல தனியா வச்சது
   cap_phrase: "{cap_colour} மூடி"
   print_phrase: "{print_colour} எழுத்து"
