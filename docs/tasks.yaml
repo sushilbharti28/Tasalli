@@ -1,0 +1,77 @@
+# Source list for GitHub issues. The lead agent creates one issue per entry,
+# labelled with the workstream, the agent and the week.
+# week 0 = 23-29 Nov 2026, week 1 = 30 Nov-6 Dec, ... week 8 = 18-24 Jan 2027.
+
+- {ws: founder, week: 0, title: "Incorporate the company; Tasalli as product brand"}
+- {ws: founder, week: 0, title: "Trademark search and filing for Tasalli (classes 9, 38, 44)"}
+- {ws: founder, week: 0, title: "Domain and Google Workspace email"}
+- {ws: founder, week: 0, title: "Exotel and Plivo accounts, KYC, pricing at 15k calls/month"}
+- {ws: founder, week: 0, title: "DLT registration and caller ID approval for transactional voice"}
+- {ws: founder, week: 0, title: "Sarvam and Google Cloud speech accounts"}
+- {ws: founder, week: 0, title: "MSG91 OTP template and WhatsApp Business templates"}
+- {ws: founder, week: 0, title: "Razorpay KYC with UPI autopay"}
+- {ws: founder, week: 0, title: "Google Play developer account (organisation)"}
+- {ws: founder, week: 0, title: "Cloud account in Mumbai region with billing alerts"}
+- {ws: founder, week: 1, title: "Lawyer: terms, privacy policy, consent wording, not-medical-advice"}
+- {ws: founder, week: 1, title: "Manual calling week with 5-10 parents; log exact confirm phrases"}
+- {ws: founder, week: 2, title: "Doctor friend reviews call scripts and safety rules"}
+
+- {ws: contracts, agent: lead, week: 0, title: "Approve OpenAPI spec", done: "Founder approves packages/contracts/openapi.yaml"}
+- {ws: contracts, agent: lead, week: 0, title: "Approve database schema", done: "Founder approves schema.sql"}
+- {ws: contracts, agent: lead, week: 0, title: "Approve call engine interfaces and rules", done: "Founder approves src/telephony.ts"}
+- {ws: contracts, agent: lead, week: 0, title: "Generate TypeScript API client and mock server from the spec"}
+
+- {ws: devops, agent: devops, week: 1, title: "pnpm workspace, lint, test, CI on every PR"}
+- {ws: devops, agent: devops, week: 1, title: "Terraform: dev and staging in Mumbai (Postgres, Redis, secrets)"}
+- {ws: devops, agent: devops, week: 2, title: "Sentry, uptime alerts, call-failure alert"}
+- {ws: devops, agent: devops, week: 3, title: "Expo EAS builds to Play internal testing"}
+- {ws: devops, agent: devops, week: 7, title: "Production environment, backups tested, release runbook"}
+
+- {ws: backend, agent: backend, week: 1, title: "Migrations from schema.sql; NestJS skeleton with health check"}
+- {ws: backend, agent: backend, week: 1, title: "OTP sign-in and sessions"}
+- {ws: backend, agent: backend, week: 2, title: "People API with consent states, 4-person limit, block list check"}
+- {ws: backend, agent: backend, week: 2, title: "Medicines and schedules API (tablet, capsule, syrup, other)"}
+- {ws: backend, agent: backend, week: 3, title: "Look-alike check (appearance only) with auto-resolve and recommendation"}
+- {ws: backend, agent: backend, week: 3, title: "Dose generation, Today and history endpoints, manual mark-taken"}
+- {ws: backend, agent: backend, week: 4, title: "Medicine name autocomplete from government drug codes (licence checked)"}
+- {ws: backend, agent: backend, week: 4, title: "Audit log for medicines, consents and manual actions"}
+
+- {ws: call-engine, agent: call-engine, week: 1, title: "FakeProvider and FakeSpeech with scenario controls"}
+- {ws: call-engine, agent: call-engine, week: 1, title: "Scheduler: job per dose, 30-minute grouping, parent time zone"}
+- {ws: call-engine, agent: call-engine, week: 2, title: "Script builder: full vs short, disambiguators, Sunday line"}
+- {ws: call-engine, agent: call-engine, week: 2, title: "TTS generation with audio cache"}
+- {ws: call-engine, agent: call-engine, week: 2, title: "Consent call flow"}
+- {ws: call-engine, agent: call-engine, week: 3, title: "Reminder flow with keys 1/2/0/3/9, retries, missed"}
+- {ws: call-engine, agent: call-engine, week: 3, title: "Webhook idempotency and signature checks"}
+- {ws: call-engine, agent: call-engine, week: 3, title: "Caps (6 calls/number/day) and key 9 global block"}
+- {ws: call-engine, agent: call-engine, week: 3, title: "Exotel adapter; first real call to founder's phone", done: "Gate: first real call (20 Dec)"}
+- {ws: call-engine, agent: call-engine, week: 5, title: "Speech replies: negative-first phrase matching, unclear fallback"}
+- {ws: call-engine, agent: call-engine, week: 6, title: "Plivo adapter as fallback"}
+
+- {ws: mobile, agent: mobile, week: 1, title: "Expo app skeleton, navigation, i18n (en, hi), API client against mock"}
+- {ws: mobile, agent: mobile, week: 2, title: "Sign in and add a person screens"}
+- {ws: mobile, agent: mobile, week: 2, title: "Consent status screen"}
+- {ws: mobile, agent: mobile, week: 3, title: "Add-medicine steps: kind, name, looks, kept, amount and times"}
+- {ws: mobile, agent: mobile, week: 4, title: "Check screen with play preview; look-alike screen"}
+- {ws: mobile, agent: mobile, week: 4, title: "Today, missed dose, history"}
+- {ws: mobile, agent: mobile, week: 5, title: "Plans and paywall; settings with test call"}
+- {ws: mobile, agent: mobile, week: 5, title: "Push notifications"}
+
+- {ws: integrations, agent: integrations, week: 3, title: "OTP via MSG91 with DLT template"}
+- {ws: integrations, agent: integrations, week: 4, title: "WhatsApp missed-dose alert and evening summary"}
+- {ws: integrations, agent: integrations, week: 4, title: "Firebase push"}
+- {ws: integrations, agent: integrations, week: 5, title: "Razorpay subscriptions, trial, webhooks"}
+
+- {ws: web, agent: web, week: 4, title: "Admin console: login, family search, person detail"}
+- {ws: web, agent: web, week: 5, title: "Admin: call and consent logs, block list, pause"}
+- {ws: web, agent: web, week: 6, title: "Admin: pilot metrics page"}
+
+- {ws: qa, agent: qa, week: 1, title: "Test plan from quality gates; PR review checklist"}
+- {ws: qa, agent: qa, week: 3, title: "Call-flow scenario suite on FakeProvider"}
+- {ws: qa, agent: qa, week: 5, title: "Speech test set incl. negative phrases, 6 languages"}
+- {ws: qa, agent: qa, week: 6, title: "End-to-end setup flow tests"}
+- {ws: qa, agent: qa, week: 7, title: "Load test 10k calls/day; security review"}
+
+- {ws: content, agent: content, week: 1, title: "Hindi and English call scripts for review"}
+- {ws: content, agent: content, week: 3, title: "Bengali, Marathi, Tamil, Telugu scripts for review"}
+- {ws: content, agent: content, week: 6, title: "Play listing, onboarding guide, support replies"}
