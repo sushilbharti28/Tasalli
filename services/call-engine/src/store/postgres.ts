@@ -49,8 +49,9 @@ export class PgStore implements Store {
     return r ? { id: r.id, phone: r.phone_e164, name: r.name, timeZone: r.time_zone, locale: r.locale, deleted: r.deleted_at !== null } : null;
   }
   async listSubscriptions(userId: string): Promise<SubscriptionRow[]> {
-    return (await this.q(`select status, current_period_end, trial_ends_at from subscriptions where user_id = $1`, [userId])).map((r) => ({
+    return (await this.q(`select status, current_period_end, past_due_since, trial_ends_at from subscriptions where user_id = $1`, [userId])).map((r) => ({
       status: r.status, currentPeriodEnd: r.current_period_end ? new Date(r.current_period_end) : null,
+      pastDueSince: r.past_due_since ? new Date(r.past_due_since) : null,
       trialEndsAt: r.trial_ends_at ? new Date(r.trial_ends_at) : null,
     }));
   }

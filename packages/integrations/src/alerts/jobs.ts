@@ -19,7 +19,8 @@ export type AlertKind =
   | 'consent_given'
   | 'consent_declined'
   | 'consent_no_answer'  // consent call unanswered after 2 retries
-  | 'evening_summary';   // PROPOSED: once per person per local day
+  | 'evening_summary'    // PROPOSED: once per person per local day
+  | 'plan_lapsed';       // reminder skipped because the owner's plan is not entitled; once per owner per local day (jobId plan_lapsed_<userId>_<localDate>)
 
 export interface AlertJob {
   kind: AlertKind;
@@ -31,7 +32,7 @@ export interface AlertJob {
   at: string;
   /** e.g. 'retries_exhausted' | 'said_not_taken' | 'daily_cap' | 'too_late'. */
   reason?: string;
-  /** PROPOSED, evening_summary only: the person's local date, YYYY-MM-DD. */
+  /** PROPOSED, evening_summary and plan_lapsed: the person's local date, YYYY-MM-DD. */
   localDate?: string;
 }
 
@@ -43,4 +44,9 @@ export function alertJobId(...parts: Array<string | number>): string {
 /** Suggested dedupe id for the evening summary: one per person per local date. */
 export function eveningSummaryJobId(personId: string, localDate: string): string {
   return alertJobId('evening_summary', personId, localDate);
+}
+
+/** plan_lapsed: one per owner per local day, whichever of their people was skipped first. */
+export function planLapsedJobId(userId: string, localDate: string): string {
+  return alertJobId('plan_lapsed', userId, localDate);
 }

@@ -127,7 +127,17 @@ describe('billing gate', () => {
     ['cancelled', -1, false],
     ['cancelled', null, false],
   ] as const)('%s, period end %s days from now: entitled=%s', (st, off, want) => {
-    expect(isEntitled({ status: st, currentPeriodEnd: off === null ? null : at(off), trialEndsAt: null }, now)).toBe(want);
+    expect(isEntitled({ status: st, currentPeriodEnd: off === null ? null : at(off), pastDueSince: null, trialEndsAt: null }, now)).toBe(want);
+  });
+
+  it.each([
+    // past_due_since wins over current_period_end; the fallback is only for null
+    [-2.9, -10, true],
+    [-3.1, -1, false],
+    [-1, null, true],
+    [-4, null, false],
+  ] as const)('past_due_since %s days, period end %s days: entitled=%s', (since, end, want) => {
+    expect(isEntitled({ status: 'past_due', pastDueSince: at(since), currentPeriodEnd: end === null ? null : at(end), trialEndsAt: null }, now)).toBe(want);
   });
 
   it('no reminder call when the owner is not entitled (every attempt), and no missed alert', async () => {
@@ -140,7 +150,17 @@ describe('billing gate', () => {
     await w.advance(60);
     expect(w.provider.callsTo(PARENT)).toHaveLength(0);
     expect(w.store.allDoses()[0]!.status).toBe('skipped_paused');
-    expect(w.queue.alerts).toHaveLength(0);
+    expect(w.queue.alerts.map((a) => a.job.kind)).toEqual(['plan_lapsed']); // no dose_missed
+  });
+
+  it('past_due_since older than 3 days: no calls, even if current_period_end is recent', async () => {
+    const w = world();
+    w.store.state.subscriptions.length = 0;
+    w.store.addSubscription(w.user.id, { status: 'past_due', pastDueSince: new Date('2026-03-01T00:00:00Z'), currentPeriodEnd: new Date('2026-03-09T00:00:00Z') });
+    w.med('Amlodac', '09:00');
+    await planned(w);
+    await w.advance(60);
+    expect(w.provider.callsTo(PARENT)).toHaveLength(0);
   });
 
   it('no subscription at all: no reminder call', async () => {
@@ -155,7 +175,7 @@ describe('billing gate', () => {
   it('past_due inside the 3 days still gets calls', async () => {
     const w = world();
     w.store.state.subscriptions.length = 0;
-    w.store.addSubscription(w.user.id, { status: 'past_due', currentPeriodEnd: new Date('2026-03-08T12:00:00Z') });
+    w.store.addSubscription(w.user.id, { status: 'past_due', pastDueSince: new Date('2026-03-08T12:00:00Z'), currentPeriodEnd: new Date('2026-02-01T00:00:00Z') });
     w.med('Amlodac', '09:00');
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }] });
     await planned(w);
@@ -259,16 +279,6 @@ describe('Twilio recording', () => {
     await on.queue.add('test.call', { userId: on.user.id });
     await on.queue.runDue();
     expect(on.placed[0]!.get('Record')).toBeNull();
-  });
-
-  it('completed stores recording_url; a duplicate is a no-op 200', async () => {
-    const r = rig();
-    const callId = await r.start();
-    expect((await r.rec(callId, recParams())).status).toBe(200);
-    expect(r.store.allCalls()[0]!.recordingUrl).toBe('https://api.twilio.com/2010-04-01/Accounts/AC1/Recordings/RE1');
-    r.store.state.calls.get(callId)!.recordingUrl = 'changed-by-test';
-    expect((await r.rec(callId, recParams())).status).toBe(200); // Twilio retry: same RecordingSid
-    expect(r.store.allCalls()[0]!.recordingUrl).toBe('changed-by-test'); // not written twice
   });
 
   it('in-progress, bad signature and unknown call', async () => {

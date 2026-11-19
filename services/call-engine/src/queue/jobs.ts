@@ -29,6 +29,8 @@ export interface EngineJobs {
   'consent.retry': { personId: string; attempt: number };
   /** Internal: 20:00 in the parent's time zone: emit the evening_summary alert for that local date. */
   'summary.evening': { personId: string; localDate: string };
+  /** Recording-completed webhook: copy the audio to our storage in India, size-check it, then delete it from Twilio. Idempotent per recordingSid. */
+  'recording.fetch': { callId: string; recordingSid: string; recordingUrl: string };
 }
 
 export type EngineJobName = keyof EngineJobs;
@@ -41,7 +43,8 @@ export type AlertKind =
   | 'consent_given'
   | 'consent_declined'
   | 'consent_no_answer'  // consent call unanswered after 2 retries
-  | 'evening_summary';   // once per person per local day, 20:00 parent's time
+  | 'evening_summary'    // once per person per local day, 20:00 parent's time
+  | 'plan_lapsed';       // reminder skipped, plan not entitled; once per owner per local day
 
 export interface AlertJob {
   kind: AlertKind;
@@ -53,7 +56,7 @@ export interface AlertJob {
   at: string;
   /** Extra machine-readable reason, e.g. 'retries_exhausted' | 'said_not_taken' | 'daily_cap' | 'too_late'. */
   reason?: string;
-  /** evening_summary only: the person's local date, YYYY-MM-DD. */
+  /** evening_summary: the person's local date; plan_lapsed: the owner's local date. YYYY-MM-DD. */
   localDate?: string;
 }
 
@@ -61,6 +64,8 @@ export interface AddOptions {
   delayMs?: number;
   /** Deduplication key: a second add with the same jobId is ignored. Never contains ':' (BullMQ rule). */
   jobId?: string;
+  /** BullMQ attempts (exponential backoff). Default 3. */
+  attempts?: number;
 }
 
 export interface JobQueue {

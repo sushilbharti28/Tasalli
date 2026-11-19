@@ -18,7 +18,7 @@ export class BullQueues implements JobQueue, AlertSink {
   }
 
   async add<N extends EngineJobName>(name: N, data: EngineJobs[N], opts: AddOptions = {}): Promise<void> {
-    await this.engine.add(name, data, { ...KEEP, delay: opts.delayMs && opts.delayMs > 0 ? opts.delayMs : undefined, jobId: opts.jobId, attempts: 3, backoff: { type: 'exponential', delay: 5000 } });
+    await this.engine.add(name, data, { ...KEEP, delay: opts.delayMs && opts.delayMs > 0 ? opts.delayMs : undefined, jobId: opts.jobId, attempts: opts.attempts ?? 3, backoff: { type: 'exponential', delay: 5000 } });
   }
 
   async alert(job: AlertJob, jobId: string): Promise<void> {

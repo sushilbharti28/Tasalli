@@ -100,7 +100,7 @@ export interface CallRow {
   inputValue: string | null;
   startedAt: Date | null;
   endedAt: Date | null;
-  /** Twilio recording URL (set once, from the recording-completed webhook). */
+  /** Our own copy of the recording (path under /internal/recordings/), set only after it is saved in India and size-checked. Never a Twilio URL. */
   recordingUrl: string | null;
   createdAt: Date;
 }
@@ -109,5 +109,7 @@ export interface CallRow {
 export interface SubscriptionRow {
   status: 'trialing' | 'active' | 'past_due' | 'cancelled';
   currentPeriodEnd: Date | null;
+  /** Set when a payment fails; the 3-day grace period runs from here. */
+  pastDueSince: Date | null;
   trialEndsAt: Date | null;
 }

@@ -27,7 +27,7 @@ export type AlertOutcome =
   | { status: 'skipped'; why: string };
 
 /** WhatsApp is sent for these kinds only (approved templates exist for them). */
-const WHATSAPP_KINDS = new Set<AlertJob['kind']>(['dose_missed', 'evening_summary']);
+const WHATSAPP_KINDS = new Set<AlertJob['kind']>(['dose_missed', 'evening_summary', 'plan_lapsed']);
 
 /**
  * Handles one alert job. Exactly once per channel and recipient (safety rule 6):
@@ -58,6 +58,9 @@ export async function handleAlertJob(jobId: string, job: AlertJob, deps: AlertDe
         confirmed: String(s.confirmed), total: String(s.total), not_confirmed: s.notConfirmed,
       },
     };
+  } else if (job.kind === 'plan_lapsed') {
+    push = pushText(job, person, recipient, []);
+    wa = { to: recipient.phoneE164, template: 'plan_lapsed', locale: recipient.locale, params: { person_name: person.nickname } };
   } else {
     let doses: AlertDose[] = [];
     if (job.kind === 'dose_missed') {

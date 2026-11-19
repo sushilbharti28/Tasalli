@@ -67,6 +67,17 @@ const PUSH: Record<Exclude<AlertJob['kind'], 'evening_summary'>, Record<AppLocal
     en: (c) => ({ title: `${c.nick} said no`, body: `${c.nick} did not agree to reminder calls. No calls will be made.` }),
     hi: (c) => ({ title: `${c.nick} ने मना किया`, body: `${c.nick} ने याद वाली कॉल के लिए मना किया। कोई कॉल नहीं होगी।` }),
   },
+  plan_lapsed: {
+    en: (c) => ({
+      title: `${c.nick}: reminder calls stopped`,
+      body: `${c.nick}'s medicine reminder calls have stopped because payment is pending. Please renew your plan in the app.`,
+    }),
+    // Founder-approved wording (romanised Hindi, as the family reads it on their phones).
+    hi: (c) => ({
+      title: `${c.nick}: reminder calls ruk gaye`,
+      body: `${c.nick} ke dawai ke reminder calls ruk gaye hain kyunki payment baaki hai. App mein plan renew karein.`,
+    }),
+  },
   consent_no_answer: {
     en: (c) => ({ title: `${c.nick} did not answer`, body: `${c.nick} did not answer the consent call. You can try again from the app.` }),
     hi: (c) => ({ title: `${c.nick} ने फ़ोन नहीं उठाया`, body: `${c.nick} ने अनुमति वाली कॉल नहीं उठाई। ऐप से फिर से कोशिश कर सकते हैं।` }),

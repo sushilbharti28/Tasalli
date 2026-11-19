@@ -6,7 +6,7 @@ import type { AppLocale } from '../otp/types';
  * Variables use named parameters ({{person_name}}) and are filled from the family's own
  * entries, verbatim (safety rule 1). No medical advice in any template.
  */
-export type WhatsAppTemplateName = 'missed_dose_alert' | 'evening_summary';
+export type WhatsAppTemplateName = 'missed_dose_alert' | 'evening_summary' | 'plan_lapsed';
 
 export interface TemplateDefinition {
   category: 'UTILITY';
@@ -37,6 +37,18 @@ export const WHATSAPP_TEMPLATES: Record<WhatsAppTemplateName, TemplateDefinition
       hi:
         'तसल्ली: {{person_name}} का आज का हाल, {{date}}: {{total}} में से {{confirmed}} दवाई की कॉल पर पुष्टि हुई। ' +
         'पुष्टि नहीं हुई: {{not_confirmed}}। पूरी जानकारी तसल्ली ऐप में देखें।',
+    },
+  },
+  plan_lapsed: {
+    category: 'UTILITY',
+    params: ['person_name'],
+    text: {
+      en:
+        "Tasalli: {{person_name}}'s medicine reminder calls have stopped because payment is pending. " +
+        'Please renew your plan in the Tasalli app.',
+      hi:
+        'Tasalli: {{person_name}} ke dawai ke reminder calls ruk gaye hain kyunki payment baaki hai. ' +
+        'App mein plan renew karein.',
     },
   },
 };

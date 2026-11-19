@@ -5,6 +5,7 @@ import { afterNoConfirmation, consentUnanswered, placeConsent, placeReminder, pl
 import { type Deps, decodeAttempt, encodeAttempt } from './deps.js';
 import { handleInput } from './flows.js';
 import { doseDue, doseRemind, eveningSummary, planAll, planPerson } from './scheduler.js';
+import { fetchRecording } from '../recordings/fetch.js';
 import type { RecordingEvent } from '../providers/twilio.js';
 import { WebhookPayloadError, WebhookSignatureError } from '../providers/fake-telephony.js';
 
@@ -14,6 +15,8 @@ export interface HttpResult {
   body: string;
 }
 
+/** Download/delete retries with exponential backoff (5 s base): about 10 minutes of retrying in total. */
+const RECORDING_ATTEMPTS = 8;
 const TERMINAL = new Set(['no_answer', 'busy', 'failed', 'completed']);
 
 export class Engine {
@@ -43,6 +46,7 @@ export class Engine {
         const j = data as EngineJobs['summary.evening'];
         return eveningSummary(d, j.personId, j.localDate);
       }
+      case 'recording.fetch': return fetchRecording(d, data as EngineJobs['recording.fetch']);
       case 'test.call': return placeTest(d, (data as EngineJobs['test.call']).userId);
     }
   }
@@ -90,7 +94,8 @@ export class Engine {
   }
 
   /**
-   * Recording-completed webhook (Twilio only). Verified, de-duplicated by RecordingSid (rule 6) and stored once in calls.recording_url.
+   * Recording-completed webhook (Twilio only). Verified, then handed to the `recording.fetch` job (deduped by RecordingSid, rule 6):
+   * the audio is copied to our storage in India, calls.recording_url gets our path, and the provider's copy is deleted.
    * Always 200 for a valid event, however many times it arrives.
    */
   async handleRecordingWebhook(headers: Record<string, string>, body: unknown): Promise<HttpResult> {
@@ -108,9 +113,10 @@ export class Engine {
     return this.locked(ev.callId, async () => {
       const call = await d.store.getCall(ev.callId);
       if (!call) return plain(200, 'unknown call');
-      if (await d.store.recordWebhookEvent(d.provider.name, `${ev.recordingSid}:recording:completed`, d.clock.now())) {
-        await d.store.updateCall(call.id, { recordingUrl: ev.recordingUrl });
-      }
+      // Enqueue first (jobId makes it idempotent), then log the event: a crash in between lets Twilio's retry enqueue again.
+      await d.queue.add('recording.fetch', { callId: call.id, recordingSid: ev.recordingSid, recordingUrl: ev.recordingUrl! },
+        { jobId: `recording_${ev.recordingSid}`, attempts: RECORDING_ATTEMPTS });
+      await d.store.recordWebhookEvent(d.provider.name, `${ev.recordingSid}:recording:completed`, d.clock.now());
       return plain(200, 'ok');
     });
   }

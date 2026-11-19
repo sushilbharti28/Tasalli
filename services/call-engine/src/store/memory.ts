@@ -45,7 +45,7 @@ export class MemoryStore implements Store {
     return row;
   }
   addSubscription(userId: string, s: Partial<SubscriptionRow> = {}): SubscriptionRow {
-    const row = { userId, status: 'active' as const, currentPeriodEnd: null, trialEndsAt: null, ...s };
+    const row = { userId, status: 'active' as const, currentPeriodEnd: null, pastDueSince: null, trialEndsAt: null, ...s };
     this.state.subscriptions.push(row);
     return row;
   }
@@ -108,7 +108,7 @@ export class MemoryStore implements Store {
     return copy(this.state.users.get(id)) ?? null;
   }
   async listSubscriptions(userId: string) {
-    return this.state.subscriptions.filter((s) => s.userId === userId).map((s) => ({ status: s.status, currentPeriodEnd: s.currentPeriodEnd, trialEndsAt: s.trialEndsAt }));
+    return this.state.subscriptions.filter((s) => s.userId === userId).map((s) => ({ status: s.status, currentPeriodEnd: s.currentPeriodEnd, pastDueSince: s.pastDueSince, trialEndsAt: s.trialEndsAt }));
   }
   async getPerson(id: string) {
     const p = this.state.people.get(id);

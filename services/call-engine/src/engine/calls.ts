@@ -16,9 +16,9 @@ export function listenStep(d: Deps, audioUrl: string, purpose: 'consent' | 'remi
 }
 
 export async function alertFor(d: Deps, person: PersonRow, kind: Parameters<Deps['queue']['alert']>[0]['kind'],
-  groupId: string | null, doseIds: string[], jobKey: string, reason?: string) {
+  groupId: string | null, doseIds: string[], jobKey: string, reason?: string, localDate?: string) {
   await d.queue.alert({ kind, personId: person.id, ownerUserId: person.ownerUserId, callGroupId: groupId, doseIds,
-    at: d.clock.now().toISOString(), reason }, jobKey);
+    at: d.clock.now().toISOString(), reason, ...(localDate ? { localDate } : {}) }, jobKey);
 }
 
 type PlaceOutcome = 'placed' | 'capped' | 'blocked' | 'failed';
@@ -69,10 +69,14 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   };
   if (person.deleted || person.paused || person.consent !== 'consented' || await d.store.isBlocked(person.phone)) return void await stop('skipped_paused');
 
-  // Billing gate: no reminder call (first call, retry or snooze) for an account that is not entitled. No alert: nothing was missed by the parent.
+  // Billing gate: no reminder call (first call, retry or snooze) for an account that is not entitled. The family gets one plan_lapsed alert a day (not dose_missed: nothing was missed by the parent).
   if (!(await ownerEntitled(d, person.ownerUserId))) {
     d.log.info('reminder skipped: subscription not entitled', { personId: person.id, groupId });
-    return void await stop('skipped_paused');
+    await d.store.closeGroup(groupId, 'skipped_paused');
+    // Tell the child, once per owner per local day: the job id dedupes every attempt, retry and person of this owner.
+    const localDate = localDay(d.clock.now(), user?.timeZone ?? person.timeZone).date;
+    await alertFor(d, person, 'plan_lapsed', groupId, doseIds, `plan_lapsed_${person.ownerUserId}_${localDate}`, 'plan_not_entitled', localDate);
+    return;
   }
 
   const now = d.clock.now();
