@@ -8,3 +8,4 @@ dist/
 *.log
 .terraform/
 *.tfstate*
+*.rdb
