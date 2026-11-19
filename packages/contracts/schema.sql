@@ -104,7 +104,7 @@ create table schedules (
 );
 
 -- One row per scheduled dose occurrence
-create type dose_status as enum ('upcoming', 'calling', 'confirmed', 'missed', 'skipped_paused');
+create type dose_status as enum ('upcoming', 'calling', 'confirmed', 'missed', 'skipped_paused', 'cancelled');
 
 create table doses (
   id               uuid primary key default gen_random_uuid(),
@@ -147,6 +147,17 @@ create table webhook_events (
   received_at     timestamptz not null default now(),
   primary key (provider, event_id)
 );
+
+-- Push notification tokens for the child app
+create table devices (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references users(id),
+  push_token    text not null unique,
+  platform      text not null default 'android',
+  created_at    timestamptz not null default now(),
+  last_seen_at  timestamptz not null default now()
+);
+create index on devices (user_id);
 
 -- Subscriptions
 create table subscriptions (

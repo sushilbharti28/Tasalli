@@ -196,7 +196,7 @@ components:
       properties:
         medicine: { $ref: '#/components/schemas/Medicine' }
         lookAlike: { type: array, items: { $ref: '#/components/schemas/LookAlikeConflict' } }
-    DoseStatus: { type: string, enum: [upcoming, calling, confirmed, missed, skipped_paused] }
+    DoseStatus: { type: string, enum: [upcoming, calling, confirmed, missed, skipped_paused, cancelled] }
     Dose:
       type: object
       properties:
