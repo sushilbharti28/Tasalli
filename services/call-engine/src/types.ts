@@ -18,12 +18,16 @@ export interface UserRow {
   deleted: boolean;
 }
 
+export type CallerRelation = 'son' | 'daughter' | 'grandson' | 'granddaughter' | 'daughter_in_law' | 'son_in_law' | 'other';
+
 export interface PersonRow {
   id: string;
   ownerUserId: string;
   isSelf: boolean;
   nickname: string;
   fullName: string | null;
+  /** How the caller (the child who set it up) relates to the parent. Not in the schema yet: absent means unknown. */
+  callerRelation?: CallerRelation | null;
   phone: string;
   language: CallLanguage;
   timeZone: string;

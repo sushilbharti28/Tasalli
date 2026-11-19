@@ -16,6 +16,14 @@ export interface CallSession {
   keypadOnly: boolean;
   /** "Not taken" was answered once with not_taken_ack (take it, press 1, or 2 for a reminder). */
   notTakenAsked?: boolean;
+  /** Reminder calls: one medicine at a time. Survives webhooks (Redis/memory), so a repeated webhook never advances twice. */
+  reminder?: {
+    items: Array<{ doseId: string; /** first time it is said (full or short) */ first: string; /** key 0 / "phir se" */ full: string }>;
+    index: number;
+    outcomes: Record<string, 'confirmed' | 'declined' | 'none'>;
+    /** What was heard for each medicine, for logs and test-reminder. */
+    heard: Record<string, string[]>;
+  };
   /** NextAction returned per input event id, replayed for duplicate webhooks. */
   responses: Record<string, NextAction>;
 }

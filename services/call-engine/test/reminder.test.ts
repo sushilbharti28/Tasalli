@@ -55,12 +55,13 @@ describe('reminder flow', () => {
   it('key 2 snoozes once; the second snooze request says take it now', async () => {
     const w = world();
     w.med('Amlodac', '09:00');
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '2' }] }, { answer: 'answered', inputs: [{ key: '2' }, { key: '1' }] });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '2' }] }, { answer: 'answered', inputs: [{ key: '2' }] });
     await planned(w);
     await w.advance(16);
     expect(w.provider.callsTo(PARENT)).toHaveLength(2);
-    expect(w.playedText(1)[1]).toMatch(/Ab dawai le lijiye/);
-    expect(doses(w)[0]!.status).toBe('confirmed');
+    expect(w.playedText(0)[1]).toMatch(/Koi baat nahi, thodi der mein phir yaad dilayenge/);
+    expect(doses(w)[0]!.status).toBe('missed'); // second "not now": no second snooze
+    expect(w.queue.alerts.map((a) => a.job.reason)).toEqual(['said_not_taken']);
   });
 
   it('key 0 repeats the full description', async () => {
@@ -70,7 +71,7 @@ describe('reminder flow', () => {
     await planned(w);
     await w.advance(1);
     const played = w.playedText(0);
-    expect(played[1]).toBe(played[0]); // first call of the day: main text is already the full one
+    expect(played[0]).toContain(played[1]!); // the repeat is the full description of the same medicine
     expect(doses(w)[0]!.status).toBe('confirmed');
   });
 
@@ -93,7 +94,7 @@ describe('reminder flow', () => {
     await planned(w);
     await w.advance(1);
     const call = w.provider.callsTo(PARENT)[0]!;
-    expect(call.played).toHaveLength(4); // main, unclear, keypad-only, goodbye
+    expect(call.played).toHaveLength(3); // main, unclear (keypad only), goodbye
     expect(doses(w)[0]!.status).not.toBe('confirmed');
   });
 
@@ -167,11 +168,11 @@ describe('reminder flow', () => {
     w.med('Amlodac', '09:00');
     w.med('Metformin', '09:20');
     w.med('Ecosprin', '10:00');
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }] });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }] });
     await planned(w);
     await w.advance(120);
     expect(w.provider.callsTo(PARENT)).toHaveLength(2);
-    const first = w.playedText(0)[0]!;
+    const first = w.playedText(0).join(' ');
     expect(first).toMatch(/Amlodac/);
     expect(first).toMatch(/Metformin/);
     expect(first).not.toMatch(/Ecosprin/);
@@ -195,10 +196,10 @@ describe('reminder flow', () => {
     const w = world();
     w.med('Amlodac', '09:00', { numberLabel: 2 });
     w.med('Telma', '09:05', { sayPrintedName: true, stripName: 'Telma 40' });
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }] });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
-    const said = w.playedText(0)[0]!;
+    const said = w.playedText(0).join(' ');
     expect(said).toMatch(/2 number wali/);
     expect(said).toMatch(/T-E-L-M-A 4-0/);
   });

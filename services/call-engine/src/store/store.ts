@@ -68,6 +68,10 @@ export interface Store {
   getGroupDetails(groupId: string): Promise<DoseDetail[]>;
   /** Confirm the group's doses that are still upcoming/calling. Returns rows changed. */
   confirmGroup(groupId: string, via: 'key' | 'speech', at: Date): Promise<number>;
+  /** Confirm these doses if they are still upcoming/calling (one medicine of a call). Returns rows changed. */
+  confirmDoses(ids: string[], via: 'key' | 'speech', at: Date): Promise<number>;
+  /** Move these doses to `to` if they are still upcoming/calling. Returns rows changed. */
+  closeDoses(ids: string[], to: 'missed' | 'skipped_paused'): Promise<number>;
   /** Move the group's still-open (upcoming/calling) doses to `to`. Returns rows changed. */
   closeGroup(groupId: string, to: 'missed' | 'skipped_paused'): Promise<number>;
   /** Upcoming doses for a person from `from` onward. */

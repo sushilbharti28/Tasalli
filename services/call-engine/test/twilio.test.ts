@@ -69,7 +69,7 @@ describe('Twilio TwiML', () => {
     const url = await say.urlFor('Namaste <ji> & "dawai"', 'hi');
     const { contentType, body } = p.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1', '9'], speech: true, timeoutSeconds: 8 } } }, { callId: 'call-1' });
     expect(contentType).toBe('text/xml');
-    expect(body).toContain('<Gather input="dtmf speech" language="hi-IN" speechTimeout="auto" hints="le li,haan,nahi,nahi li,ho gaya,baad mein,band karo"');
+    expect(body).toContain('<Gather input="dtmf speech" language="hi-IN" speechTimeout="auto" hints="le li,le liya,haan,ho gaya,nahi,nahi li,baad mein,phir se,band karo"');
     expect(body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN">Namaste &lt;ji&gt; &amp; &quot;dawai&quot;</Say>');
     expect(body).toMatch(/action="https:\/\/abc\.trycloudflare\.com\/webhooks\/twilio\/input\?c=call-1&amp;n=[0-9a-f]{16}"/);
     expect(body).toContain('<Redirect method="POST">');

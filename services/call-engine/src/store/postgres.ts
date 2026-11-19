@@ -166,6 +166,19 @@ export class PgStore implements Store {
         where call_group_id = $1 and status in ('upcoming', 'calling') returning id`, [groupId, via, at]);
     return rows.length;
   }
+  async confirmDoses(ids: string[], via: 'key' | 'speech', at: Date) {
+    if (ids.length === 0) return 0;
+    const rows = await this.q(
+      `update doses set status = 'confirmed', confirmed_at = $3, confirmed_via = $2
+        where id = any($1::uuid[]) and status in ('upcoming', 'calling') returning id`, [ids, via, at]);
+    return rows.length;
+  }
+  async closeDoses(ids: string[], to: 'missed' | 'skipped_paused') {
+    if (ids.length === 0) return 0;
+    const rows = await this.q(
+      `update doses set status = $2 where id = any($1::uuid[]) and status in ('upcoming', 'calling') returning id`, [ids, to]);
+    return rows.length;
+  }
   async closeGroup(groupId: string, to: 'missed' | 'skipped_paused') {
     const rows = await this.q(
       `update doses set status = $2 where call_group_id = $1 and status in ('upcoming', 'calling') returning id`, [groupId, to]);
@@ -241,7 +254,7 @@ export class PgStore implements Store {
 
 function mapPerson(r: Row): PersonRow {
   return {
-    id: r.id, ownerUserId: r.owner_user_id, isSelf: r.is_self, nickname: r.nickname, fullName: r.full_name,
+    id: r.id, ownerUserId: r.owner_user_id, isSelf: r.is_self, nickname: r.nickname, fullName: r.full_name, callerRelation: (r.caller_relation as PersonRow['callerRelation']) ?? null, // column may not exist yet
     phone: r.phone_e164, language: r.language, timeZone: r.time_zone, canReadStrip: r.can_read_strip,
     consent: r.consent, paused: r.paused, deleted: r.deleted_at !== null,
   };

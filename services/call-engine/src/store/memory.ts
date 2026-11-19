@@ -225,6 +225,30 @@ export class MemoryStore implements Store {
     }
     return n;
   }
+  async confirmDoses(ids: string[], via: 'key' | 'speech', at: Date) {
+    let n = 0;
+    for (const id of ids) {
+      const d = this.state.doses.get(id);
+      if (d && (d.status === 'upcoming' || d.status === 'calling')) {
+        d.status = 'confirmed';
+        d.confirmedAt = new Date(at);
+        d.confirmedVia = via;
+        n++;
+      }
+    }
+    return n;
+  }
+  async closeDoses(ids: string[], to: 'missed' | 'skipped_paused') {
+    let n = 0;
+    for (const id of ids) {
+      const d = this.state.doses.get(id);
+      if (d && (d.status === 'upcoming' || d.status === 'calling')) {
+        d.status = to;
+        n++;
+      }
+    }
+    return n;
+  }
   async closeGroup(groupId: string, to: 'missed' | 'skipped_paused') {
     let n = 0;
     for (const d of this.state.doses.values()) {

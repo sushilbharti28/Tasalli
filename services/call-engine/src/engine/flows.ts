@@ -2,6 +2,7 @@ import type { CallEvent, NextAction, ReplyIntent } from '@tasalli/contracts';
 import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
 import { MINUTE } from '../clock.js';
 import { fetchAudio } from '../providers/fake-speech.js';
+import { joinSentences } from '../scripts/render.js';
 import { line, childName } from '../scripts/builder.js';
 import { matchIntent } from '../speech/intent.js';
 import type { CallSession } from '../flows/session.js';
@@ -63,6 +64,11 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
   await d.store.updateCall(call.id, { inputKind: kind, inputValue: kind === 'key' ? raw : raw.slice(0, 80) });
   const ask = async (text: string, speech: boolean): Promise<NextAction> => ({ action: 'play', step: listenStep(d, await say(text), s.purpose, speech) });
 
+  // Reminder calls go through the medicines one at a time: every intent is about the medicine being asked now.
+  if (s.purpose === 'reminder' && s.reminder && person && call.callGroupId) {
+    return reminderStep(d, call, s, person, intent, kind, raw, child, ask, bye);
+  }
+
   if (intent === 'unclear') {
     s.unclearCount++;
     if (s.unclearCount === 1) return ask(s.purpose === 'consent' ? t.consent.unclear : t.reminder.unclear, true);
@@ -81,8 +87,7 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
     return bye(s.purpose === 'consent' ? t.consent.stop_ack : t.reminder.stop_ack, 'stop');
   }
   if (s.purpose === 'consent' && person) return consentReply(d, call, person, intent, kind, child, bye);
-  if (!person || !call.callGroupId) return bye(t.reminder.no_input_goodbye, 'none');
-  return reminderReply(d, call, s, person, intent, kind as 'key' | 'speech', child, ask, bye);
+  return bye(t.reminder.no_input_goodbye, 'none'); // reminder call with no per-medicine state (placed before this version)
 }
 
 async function consentReply(d: Deps, call: CallRow, person: PersonRow, intent: ReplyIntent, via: 'key' | 'speech', child: string,
@@ -116,41 +121,82 @@ async function consentReply(d: Deps, call: CallRow, person: PersonRow, intent: R
   return bye(line(t.consent.no_ack, { child_name: child }), 'declined');
 }
 
-async function reminderReply(d: Deps, call: CallRow, s: CallSession, person: PersonRow, intent: ReplyIntent, via: 'key' | 'speech', child: string,
+/**
+ * One input for the medicine being asked now (s.reminder.index). Per-dose outcomes live in the session, so every
+ * webhook decides about exactly one medicine; a replayed webhook gets its stored reply (Engine.handleWebhook) and never advances twice.
+ * Intents arrive with "no" already ahead of "yes" (matchIntent, rule 4); unclear speech and silence never confirm.
+ */
+async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: PersonRow, intent: ReplyIntent, via: 'key' | 'speech', raw: string, child: string,
   ask: (text: string, speech: boolean) => Promise<NextAction>, bye: (text: string, r: CallResultRow) => Promise<NextAction>): Promise<NextAction> {
   const t = d.scripts.get(person.language).templates.reminder;
+  const r = s.reminder!;
   const gid = call.callGroupId!;
-  const doseIds = async () => (await d.store.getGroupDetails(gid)).map((x) => x.dose.id);
+  const cur = r.items[r.index];
+  if (!cur) return bye(t.no_input_goodbye, 'none'); // already past the last medicine
+  (r.heard[cur.doseId] ??= []).push(via === 'key' ? `key ${raw}` : raw.slice(0, 80));
+  const n = r.items.length;
+  const openDoseIds = async () => (await d.store.getGroupDetails(gid)).filter((x) => x.dose.status === 'calling' || x.dose.status === 'upcoming').map((x) => x.dose.id);
+
+  const finish = async (ack: string): Promise<NextAction> => {
+    const ids = r.items.map((i) => i.doseId);
+    const declined = ids.filter((id) => r.outcomes[id] === 'declined');
+    const silent = ids.filter((id) => r.outcomes[id] === 'none');
+    let result: CallResultRow = 'confirmed';
+    if (declined.length > 0) {
+      const used = (await d.store.listCallsForGroup(gid)).some((c) => c.result === 'snoozed');
+      if (!used) {
+        // Snooze once: the call that comes back covers whatever is still unconfirmed in the group (confirmed doses are not called again).
+        await d.queue.add('reminder.snooze', { callGroupId: gid }, { delayMs: RULES.snoozeMinutes * MINUTE, jobId: `snooze_${gid}` });
+        result = 'snoozed';
+      } else {
+        if ((await d.store.closeDoses(declined, 'missed')) > 0) await alertFor(d, person, 'dose_missed', gid, declined, `missed_${gid}`, 'said_not_taken');
+        result = silent.length > 0 ? 'none' : 'declined';
+      }
+    } else if (silent.length > 0) {
+      result = 'none'; // the normal 10-minute retry covers the doses nobody answered for
+    }
+    const end = result === 'confirmed' ? (n === 1 ? t.step_all_done_one : t.step_all_done) : (n === 1 ? t.step_some_left_one : t.step_some_left);
+    return bye(joinSentences([ack, end]), result);
+  };
+  const advance = async (outcome: 'confirmed' | 'declined' | 'none', ack: string): Promise<NextAction> => {
+    r.outcomes[cur.doseId] = outcome;
+    r.index++;
+    s.unclearCount = 0;
+    s.repeats = 0;
+    s.keypadOnly = false;
+    const upcoming = r.items[r.index];
+    if (!upcoming) return finish(ack);
+    s.fullText = upcoming.full;
+    return ask(joinSentences([ack, upcoming.first]), true);
+  };
+
   switch (intent) {
-    case 'confirm':
-      await d.store.confirmGroup(gid, via, d.clock.now());
-      return bye(t.confirm_ack, 'confirmed');
+    case 'stop':
+      await stopNumber(d, s.to, via === 'key' ? 'key_9' : 'stop_phrase', via, call);
+      return bye(t.stop_ack, 'stop');
     case 'doctor_changed':
     case 'unwell': {
-      const ids = await doseIds();
+      const ids = await openDoseIds();
       if ((await d.store.closeGroup(gid, 'missed')) > 0) await alertFor(d, person, intent, gid, ids, `${intent}_${gid}`);
       return bye(line(intent === 'unwell' ? t.unwell_ack : t.doctor_changed_ack, { child_name: child }), intent);
     }
+    case 'confirm':
+      await d.store.confirmDoses([cur.doseId], via, d.clock.now());
+      return advance('confirmed', t.step_ack_next);
     case 'snooze':
-    case 'decline': {
-      const used = (await d.store.listCallsForGroup(gid)).some((c) => c.result === 'snoozed');
-      // First "nahi li" while the snooze is still available: tell them to take it, press 1, or 2 for a reminder. Never a confirmation.
-      if (!used && intent === 'decline' && !s.notTakenAsked && t.not_taken_ack) {
-        s.notTakenAsked = true;
-        return ask(t.not_taken_ack, !s.keypadOnly);
+    case 'decline':
+      return advance('declined', t.step_ack_not_now);
+    case 'repeat':
+      if (++s.repeats > 3) return advance('none', t.step_ack_silence);
+      return ask(cur.full, !s.keypadOnly);
+    default: { // unclear or silence: ask once (keypad only), then leave this medicine unconfirmed
+      s.unclearCount++;
+      if (s.unclearCount === 1) {
+        s.keypadOnly = true;
+        return ask(t.step_unclear, false);
       }
-      if (!used) {
-        const at = RULES.snoozeMinutes;
-        await d.queue.add('reminder.snooze', { callGroupId: gid }, { delayMs: at * MINUTE, jobId: `snooze_${gid}` });
-        return bye(line(t.snooze_ack, { minutes: at }), 'snoozed');
-      }
-      if (intent === 'snooze') return ask(t.snooze_used, true); // second snooze request: take it now, press 1
-      const ids = await doseIds();
-      if ((await d.store.closeGroup(gid, 'missed')) > 0) await alertFor(d, person, 'dose_missed', gid, ids, `missed_${gid}`, 'said_not_taken');
-      return bye(line(t.declined_ack, { child_name: child }), 'declined');
+      return advance('none', t.step_ack_silence);
     }
-    default:
-      return bye(t.no_input_goodbye, 'none');
   }
 }
 

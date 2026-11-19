@@ -36,9 +36,38 @@ export interface ScriptTemplates {
     unwell_ack: string;      // {child_name}
     stop_ack: string;
     no_input_goodbye: string;
+    /**
+     * One-medicine-at-a-time flow (v1.3). {ordinal} may already include the word for medicine (yaml) or not (built-in: "Pehli").
+     * step_item_one / step_intro_one are used when exactly one medicine is due; step_short_* after the first call of the day.
+     */
+    step_intro: string;       // {person_name} {meal_phrase} {count_word} {count}; reminder calls never name the child
+    step_intro_one: string;   // {person_name} {meal_phrase}
+    step_short_intro: string; // later calls of the day: {person_name} {meal_phrase} {count_word} {count}
+    step_short_intro_one: string;
+    /** The food timing is said once, in the intro, so the item lines leave it out. */
+    step_item: string;        // {ordinal} {spoken_name} {amount_text} {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}
+    step_item_one: string;    // no ordinal
+    step_item_short: string;  // {ordinal} {spoken_name} {amount_text} {disambiguator} {extra_instruction}
+    step_item_short_one: string;
+    /** {meal_phrase}: with food, "<meal> <relation>" (meal by the dose's local hour: <11 breakfast, 11-16 lunch, else dinner); with food=any, the day part. */
+    step_meals: Record<'breakfast' | 'lunch' | 'dinner', string>;
+    step_food_rel: Record<'before' | 'after' | 'with', string>;
+    /** Day part by local hour: morning <11, afternoon 11-16, evening 16-19, night 19+. */
+    step_day_part: Record<'morning' | 'afternoon' | 'evening' | 'night', string>;
+    /** {relation_phrase} by the caller's relation; missing (or "other") means no phrase. */
+    step_relations: Partial<Record<'son' | 'daughter' | 'grandson' | 'granddaughter' | 'daughter_in_law' | 'son_in_law', string>>;
+    step_count_words: string[]; // [0] is the word for 1
+    step_ack_next: string;    // after "le li"
+    step_ack_not_now: string; // after "nahi" / "baad mein" / 2
+    step_ack_silence: string; // after no usable answer
+    step_unclear: string;     // asked once, then keypad only
+    step_all_done: string;
+    step_all_done_one: string;
+    step_some_left: string;
+    step_some_left_one: string;
   };
   consent: {
-    prompt: string;          // {person_name} {child_name}
+    prompt: string;          // {person_name} {relation_phrase} {child_name}
     unclear: string;
     keypad_only: string;
     yes_ack: string;
@@ -98,9 +127,30 @@ export const HI_TEMPLATES: ScriptTemplates = {
     unwell_ack: 'Apna khayal rakhiye. Hum {child_name} ko abhi bata rahe hain.',
     stop_ack: 'Theek hai. Ab hum aapko phone nahi karenge. Namaste.',
     no_input_goodbye: 'Hum thodi der mein phir phone karenge. Namaste.',
+    step_intro: 'Namaste {person_name}. Aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
+    step_intro_one: 'Namaste {person_name}. Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
+    step_short_intro: '{person_name}, aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
+    step_short_intro_one: '{person_name}, aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
+    step_item: '{ordinal} dawai: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
+    step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
+    step_item_short: '{ordinal} dawai: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
+    step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
+    step_meals: { breakfast: 'nashte', lunch: 'dopahar ke khane', dinner: 'raat ke khane' },
+    step_food_rel: { before: 'se pehle', after: 'ke baad', with: 'ke saath' },
+    step_day_part: { morning: 'subah ki', afternoon: 'dopahar ki', evening: 'shaam ki', night: 'raat ki' },
+    step_relations: { son: 'aapke bete', daughter: 'aapki beti', grandson: 'aapke pote', granddaughter: 'aapki poti', daughter_in_law: 'aapki bahu', son_in_law: 'aapke damad' },
+    step_count_words: ['ek', 'do', 'teen', 'chaar', 'paanch', 'chhah', 'saat', 'aath', 'nau', 'das'],
+    step_ack_next: 'Theek hai.',
+    step_ack_not_now: 'Koi baat nahi, thodi der mein phir yaad dilayenge.',
+    step_ack_silence: 'Koi baat nahi.',
+    step_unclear: 'Maaf kijiye, samajh nahi aaya. Le li ho to 1 dabaiye.',
+    step_all_done: 'Bahut achha. Sab dawaiyan le li gayi hain. Dhanyavaad.',
+    step_all_done_one: 'Bahut achha. Dawai le li gayi hai. Dhanyavaad.',
+    step_some_left: 'Dhanyavaad. Baaki dawai ke liye thodi der mein phir phone karenge.',
+    step_some_left_one: 'Dhanyavaad. Dawai ke liye thodi der mein phir phone karenge.',
   },
   consent: {
-    prompt: 'Namaste {person_name}. Is call ko behtar seva ke liye record kiya ja sakta hai. {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.',
+    prompt: 'Namaste {person_name}. Yeh Tasalli ki taraf se phone hai. {relation_phrase} {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Yeh call record ki jayegi. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.',
     unclear: 'Maaf kijiye, samajh nahi aaya. Haan ke liye 1 dabaiye. Phone nahi chahiye to 9 dabaiye.',
     keypad_only: 'Haan ke liye 1 dabaiye. Phone nahi chahiye to 9 dabaiye.',
     yes_ack: 'Dhanyavaad. Ab hum dawai ke samay par phone karenge. Namaste.',
@@ -160,6 +210,27 @@ export const EN_TEMPLATES: ScriptTemplates = {
     unwell_ack: 'Please take care. We are letting {child_name} know now.',
     stop_ack: 'All right. We will not call you again. Goodbye.',
     no_input_goodbye: 'We will call again in a little while. Goodbye.',
+    step_intro: 'Namaste {person_name}. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
+    step_intro_one: 'Namaste {person_name}. It is time for your {meal_phrase} medicine.',
+    step_short_intro: '{person_name}, it is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
+    step_short_intro_one: '{person_name}, it is time for your {meal_phrase} medicine.',
+    step_item: '{ordinal} medicine: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_item_short: '{ordinal} medicine: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_meals: { breakfast: 'breakfast', lunch: 'lunch', dinner: 'dinner' },
+    step_food_rel: { before: 'before', after: 'after', with: 'with' },
+    step_day_part: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' },
+    step_relations: { son: 'your son', daughter: 'your daughter', grandson: 'your grandson', granddaughter: 'your granddaughter', daughter_in_law: 'your daughter-in-law', son_in_law: 'your son-in-law' },
+    step_count_words: ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'],
+    step_ack_next: 'All right.',
+    step_ack_not_now: 'No problem, we will remind you again in a little while.',
+    step_ack_silence: 'No problem.',
+    step_unclear: 'Sorry, I did not understand. If you have taken it, press 1.',
+    step_all_done: 'Very good. All the medicines have been taken. Thank you.',
+    step_all_done_one: 'Very good. The medicine has been taken. Thank you.',
+    step_some_left: 'Thank you. We will call again in a little while for the remaining medicine.',
+    step_some_left_one: 'Thank you. We will call again in a little while for the medicine.',
   },
   consent: {
     prompt: 'Hello {person_name}. This call may be recorded to improve the service. {child_name} would like to send you medicine reminder calls. To agree, say "yes" or press 1. If you do not want these calls, press 9 and we will never call again.',

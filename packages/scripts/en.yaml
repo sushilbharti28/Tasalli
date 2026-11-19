@@ -16,7 +16,7 @@ meta:
 
 templates:
   consent:
-    ask: 'Namaste {person_name} ji. This is a call from Tasalli. This call will be recorded. {child_name} wants us to call you at medicine time, to remind you. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.'
+    ask: 'Namaste {person_name} ji. This is a call from Tasalli. {relation_phrase} {child_name} wants us to call you at medicine time, to remind you. This call will be recorded. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.'
     agreed: 'Thank you. We will call you at medicine time. Each time, say "taken", or press 1. You can press 9 at any time to stop the calls. Namaste.'
     declined: 'Okay. We will not call you. Namaste.'
     stopped: 'Okay. We will never call you again. Namaste.'
@@ -66,6 +66,31 @@ engine_extra:
   child_fallback: 'your family'   # said when the account holder gave no name
   list_and: ' and '
   declined_ack: 'All right. We will let {child_name} know. Goodbye.'   # not taken and the 15 minute reminder already used
+
+# One medicine at a time (call engine v1.3). {ordinal} already says "medicine" (see blocks.ordinals).
+reminder_steps:
+  # Same variables as hi.yaml. Food timing is said once in the intro; item lines leave it out.
+  intro_many: 'Namaste {person_name} ji. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
+  intro_one: 'Namaste {person_name} ji. It is time for your {meal_phrase} medicine.'
+  short_intro_many: '{person_name} ji, it is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
+  short_intro_one: '{person_name} ji, it is time for your {meal_phrase} medicine.'
+  item: '{ordinal}: {spoken_name}. {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  item_one: '{spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  item_short: '{ordinal}: {spoken_name}. {amount_text}[, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  item_short_one: '{spoken_name}: {amount_text}[, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  meals: { breakfast: 'breakfast', lunch: 'lunch', dinner: 'dinner' }
+  food_rel: { before: 'before', after: 'after', with: 'with' }
+  day_part: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' }
+  relations: { son: 'your son', daughter: 'your daughter', grandson: 'your grandson', granddaughter: 'your granddaughter', daughter_in_law: 'your daughter-in-law', son_in_law: 'your son-in-law' }
+  count_words: ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
+  ack_next: 'All right.'
+  ack_not_now: 'No problem, we will remind you again in a little while.'
+  ack_silence: 'No problem.'
+  unclear: 'Sorry, I did not understand. If you have taken it, press 1.'
+  all_done: 'Very good. All the medicines have been taken. Thank you.'
+  all_done_one: 'Very good. The medicine has been taken. Thank you.'
+  some_left: 'Thank you. We will call again in a little while for the remaining medicine.'
+  some_left_one: 'Thank you. We will call again in a little while for the medicine.'
 
 building:
   appearance:

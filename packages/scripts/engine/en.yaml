@@ -23,8 +23,55 @@ reminder:
   unwell_ack: Okay. We will tell {child_name}. If you need, please talk to your doctor. Namaste.
   stop_ack: Okay. We will never call you again. We will tell {child_name} too. Namaste.
   no_input_goodbye: We did not get an answer. Namaste.
+  step_intro: Namaste {person_name} ji. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.
+  step_intro_one: Namaste {person_name} ji. It is time for your {meal_phrase} medicine.
+  step_short_intro: "{person_name} ji, it is time for your {count_word} {meal_phrase} medicines. We will go one by one."
+  step_short_intro_one: "{person_name} ji, it is time for your {meal_phrase} medicine."
+  step_item: '{ordinal}: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_item_short: '{ordinal}: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_meals:
+    breakfast: breakfast
+    lunch: lunch
+    dinner: dinner
+  step_food_rel:
+    before: before
+    after: after
+    with: with
+  step_day_part:
+    morning: morning
+    afternoon: afternoon
+    evening: evening
+    night: night
+  step_relations:
+    son: your son
+    daughter: your daughter
+    grandson: your grandson
+    granddaughter: your granddaughter
+    daughter_in_law: your daughter-in-law
+    son_in_law: your son-in-law
+  step_count_words:
+    - one
+    - two
+    - three
+    - four
+    - five
+    - six
+    - seven
+    - eight
+    - nine
+    - ten
+  step_ack_next: All right.
+  step_ack_not_now: No problem, we will remind you again in a little while.
+  step_ack_silence: No problem.
+  step_unclear: Sorry, I did not understand. If you have taken it, press 1.
+  step_all_done: Very good. All the medicines have been taken. Thank you.
+  step_all_done_one: Very good. The medicine has been taken. Thank you.
+  step_some_left: Thank you. We will call again in a little while for the remaining medicine.
+  step_some_left_one: Thank you. We will call again in a little while for the medicine.
 consent:
-  prompt: Namaste {person_name} ji. This is a call from Tasalli. This call will be recorded. {child_name} wants us to call you at medicine time, to remind you. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.
+  prompt: Namaste {person_name} ji. This is a call from Tasalli. {relation_phrase} {child_name} wants us to call you at medicine time, to remind you. This call will be recorded. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.
   unclear: Sorry, I did not understand. To say yes, press 1. If you do not want these calls, press 9.
   keypad_only: Sorry, I did not understand. To say yes, press 1. If you do not want these calls, press 9.
   yes_ack: Thank you. We will call you at medicine time. Each time, say "taken", or press 1. You can press 9 at any time to stop the calls. Namaste.

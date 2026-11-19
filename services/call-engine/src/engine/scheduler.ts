@@ -74,6 +74,13 @@ export async function doseDue(d: Deps, doseId: string): Promise<void> {
     }
     return;
   }
+  // One call at a time per person: a dose with a different food timing waits for the live call to end.
+  const live = (await d.store.listCallsForPerson(person.id, 'reminder')).some((c) => !c.endedAt && now.getTime() - c.createdAt.getTime() < 15 * MINUTE);
+  if (live) {
+    await d.queue.add('dose.due', { doseId }, { delayMs: 2 * MINUTE, jobId: `dose_${doseId}_w${Math.floor(now.getTime() / (2 * MINUTE))}` });
+    return;
+  }
+  const firstSchedule = await d.store.getSchedule(first.scheduleId);
   const groupId = newGroupId();
   const assigned = await d.store.transaction(async (tx) => {
     await tx.lockPerson(person.id);
@@ -85,6 +92,7 @@ export async function doseDue(d: Deps, doseId: string): Promise<void> {
       const med = sched ? await tx.getMedicine(sched.medicineId) : null;
       // Edited or removed since planning: the old dose must not be spoken.
       if (!sched || !med?.active || !stillMatches(sched, person.timeZone, dose.dueAt)) continue;
+      if (sched.food !== firstSchedule?.food) continue; // same time window AND same food timing in one call
       ids.push(dose.id);
     }
     return ids.length ? tx.assignGroup(ids, groupId) : [];

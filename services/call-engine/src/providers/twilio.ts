@@ -30,7 +30,7 @@ export interface RecordingEvent {
 const hindi = () => ({ voice: process.env.TWILIO_VOICE || 'Google.hi-IN-Chirp3-HD-Aoede', language: 'hi-IN' });
 // Hindi only for now: every language, English included, uses the Hindi voice so accents don't mix within a call.
 const voiceFor = (_language: CallLanguage) => hindi();
-const HINTS = 'le li,haan,nahi,nahi li,ho gaya,baad mein,band karo';
+const HINTS = 'le li,le liya,haan,ho gaya,nahi,nahi li,baad mein,phir se,band karo';
 
 /** "Audio" for Twilio is the text itself: <Say> speaks it. Format: say:<lang>:<base64url text>. */
 export class SayUrls implements AudioSource {

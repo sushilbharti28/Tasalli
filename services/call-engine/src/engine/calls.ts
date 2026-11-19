@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { CallStep } from '@tasalli/contracts';
 import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
-import { buildReminderText, line, personName, childName } from '../scripts/builder.js';
+import { buildReminderSteps, relationPhrase, line, personName, childName } from '../scripts/builder.js';
 import { localDay } from '../scheduler/time.js';
 import type { CallSession } from '../flows/session.js';
 import type { PersonRow } from '../types.js';
@@ -85,13 +85,17 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   const pack = d.scripts.get(lang);
   const prior = await d.store.answeredRemindersBetween(person.id, day.start, day.end, groupId);
   const base = {
-    templates: pack.templates, person, childName: user?.name ?? null, isSunday: day.isSunday, localHour: day.hour,
+    templates: pack.templates, person, childName: user?.name ?? null, isSunday: day.isSunday,
+    localHour: localDay(details[0]!.dose.dueAt, person.timeZone).hour, // the dose time (not the retry time) picks the meal name
     announcedTodayMedicineIds: prior.medicineIds, items: details.map((x) => ({ medicine: x.medicine, schedule: x.schedule })),
   };
-  const full = buildReminderText({ ...base, mode: 'full' });
-  const mainText = prior.answeredCalls === 0 ? full : buildReminderText({ ...base, mode: 'short' });
+  // One medicine at a time: full description on the first answered call of the day, short afterwards.
+  const mode = prior.answeredCalls === 0 ? 'full' : 'short';
+  const steps = buildReminderSteps({ ...base, mode });
+  const reminder = { items: details.map((x, i) => ({ doseId: x.dose.id, first: steps.items[i]!.first, full: steps.items[i]!.full })),
+    index: 0, outcomes: {}, heard: {} };
   const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode,
-    language: lang, session: { ...blank, mainText, fullText: full } });
+    language: lang, session: { ...blank, mainText: steps.opening, fullText: steps.items[0]!.full, reminder } });
   if (out === 'capped') return void await stop('missed', 'daily_cap');
   if (out === 'blocked') return void await stop('skipped_paused');
   if (out === 'failed') await afterNoConfirmation(d, groupId, attemptCode);
@@ -120,7 +124,7 @@ export async function placeConsent(d: Deps, personId: string, attempt: number): 
   const user = await d.store.getUser(person.ownerUserId);
   const lang = callLanguage(d, person.language, person.id);
   const t = d.scripts.get(lang).templates;
-  const text = line(t.consent.prompt, { person_name: personName(t, person), child_name: childName(t, user?.name ?? null) });
+  const text = line(t.consent.prompt, { person_name: personName(t, person), child_name: childName(t, user?.name ?? null), relation_phrase: relationPhrase(t, person.callerRelation) });
   const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'consent', groupId: null, attempt,
     language: lang, session: { ...blank, mainText: text, fullText: text } });
   if (out === 'capped') return void await alertFor(d, person, 'consent_no_answer', null, [], `consent_noanswer_${person.id}`, 'daily_cap');
