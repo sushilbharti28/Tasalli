@@ -13,6 +13,7 @@ the WhatsApp Business API and Razorpay are interfaces plus fakes only. See
 | Push | `PushSender` | `FcmPushSender` (FCM HTTP v1, free) | `FakePushSender` |
 | WhatsApp templates | `WhatsAppSender` | none yet (paid) | `FakeWhatsAppSender` |
 | Alerts to the child | `handleAlertJob`, `startAlertWorker` | BullMQ worker | `InMemoryAlertData` |
+| Billing | `BillingProvider` + webhook handler | none yet (paid) | `FakeBillingProvider` |
 
 All configuration is read from environment variables by name (safety rule 8). Phone numbers
 are masked to the last 4 digits in every log line (`maskPhone`, `Logger`).
@@ -132,6 +133,21 @@ startAlertWorker(
 );
 ```
 
+## Billing (fake only)
+
+`FakeBillingProvider` implements `BillingProvider` with an in-memory `SubscriptionStore`.
+Plans (paise, mirrors `services/api/src/billing/plans.ts`): `one_parent` 29900/month,
+`two_parents` 49900/month, `family_yearly` 499900/year; trial 7 days, 1 person, 3 calls/day.
+
+`services/api` already has plans, the `subscriptions` table, `GET/POST /subscription` and a
+start-only fake provider. This package adds only what it lacks: `applySubscriptionEvent`
+(trialing -> active -> past_due -> active/cancelled, cancelled final, impossible events
+ignored), `entitlement`, and `handleBillingWebhook`, which verifies the HMAC-SHA256
+signature over the raw body (secret `BILLING_WEBHOOK_SECRET`) and applies each event id
+exactly once. Events: `subscription.activated`, `payment.succeeded`, `payment.failed`,
+`trial.ended`, `subscription.cancelled`. Assumption to confirm: `past_due` and expired
+`cancelled` stop new reminder scheduling.
+
 ## Testing
 
 ```
@@ -172,3 +188,31 @@ in the matching `create...FromEnv` factory. Nothing that calls the interface cha
    `X-Hub-Signature-256`, HMAC-SHA256 of the raw body with the app secret; use
    `verifyHmacSha256Hex`) and dedupe by message id + status with `IdempotencyStore`.
 4. Add the provider to `createWhatsAppSenderFromEnv`, test with recorded payloads.
+
+### Razorpay subscriptions (UPI autopay)
+
+1. Founder: Razorpay account with Subscriptions and UPI autopay enabled; create the three
+   plans in the dashboard (29900/month, 49900/month, 499900/year, INR) and note their
+   `plan_id`s; set a webhook secret.
+2. Add `RazorpayBillingProvider implements BillingProvider` with `RAZORPAY_KEY_ID`,
+   `RAZORPAY_KEY_SECRET` and `RAZORPAY_PLAN_IDS` (JSON map of our plan name to `plan_id`)
+   from env. `startPaid` calls `POST /v1/subscriptions` and returns the `subscription_id`
+   and checkout options (`key`, `subscription_id`); the status stays `past_due` until the
+   webhook says otherwise. `cancel` calls `POST /v1/subscriptions/{id}/cancel`. The 7-day
+   trial can stay on our side (no Razorpay object until the first paid plan) or use
+   `start_at` for the first charge.
+3. Webhook endpoint: Razorpay signs the raw body with HMAC-SHA256 in `X-Razorpay-Signature`
+   using the webhook secret, so `handleBillingWebhook` verifies it unchanged (read the
+   secret into `BILLING_WEBHOOK_SECRET`). Add a small mapper from Razorpay events
+   (`subscription.activated`, `subscription.charged`, `payment.failed`, `subscription.halted`,
+   `subscription.cancelled`) to `BillingEvent`, and use the `X-Razorpay-Event-Id` header as
+   `BillingEvent.id` so replays are ignored.
+4. Add `BILLING_PROVIDER=razorpay` to the factory, refuse it in production without the keys,
+   and test with recorded webhook payloads.
+5. In `services/api`, have `BILLING_PROVIDER` use the same interface and call the handler from
+   a webhook route (a change for the backend agent).
+
+### Never needed to change
+
+Callers of `OtpSender`, `PushSender`, `WhatsAppSender` and `BillingProvider`, the alert
+worker, and the tests. Fakes stay for unit tests.

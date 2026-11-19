@@ -7,3 +7,4 @@ export * from './otp';
 export * from './push';
 export * from './whatsapp';
 export * from './alerts';
+export * from './billing';
