@@ -27,7 +27,7 @@ export interface RecordingEvent {
 /** <Say> voice and language. v1.1 is Hindi only: Polly.Aditi (hi-IN), also for English text. Every other language falls back to Hindi. */
 // TWILIO_VOICE picks the Hindi voice without a code change, e.g. Google.hi-IN-Chirp3-HD-Aoede or Polly.Kajal-Neural.
 // Read at call time, not import time: .env is loaded after modules are imported.
-const hindi = () => ({ voice: process.env.TWILIO_VOICE || 'Polly.Aditi', language: 'hi-IN' });
+const hindi = () => ({ voice: process.env.TWILIO_VOICE || 'Google.hi-IN-Chirp3-HD-Aoede', language: 'hi-IN' });
 // Hindi only for now: every language, English included, uses the Hindi voice so accents don't mix within a call.
 const voiceFor = (_language: CallLanguage) => hindi();
 const HINTS = 'le li,haan,nahi,nahi li,ho gaya,baad mein,band karo';
