@@ -1,0 +1,143 @@
+# NEEDS NATIVE-SPEAKER REVIEW (Telugu). Draft written without a native speaker. Not approved for real calls.
+# Tasalli call script: Telugu (te). Same keys as en.yaml. Format: see README.md.
+# {name} = value, [ ... ] = optional segment. Adjectives here do not change with gender, so no |forms.
+# Rules: plain spoken Telugu, short sentences, "meeru" and "-andi" forms, "garu" after the name. No medical advice or claims.
+
+meta:
+  language: te
+  name: తెలుగు
+  version: 1
+  review_status: needs_native_speaker_review
+  approved_by: null
+  approved_on: null
+  reviewer_notes:
+    - 'Register: polite spoken Telugu. Check it suits older listeners in Andhra and Telangana towns.'
+    - '"అట్ట" is used for a tablet strip and "సీసా" for a bottle. Check these are the common words.'
+    - '"అయిపోయింది" means both "done" and "ran out", so it is in the negative list, never in confirm.'
+
+templates:
+  consent:
+    ask: 'నమస్కారం {person_name} గారు. ఇది తసల్లి నుంచి ఫోన్. మందుల సమయం గుర్తు చేయడానికి మేము మీకు ఫోన్ చేయాలని {child_name} కోరుకుంటున్నారు. మీకు సమ్మతమైతే "అవును" అనండి, లేదా 1 నొక్కండి. ఈ ఫోన్లు వద్దనుకుంటే 9 నొక్కండి. అప్పుడు మేము ఇంకెప్పుడూ ఫోన్ చేయము.'
+    agreed: 'ధన్యవాదాలు. మందుల సమయంలో మేము ఫోన్ చేస్తాము. ప్రతిసారీ "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి. ఎప్పుడైనా 9 నొక్కి ఫోన్లు ఆపవచ్చు. నమస్కారం.'
+    declined: 'సరేనండి. మేము మీకు ఫోన్ చేయము. నమస్కారం.'
+    stopped: 'సరేనండి. ఇకపై మేము ఎప్పుడూ ఫోన్ చేయము. నమస్కారం.'
+    unclear: 'క్షమించండి, అర్థం కాలేదు. సమ్మతమైతే 1 నొక్కండి. ఫోన్లు వద్దనుకుంటే 9 నొక్కండి.'
+    no_answer_goodbye: 'సమాధానం రాలేదు. నమస్కారం.'
+
+  reminder_full:
+    greeting: 'నమస్కారం {person_name} గారు. మందు వేసుకునే సమయం అయింది. {child_name} గుర్తు చేయమన్నారు.'
+    count_one: 'ఇప్పుడు ఒక మందు వేసుకోవాలి.'
+    count_many: 'ఇప్పుడు {count} మందులు వేసుకోవాలి.'
+    item: '{ordinal}, {spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {food_phrase}.][ {extra_instruction}]'
+    ask: 'మందు వేసుకున్నాక, "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి. మళ్ళీ వినడానికి 0. పదిహేను నిమిషాల తర్వాత గుర్తు చేయడానికి 2.'
+    more_options: 'డాక్టర్ గారు మందు మార్చి ఉంటే 3 నొక్కండి.'
+
+  reminder_short:
+    single: '{person_name} గారు, {spoken_name} వేసుకునే సమయం. {amount_text}[, {food_phrase}]. వేసుకున్నాక "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి.'
+    group_greeting: '{person_name} గారు, మందుల సమయం అయింది.'
+    group_item: '{spoken_name}: {amount_text}[, {food_phrase}].'
+    ask: 'వేసుకున్నాక "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి.'
+
+  test_call:
+    intro: 'ఇది తసల్లి పరీక్ష ఫోన్. మీ ఇంటి పెద్దవాళ్ళకు ఇలాంటి ఫోనే వస్తుంది.'
+
+  repeat:
+    intro: 'మళ్ళీ వినండి.'
+
+  unclear:
+    first: 'క్షమించండి, అర్థం కాలేదు. మళ్ళీ చెప్పండి.'
+    keypad: 'మందు వేసుకుని ఉంటే 1 నొక్కండి. తర్వాత గుర్తు చేయడానికి 2. మళ్ళీ వినడానికి 0.'
+    final: 'సమాధానం రాలేదు. నమస్కారం.'
+
+  reply_ack:
+    confirmed: 'ధన్యవాదాలు. {child_name}కి చెబుతాము. నమస్కారం.'
+    snoozed: 'సరేనండి. పదిహేను నిమిషాల తర్వాత మళ్ళీ గుర్తు చేస్తాము. నమస్కారం.'
+    snooze_used_up: 'పదిహేను నిమిషాల తర్వాత గుర్తు చేయడం ఒక్కసారే. మందు వేసుకున్నాక "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి.'
+    not_taken: 'సరేనండి. మందు వేసుకున్నాక "వేసుకున్నాను" అనండి, లేదా 1 నొక్కండి. పదిహేను నిమిషాల తర్వాత గుర్తు చేయడానికి 2 నొక్కండి.'
+    doctor_changed: 'సరేనండి. డాక్టర్ గారు మందు మార్చారని {child_name}కి చెబుతాము. నమస్కారం.'
+    unwell: 'సరేనండి. {child_name}కి చెబుతాము. అవసరమైతే మీ డాక్టర్ గారితో మాట్లాడండి. నమస్కారం.'
+    stop: 'సరేనండి. ఇకపై మేము ఎప్పుడూ ఫోన్ చేయము. {child_name}కి కూడా చెబుతాము. నమస్కారం.'
+    goodbye: 'నమస్కారం.'
+
+  sunday:
+    new_strip: '{spoken_name} కొత్త అట్ట తెరిస్తే, దాని మీద {number} అని రాయండి.'
+
+# Lines the call engine needs that the sections above do not cover (see README, "Call engine format").
+engine_extra:
+  child_fallback: 'మీ కుటుంబం'   # said when the account holder gave no name
+  list_and: ' మరియు '
+  declined_ack: 'సరేనండి. {child_name}కి చెబుతాము. నమస్కారం.'   # not taken and the 15 minute reminder already used
+
+building:
+  appearance:
+    tablet: '[{colour_primary} ][{shape} ]మాత్ర[, {size}][, {marking}]'
+    capsule: '[{colour_primary} ]క్యాప్సూల్[, {size}]'
+    capsule_two_colour: 'సగం {colour_primary}, సగం {colour_secondary} క్యాప్సూల్[, {size}]'
+  pack:
+    strip: '{pack_colour} అట్టలో'
+    strip_with_print: '{pack_colour} అట్టలో, {print_colour} అక్షరాలు'
+    loose: 'డబ్బాలో విడిగా ఉంచినది'
+    bottle: '{pack_colour} సీసాలో'
+    bottle_with_cap: '{pack_colour} సీసాలో, {cap_colour} మూత'
+  disambiguator:
+    number: '{number} అని రాసి ఉన్నది'
+    printed_name: '{strip_name_spelled} అని రాసి ఉన్న అట్ట'
+
+blocks:
+  colours:
+    white: 'తెల్లని'
+    cream: 'క్రీమ్ రంగు'
+    yellow: 'పసుపు రంగు'
+    orange: 'నారింజ రంగు'
+    pink: 'గులాబీ రంగు'
+    red: 'ఎర్రని'
+    maroon: 'ముదురు ఎరుపు'
+    brown: 'గోధుమ రంగు'
+    green: 'ఆకుపచ్చ'
+    blue: 'నీలి రంగు'
+    purple: 'ఊదా రంగు'
+    grey: 'బూడిద రంగు'
+    black: 'నల్లని'
+    silver: 'వెండి రంగు'
+    golden: 'బంగారు రంగు'
+    transparent: 'గాజు లాంటి'
+  shapes:
+    round: 'గుండ్రని'
+    oval: 'కోడిగుడ్డు ఆకారంలో ఉన్న'
+    long: 'పొడవాటి'
+    square: 'చదరపు'
+  sizes:
+    rai: 'ఆవగింజ అంత చిన్నది'
+    dal: 'పప్పు గింజ అంత'
+    matar: 'బఠాణీ అంత'
+    badam: 'బాదం అంత'
+    bigger: 'బాదం కంటే పెద్దది'
+  markings:
+    plain: ''
+    line: 'మధ్యలో గీత'
+    letters: 'పైన అక్షరాలు ఉంటాయి'
+    unknown: ''
+  food:
+    before: 'భోజనానికి ముందు'
+    after: 'భోజనం తర్వాత'
+    with: 'భోజనంతో పాటు'
+    any: ''
+  kinds:
+    tablet: 'మాత్ర'
+    capsule: 'క్యాప్సూల్'
+    syrup: 'సిరప్'
+    other: 'మందు'
+  ordinals: ['మొదటి మందు', 'రెండో మందు', 'మూడో మందు', 'నాలుగో మందు', 'ఐదో మందు', 'ఆరో మందు', 'ఏడో మందు', 'ఎనిమిదో మందు', 'తొమ్మిదో మందు', 'పదో మందు']
+  counts: ['ఒక', 'రెండు', 'మూడు', 'నాలుగు', 'ఐదు', 'ఆరు', 'ఏడు', 'ఎనిమిది', 'తొమ్మిది', 'పది']
+
+replies:
+  confirm: ['వేసుకున్నాను', 'వేసుకున్నా', 'తీసుకున్నాను', 'తాగాను', 'అవును', 'అవును వేసుకున్నాను', 'yes', 'vesukunnanu', 'vesukunna', 'teesukunnanu', 'tagaanu', 'avunu']
+  # "Not taken", plus "ran out" (అయిపోయింది): never a confirmation.
+  negative: ['లేదు', 'వేసుకోలేదు', 'ఇంకా లేదు', 'ఇంకా వేసుకోలేదు', 'తీసుకోలేదు', 'కాదు', 'అయిపోయింది', 'అయిపోయాయి', 'ledu', 'vesukoledu', 'inka ledu', 'teesukoledu', 'kaadu', 'ayipoyindi', 'no']
+  snooze: ['తర్వాత', 'కాసేపాగి', 'కొంచెం సేపటి తర్వాత', 'tarvata', 'taruvata', 'kaasepaagi']
+  repeat: ['మళ్ళీ', 'మళ్ళీ చెప్పండి', 'అర్థం కాలేదు', 'ఏమిటి', 'ఏంటి', 'malli', 'malli cheppandi', 'artham kaaledu', 'enti']
+  doctor_changed: ['డాక్టర్ మార్చారు', 'డాక్టర్ గారు మార్చారు', 'మందు మారింది', 'డాక్టర్ ఆపేశారు', 'doctor maarchaaru', 'mandu maarindi', 'doctor aapesaru']
+  unwell: ['ఒంట్లో బాగాలేదు', 'ఆరోగ్యం బాగాలేదు', 'బాగా లేదు', 'ontlo bagaledu', 'aarogyam bagaledu']
+  stop: ['ఫోన్ చేయకండి', 'ఫోన్లు ఆపండి', 'ఫోన్ ఆపండి', 'ఆపండి', 'phone cheyakandi', 'phone aapandi', 'aapandi', 'stop']
+  consent_yes: ['అవును', 'సరే', 'సరేనండి', 'ఒప్పుకుంటున్నాను', 'avunu', 'sare', 'sarenandi', 'yes', 'ok']
+  consent_no: ['వద్దు', 'లేదు', 'వద్దండి', 'vaddu', 'vaddandi', 'ledu', 'no']

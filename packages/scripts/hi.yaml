@@ -1,0 +1,146 @@
+# NEEDS NATIVE-SPEAKER REVIEW (Hindi). Not approved for real calls until the founder signs off.
+# Tasalli call script: Hindi (hi). Same keys as en.yaml. Format: see README.md.
+# {name} = value, {name|f} = gendered form (m, f, obl), [ ... ] = optional segment.
+# Rules: bolchaal ki Hindi, chhote vaakya, "aap" aur "ji". Koi dawai ki salaah ya daawa nahi.
+# Written in Devanagari for the TTS voice. docs/call-scripts.md has the same lines in Roman Hindi.
+
+meta:
+  language: hi
+  name: हिन्दी
+  version: 1
+  review_status: needs_native_speaker_review
+  approved_by: null
+  approved_on: null
+  reviewer_notes:
+    - 'गोली स्त्रीलिंग, कैप्सूल पुल्लिंग माना है; रंग और आकार के शब्द इसी हिसाब से हैं। जाँच लें।'
+    - '"पत्ता" (strip) docs/call-scripts.md से लिया है; रविवार वाली लाइन में "पत्ती" है। एक शब्द चुन लें।'
+    - 'नकारात्मक सूची में "ना" जानबूझकर नहीं है: "ले ली ना" का मतलब "ले ली" होता है।'
+
+templates:
+  consent:
+    ask: 'नमस्ते {person_name} जी। यह तसल्ली की तरफ़ से फ़ोन है। {child_name} आपको दवाई की याद दिलाने के लिए फ़ोन करवाना चाहते हैं। अगर आप हाँ कहना चाहते हैं, तो "हाँ" बोलिए, या 1 दबाइए। अगर आप ये फ़ोन नहीं चाहते, तो 9 दबाइए। फिर हम कभी फ़ोन नहीं करेंगे।'
+    agreed: 'धन्यवाद जी। अब दवाई के समय पर हम फ़ोन करेंगे। हर बार "ले ली" बोलिए, या 1 दबाइए। कभी भी 9 दबाकर फ़ोन बंद करवा सकते हैं। नमस्ते।'
+    declined: 'ठीक है जी। हम आपको फ़ोन नहीं करेंगे। नमस्ते।'
+    stopped: 'ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। नमस्ते।'
+    unclear: 'माफ़ कीजिए, समझ नहीं आया। हाँ कहना हो, तो 1 दबाइए। फ़ोन नहीं चाहिए, तो 9 दबाइए।'
+    no_answer_goodbye: 'जवाब नहीं मिला। नमस्ते।'
+
+  reminder_full:
+    greeting: 'नमस्ते {person_name} जी, {child_name} की तरफ़ से दवाई का समय।'
+    count_one: 'अभी एक दवाई लेनी है।'
+    count_many: 'अभी {count} दवाइयाँ लेनी हैं।'
+    item: '{ordinal}, {spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {food_phrase}।][ {extra_instruction}]'
+    ask: 'दवाई ले लें, फिर बोलिए "ले ली", या 1 दबाइए। दोबारा सुनने के लिए 0। पंद्रह मिनट बाद याद दिलाने के लिए 2।'
+    more_options: 'डॉक्टर ने दवाई बदली हो, तो 3 दबाइए।'
+
+  reminder_short:
+    single: '{person_name} जी, {spoken_name} का समय। {amount_text}[, {food_phrase}]। ले ली, तो "ले ली" बोलिए, या 1 दबाइए।'
+    group_greeting: '{person_name} जी, दवाई का समय।'
+    group_item: '{spoken_name}: {amount_text}[, {food_phrase}]।'
+    ask: 'ले ली, तो "ले ली" बोलिए, या 1 दबाइए।'
+
+  test_call:
+    intro: 'यह तसल्ली की टेस्ट कॉल है। आपके घर वालों को ऐसी ही कॉल आएगी।'
+
+  repeat:
+    intro: 'फिर से सुनिए।'
+
+  unclear:
+    first: 'माफ़ कीजिए, समझ नहीं आया। फिर से बोलिए।'
+    keypad: 'दवाई ले ली हो, तो 1 दबाइए। बाद में याद दिलाने के लिए 2। दोबारा सुनने के लिए 0।'
+    final: 'जवाब नहीं मिला। नमस्ते।'
+
+  reply_ack:
+    confirmed: 'धन्यवाद जी। {child_name} को बता देंगे। नमस्ते।'
+    snoozed: 'ठीक है जी। पंद्रह मिनट बाद फिर याद दिलाएँगे। नमस्ते।'
+    snooze_used_up: 'पंद्रह मिनट वाली याद एक ही बार होती है। दवाई ले लें, तो "ले ली" बोलिए, या 1 दबाइए।'
+    not_taken: 'ठीक है जी। दवाई ले लें, तो "ले ली" बोलिए, या 1 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2 दबाइए।'
+    doctor_changed: 'ठीक है जी। {child_name} को बता देंगे कि डॉक्टर ने दवाई बदली है। नमस्ते।'
+    unwell: 'ठीक है जी। {child_name} को बता देंगे। ज़रूरत हो, तो अपने डॉक्टर से बात कीजिए। नमस्ते।'
+    stop: 'ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। {child_name} को भी बता देंगे। नमस्ते।'
+    goodbye: 'नमस्ते।'
+
+  sunday:
+    new_strip: '{spoken_name} की नई पत्ती खोली हो, तो उस पर {number} लिख दीजिए।'
+
+# Lines the call engine needs that the sections above do not cover (see README, "Call engine format").
+engine_extra:
+  child_fallback: 'आपके परिवार'   # said when the account holder gave no name
+  list_and: ' और '
+  declined_ack: 'ठीक है जी। {child_name} को बता देंगे। नमस्ते।'   # not taken and the 15 minute reminder already used
+
+building:
+  appearance:
+    tablet: '[{colour_primary|f} ][{shape|f} ]गोली[, {size|f}][, {marking}]'
+    capsule: '[{colour_primary|m} ]कैप्सूल[, {size|m}]'
+    capsule_two_colour: 'आधा {colour_primary|m}, आधा {colour_secondary|m} कैप्सूल[, {size|m}]'
+  pack:
+    strip: '{pack_colour|obl} पत्ते वाली'
+    strip_with_print: '{pack_colour|obl} पत्ते वाली, {print_colour|f} लिखाई'
+    loose: 'डिब्बे में खुली रखी हुई'
+    bottle: '{pack_colour|f} बोतल वाली'
+    bottle_with_cap: '{pack_colour|f} बोतल वाली, {cap_colour|m} ढक्कन'
+  disambiguator:
+    number: '{number} नंबर वाली'
+    printed_name: 'जिस पत्ते पर {strip_name_spelled} लिखा है'
+
+blocks:
+  colours:
+    white: 'सफ़ेद'
+    cream: { m: 'क्रीम रंग का', f: 'क्रीम रंग की', obl: 'क्रीम रंग के' }
+    yellow: { m: 'पीला', f: 'पीली', obl: 'पीले' }
+    orange: 'नारंगी'
+    pink: 'गुलाबी'
+    red: 'लाल'
+    maroon: 'गहरा लाल'
+    brown: { m: 'भूरा', f: 'भूरी', obl: 'भूरे' }
+    green: { m: 'हरा', f: 'हरी', obl: 'हरे' }
+    blue: { m: 'नीला', f: 'नीली', obl: 'नीले' }
+    purple: 'बैंगनी'
+    grey: 'स्लेटी'
+    black: { m: 'काला', f: 'काली', obl: 'काले' }
+    silver: { m: 'चाँदी जैसा', f: 'चाँदी जैसी', obl: 'चाँदी जैसे' }
+    golden: { m: 'सुनहरा', f: 'सुनहरी', obl: 'सुनहरे' }
+    transparent: { m: 'शीशे जैसा', f: 'शीशे जैसी', obl: 'शीशे जैसे' }
+  shapes:
+    round: 'गोल'
+    oval: { m: 'अंडे के आकार का', f: 'अंडे के आकार की', obl: 'अंडे के आकार के' }
+    long: { m: 'लंबा', f: 'लंबी', obl: 'लंबे' }
+    square: 'चौकोर'
+  sizes:
+    rai: { m: 'राई जितना छोटा', f: 'राई जितनी छोटी' }
+    dal: { m: 'दाल के दाने जितना', f: 'दाल के दाने जितनी' }
+    matar: { m: 'मटर के दाने जितना', f: 'मटर के दाने जितनी' }
+    badam: { m: 'बादाम जितना', f: 'बादाम जितनी' }
+    bigger: { m: 'बादाम से बड़ा', f: 'बादाम से बड़ी' }
+  markings:
+    plain: ''
+    line: 'बीच में लाइन'
+    letters: 'ऊपर कुछ लिखा हुआ'
+    unknown: ''
+  food:
+    before: 'खाने से पहले'
+    after: 'खाने के बाद'
+    with: 'खाने के साथ'
+    any: ''
+  kinds:
+    tablet: 'गोली'
+    capsule: 'कैप्सूल'
+    syrup: 'सिरप'
+    other: 'दवाई'
+  ordinals: ['पहली दवाई', 'दूसरी दवाई', 'तीसरी दवाई', 'चौथी दवाई', 'पाँचवीं दवाई', 'छठी दवाई', 'सातवीं दवाई', 'आठवीं दवाई', 'नौवीं दवाई', 'दसवीं दवाई']
+  counts: ['एक', 'दो', 'तीन', 'चार', 'पाँच', 'छह', 'सात', 'आठ', 'नौ', 'दस']
+
+# Both Devanagari and Roman forms: speech engines return either.
+# Nukta and chandrabindu/anusvara are ignored when matching (README), so नहीं = नही.
+replies:
+  confirm: ['ले ली', 'ले लिया', 'ले ली है', 'ले लिया है', 'लेली', 'हाँ', 'हाँ जी', 'हाँ ले ली', 'खा ली', 'खा लिया', 'हो गया', 'yes', 'le li', 'le liya', 'le li hai', 'leli', 'haan', 'haa', 'han', 'haan ji', 'haan le li', 'kha li', 'kha liya', 'ho gaya']
+  # "Not taken". Also "ran out" words (ख़त्म, khatam): "dawai khatam ho gayi" must never count as taken.
+  negative: ['नहीं', 'नहीं ली', 'नहीं लिया', 'नहीं खाई', 'अभी नहीं', 'ख़त्म', 'nahi', 'nahin', 'nai', 'nahi li', 'nahi liya', 'abhi nahi', 'khatam', 'khatm', 'no']
+  snooze: ['बाद में', 'थोड़ी देर में', 'थोड़ी देर बाद', 'रुको', 'baad mein', 'baad me', 'thodi der mein', 'thodi der baad', 'ruko']
+  repeat: ['फिर से', 'दोबारा', 'समझ नहीं आया', 'क्या', 'क्या बोला', 'phir se', 'dobara', 'samajh nahi aaya', 'kya', 'kya bola']
+  doctor_changed: ['डॉक्टर ने बदली', 'डॉक्टर ने बदल दी', 'डॉक्टर ने बंद की', 'डॉक्टर ने बंद कर दी', 'दवाई बदल गई', 'doctor ne badli', 'doctor ne badal di', 'doctor ne band ki', 'doctor ne band kar di', 'dawai badal gayi']
+  unwell: ['तबीयत ख़राब', 'तबियत ख़राब', 'तबीयत ठीक नहीं', 'तबियत ठीक नहीं', 'tabiyat kharab', 'tabiyat theek nahi', 'tabiyat thik nahi']
+  stop: ['बंद करो', 'फ़ोन मत करो', 'मत करो फ़ोन', 'फ़ोन बंद करो', 'band karo', 'phone mat karo', 'mat karo phone', 'phone band karo', 'stop']
+  consent_yes: ['हाँ', 'हाँ जी', 'ठीक है', 'हाँ ठीक है', 'haan', 'haa', 'han', 'haan ji', 'theek hai', 'thik hai', 'yes', 'ok']
+  consent_no: ['नहीं', 'नहीं चाहिए', 'मत करो', 'nahi', 'nahin', 'nahi chahiye', 'mat karo', 'no']

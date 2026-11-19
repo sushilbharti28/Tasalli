@@ -1,0 +1,25 @@
+{
+  "name": "@tasalli/scripts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "files": ["src", "*.yaml", "app-strings"],
+  "scripts": {
+    "test": "vitest run",
+    "lint": "tsc --noEmit -p tsconfig.json",
+    "build:engine": "tsx scripts/build-engine.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@tasalli/contracts": "workspace:*",
+    "yaml": "2.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2",
+    "vitest": "2.1.8"
+  }
+}

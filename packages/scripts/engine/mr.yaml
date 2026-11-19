@@ -1,0 +1,290 @@
+# GENERATED from mr.yaml by scripts/build-engine.ts. Do not edit by hand.
+# NEEDS NATIVE-SPEAKER REVIEW.
+language: mr
+status: needs native-speaker review
+reminder:
+  full_intro: नमस्कार {person_name} जी. औषधाची वेळ झाली आहे. {child_name} यांनी आठवण करून द्यायला सांगितलं आहे. आता {count} औषधं घ्यायची आहेत.
+  full_intro_one: नमस्कार {person_name} जी. औषधाची वेळ झाली आहे. {child_name} यांनी आठवण करून द्यायला सांगितलं आहे. आता एक औषध घ्यायचं आहे.
+  full_item: "{ordinal}, {spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}"
+  full_outro: औषध घ्या, मग "घेतलं" म्हणा, किंवा 1 दाबा. पुन्हा ऐकण्यासाठी 0. पंधरा मिनिटांनी आठवण करून देण्यासाठी 2. डॉक्टरांनी औषध बदललं असेल, तर 3 दाबा.
+  short_intro: "{person_name} जी, औषधाची वेळ झाली."
+  short_item: "{spoken_name}: {amount_text}, {food_phrase}."
+  short_outro: घेतलं असेल, तर "घेतलं" म्हणा, किंवा 1 दाबा.
+  short_single: '{person_name} जी, {spoken_name} घ्यायची वेळ झाली. {amount_text}, {food_phrase}. घेतलं असेल, तर "घेतलं" म्हणा, किंवा 1 दाबा.'
+  sunday_line: "{spoken_name} चं नवं पाकीट उघडलं असेल, तर त्यावर {number} लिहा."
+  unclear: माफ करा, समजलं नाही. पुन्हा सांगा.
+  keypad_only: औषध घेतलं असेल, तर 1 दाबा. नंतर आठवण हवी असेल, तर 2. पुन्हा ऐकण्यासाठी 0.
+  confirm_ack: धन्यवाद. {child_name} यांना कळवू. नमस्कार.
+  snooze_ack: ठीक आहे. पंधरा मिनिटांनी पुन्हा आठवण करून देऊ. नमस्कार.
+  snooze_used: पंधरा मिनिटांची आठवण एकदाच मिळते. औषध घेतलं की "घेतलं" म्हणा, किंवा 1 दाबा.
+  declined_ack: ठीक आहे. {child_name} यांना कळवू. नमस्कार.
+  not_taken_ack: ठीक आहे. औषध घेतलं की "घेतलं" म्हणा, किंवा 1 दाबा. पंधरा मिनिटांनी आठवण हवी असेल, तर 2 दाबा.
+  doctor_changed_ack: ठीक आहे. डॉक्टरांनी औषध बदललं आहे, हे {child_name} यांना कळवू. नमस्कार.
+  unwell_ack: ठीक आहे. {child_name} यांना कळवू. गरज असेल, तर तुमच्या डॉक्टरांशी बोला. नमस्कार.
+  stop_ack: ठीक आहे. आता आम्ही कधीच फोन करणार नाही. {child_name} यांनाही कळवू. नमस्कार.
+  no_input_goodbye: उत्तर मिळालं नाही. नमस्कार.
+consent:
+  prompt: नमस्कार {person_name} जी. हा तसल्लीकडून फोन आहे. औषधाची आठवण करून देण्यासाठी आम्ही तुम्हाला फोन करावा, असं {child_name} यांना वाटतं. चालणार असेल, तर "हो" म्हणा, किंवा 1 दाबा. हे फोन नको असतील, तर 9 दाबा. मग आम्ही कधीच फोन करणार नाही.
+  unclear: माफ करा, समजलं नाही. चालणार असेल, तर 1 दाबा. फोन नको असतील, तर 9 दाबा.
+  keypad_only: माफ करा, समजलं नाही. चालणार असेल, तर 1 दाबा. फोन नको असतील, तर 9 दाबा.
+  yes_ack: धन्यवाद. औषधाच्या वेळी आम्ही फोन करू. प्रत्येक वेळी "घेतलं" म्हणा, किंवा 1 दाबा. कधीही 9 दाबून फोन बंद करू शकता. नमस्कार.
+  no_ack: ठीक आहे. आम्ही तुम्हाला फोन करणार नाही. नमस्कार.
+  stop_ack: ठीक आहे. आता आम्ही तुम्हाला कधीच फोन करणार नाही. नमस्कार.
+  no_input_goodbye: उत्तर मिळालं नाही. नमस्कार.
+test:
+  prompt: हा तसल्लीचा टेस्ट फोन आहे. तुमच्या घरच्यांना असाच फोन येईल.
+  ack: नमस्कार.
+words:
+  person_suffix: ""
+  child_fallback: तुमचे कुटुंब
+  dose_unit:
+    one: ""
+    many: ""
+  ordinals:
+    - पहिलं औषध
+    - दुसरं औषध
+    - तिसरं औषध
+    - चौथं औषध
+    - पाचवं औषध
+    - सहावं औषध
+    - सातवं औषध
+    - आठवं औषध
+  list_joiner: ", "
+  list_last_joiner: " आणि "
+  food:
+    before: जेवणाआधी
+    after: जेवणानंतर
+    with: जेवणासोबत
+    any: ""
+  appearance: "{colour} {shape} {kind}, {size}, {marking}"
+  two_colour: अर्धं {colour}, अर्धं {colour2}
+  colours:
+    white: पांढरा
+    cream: क्रीम रंगाचा
+    yellow: पिवळा
+    orange: नारिंगी
+    pink: गुलाबी
+    red: लाल
+    maroon: गडद लाल
+    brown: तपकिरी
+    green: हिरवा
+    blue: निळा
+    purple: जांभळा
+    grey: राखाडी
+    black: काळा
+    silver: चंदेरी
+    golden: सोनेरी
+    transparent: काचेसारखा
+  sizes:
+    rai: मोहरीएवढा लहान
+    dal: डाळीच्या दाण्याएवढा
+    matar: वाटाण्याएवढा
+    badam: बदामाएवढा
+    bigger: बदामापेक्षा मोठा
+  shapes:
+    round: गोल
+    oval: अंड्यासारखा
+    long: लांब
+    square: चौकोनी
+  kinds:
+    tablet: गोळी
+    capsule: कॅप्सूल
+    syrup: सिरप
+    other: औषध
+  markings:
+    plain: ""
+    line: मध्ये रेघ
+    letters: वर काहीतरी लिहिलेलं
+    unknown: ""
+  pack:
+    strip: "{pack_colour} पाकीट"
+    bottle: "{pack_colour} बाटली"
+    loose: डब्यात सुटी ठेवलेली
+  cap_phrase: "{cap_colour} झाकण"
+  print_phrase: "{print_colour} रंगाची अक्षरं"
+  disambiguator_number: ज्यावर {number} लिहिलं आहे
+  disambiguator_printed_name: ज्या पाकिटावर {strip_letters} लिहिलं आहे
+words_gendered:
+  colours:
+    white:
+      m: पांढरा
+      f: पांढरी
+      n: पांढरं
+      obl: पांढऱ्या
+    cream:
+      m: क्रीम रंगाचा
+      f: क्रीम रंगाची
+      n: क्रीम रंगाचं
+      obl: क्रीम
+    yellow:
+      m: पिवळा
+      f: पिवळी
+      n: पिवळं
+      obl: पिवळ्या
+    green:
+      m: हिरवा
+      f: हिरवी
+      n: हिरवं
+      obl: हिरव्या
+    blue:
+      m: निळा
+      f: निळी
+      n: निळं
+      obl: निळ्या
+    purple:
+      m: जांभळा
+      f: जांभळी
+      n: जांभळं
+      obl: जांभळ्या
+    black:
+      m: काळा
+      f: काळी
+      n: काळं
+      obl: काळ्या
+    transparent:
+      m: काचेसारखा
+      f: काचेसारखी
+      n: काचेसारखं
+      obl: काचेसारख्या
+  shapes:
+    oval:
+      m: अंड्यासारखा
+      f: अंड्यासारखी
+      n: अंड्यासारखं
+      obl: अंड्यासारख्या
+  sizes:
+    rai:
+      m: मोहरीएवढा लहान
+      f: मोहरीएवढी लहान
+      n: मोहरीएवढं लहान
+    dal:
+      m: डाळीच्या दाण्याएवढा
+      f: डाळीच्या दाण्याएवढी
+      n: डाळीच्या दाण्याएवढं
+    matar:
+      m: वाटाण्याएवढा
+      f: वाटाण्याएवढी
+      n: वाटाण्याएवढं
+    badam:
+      m: बदामाएवढा
+      f: बदामाएवढी
+      n: बदामाएवढं
+    bigger:
+      m: बदामापेक्षा मोठा
+      f: बदामापेक्षा मोठी
+      n: बदामापेक्षा मोठं
+phrases:
+  negation_words:
+    - नाही
+    - संपलं
+    - संपली
+    - संपल्या
+    - nahi
+    - sampla
+    - sampli
+    - no
+    - नको
+    - nako
+  reminder:
+    confirm:
+      - घेतलं
+      - घेतली
+      - घेतले
+      - घेतल्या
+      - हो
+      - हो घेतलं
+      - हो घेतली
+      - झालं
+      - खाल्ली
+      - yes
+      - ghetla
+      - ghetla ahe
+      - ghetli
+      - ghetle
+      - ho
+      - ho ghetla
+      - zala
+      - jhala
+      - khalli
+    decline:
+      - नाही
+      - नाही घेतलं
+      - नाही घेतली
+      - अजून नाही
+      - संपलं
+      - संपली
+      - संपल्या
+      - nahi
+      - nahi ghetla
+      - ajun nahi
+      - sampla
+      - sampli
+      - no
+    snooze:
+      - नंतर
+      - थोड्या वेळाने
+      - नंतर घेतो
+      - नंतर घेते
+      - nantar
+      - thodya velane
+      - nantar gheto
+      - nantar ghete
+    repeat: &a2
+      - पुन्हा
+      - पुन्हा सांगा
+      - परत सांगा
+      - समजलं नाही
+      - काय
+      - punha
+      - punha sanga
+      - parat sanga
+      - samajla nahi
+      - kay
+    doctor_changed:
+      - डॉक्टरांनी बदललं
+      - डॉक्टरांनी बदलली
+      - औषध बदललं
+      - डॉक्टरांनी बंद केलं
+      - doctoranni badalla
+      - doctor ne badalla
+      - aushadh badalla
+      - doctoranni band kela
+    unwell:
+      - बरं नाही
+      - बरं वाटत नाही
+      - तब्येत बरी नाही
+      - bara nahi
+      - bara vatat nahi
+      - tabyet bari nahi
+    stop: &a1
+      - फोन बंद करा
+      - फोन करू नका
+      - परत फोन करू नका
+      - बंद करा
+      - phone band kara
+      - phone karu naka
+      - band kara
+      - stop
+  consent:
+    confirm:
+      - हो
+      - हो चालेल
+      - चालेल
+      - ठीक आहे
+      - ho
+      - chalel
+      - ho chalel
+      - thik ahe
+      - theek aahe
+      - yes
+      - ok
+    decline:
+      - नाही
+      - नको
+      - नको आहे
+      - nahi
+      - nako
+      - nako ahe
+      - no
+    stop: *a1
+    repeat: *a2

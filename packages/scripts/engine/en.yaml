@@ -1,0 +1,196 @@
+# GENERATED from en.yaml by scripts/build-engine.ts. Do not edit by hand.
+# Status: needs native-speaker review until approved in the source file.
+language: en
+status: needs native-speaker review
+reminder:
+  full_intro: Namaste {person_name} ji. It is medicine time. {child_name} asked us to remind you. You have {count} medicines to take now.
+  full_intro_one: Namaste {person_name} ji. It is medicine time. {child_name} asked us to remind you. You have one medicine to take now.
+  full_item: "{ordinal}, {spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}"
+  full_outro: Take your medicine, then say "taken", or press 1. To hear it again, press 0. To be reminded in fifteen minutes, press 2. If the doctor changed your medicine, press 3.
+  short_intro: "{person_name} ji, it is medicine time."
+  short_item: "{spoken_name}: {amount_text}, {food_phrase}."
+  short_outro: When you have taken them, say "taken", or press 1.
+  short_single: '{person_name} ji, time for {spoken_name}. {amount_text}, {food_phrase}. When you have taken it, say "taken", or press 1.'
+  sunday_line: If you opened a new strip of {spoken_name}, please write {number} on it.
+  unclear: Sorry, I did not understand. Please say it again.
+  keypad_only: If you have taken the medicine, press 1. To be reminded later, press 2. To hear it again, press 0.
+  confirm_ack: Thank you. We will tell {child_name}. Namaste.
+  snooze_ack: Okay. We will remind you again in fifteen minutes. Namaste.
+  snooze_used: The fifteen minute reminder is only once. When you take the medicine, say "taken", or press 1.
+  declined_ack: All right. We will let {child_name} know. Goodbye.
+  not_taken_ack: Okay. When you take the medicine, say "taken", or press 1. To be reminded in fifteen minutes, press 2.
+  doctor_changed_ack: Okay. We will tell {child_name} that the doctor changed the medicine. Namaste.
+  unwell_ack: Okay. We will tell {child_name}. If you need, please talk to your doctor. Namaste.
+  stop_ack: Okay. We will never call you again. We will tell {child_name} too. Namaste.
+  no_input_goodbye: We did not get an answer. Namaste.
+consent:
+  prompt: Namaste {person_name} ji. This is a call from Tasalli. {child_name} wants us to call you at medicine time, to remind you. To say yes, say "yes", or press 1. If you do not want these calls, press 9. Then we will never call again.
+  unclear: Sorry, I did not understand. To say yes, press 1. If you do not want these calls, press 9.
+  keypad_only: Sorry, I did not understand. To say yes, press 1. If you do not want these calls, press 9.
+  yes_ack: Thank you. We will call you at medicine time. Each time, say "taken", or press 1. You can press 9 at any time to stop the calls. Namaste.
+  no_ack: Okay. We will not call you. Namaste.
+  stop_ack: Okay. We will never call you again. Namaste.
+  no_input_goodbye: We did not get an answer. Namaste.
+test:
+  prompt: This is a Tasalli test call. Your family member will hear a call like this.
+  ack: Namaste.
+words:
+  person_suffix: ""
+  child_fallback: your family
+  dose_unit:
+    one: ""
+    many: ""
+  ordinals:
+    - First medicine
+    - Second medicine
+    - Third medicine
+    - Fourth medicine
+    - Fifth medicine
+    - Sixth medicine
+    - Seventh medicine
+    - Eighth medicine
+  list_joiner: ", "
+  list_last_joiner: " and "
+  food:
+    before: Before food
+    after: After food
+    with: With food
+    any: ""
+  appearance: "{colour} {shape} {kind}, {size}, {marking}"
+  two_colour: half {colour}, half {colour2}
+  colours:
+    white: white
+    cream: cream
+    yellow: yellow
+    orange: orange
+    pink: pink
+    red: red
+    maroon: dark red
+    brown: brown
+    green: green
+    blue: blue
+    purple: purple
+    grey: grey
+    black: black
+    silver: silver
+    golden: golden
+    transparent: clear glass
+  sizes:
+    rai: tiny, like a mustard seed
+    dal: small, like a dal grain
+    matar: the size of a pea
+    badam: the size of an almond
+    bigger: bigger than an almond
+  shapes:
+    round: round
+    oval: oval
+    long: long
+    square: square
+  kinds:
+    tablet: tablet
+    capsule: capsule
+    syrup: syrup
+    other: medicine
+  markings:
+    plain: ""
+    line: with a line in the middle
+    letters: with letters on it
+    unknown: ""
+  pack:
+    strip: in the {pack_colour} strip
+    bottle: in the {pack_colour} bottle
+    loose: kept loose in a box
+  cap_phrase: with the {cap_colour} cap
+  print_phrase: with {print_colour} writing
+  disambiguator_number: the one marked number {number}
+  disambiguator_printed_name: the strip that says {strip_letters}
+words_gendered:
+  colours: {}
+  shapes: {}
+  sizes: {}
+phrases:
+  negation_words:
+    - no
+    - finished
+    - over
+    - nahi
+  reminder:
+    confirm:
+      - taken
+      - i took it
+      - took it
+      - i have taken
+      - i have taken it
+      - yes
+      - yes taken
+      - done
+      - ok taken
+      - le li
+      - haan
+    decline:
+      - no
+      - not taken
+      - not yet
+      - did not take
+      - didnt take
+      - didn t take
+      - have not taken
+      - haven t taken
+      - havent taken
+      - ran out
+      - finished
+      - over
+      - nahi
+    snooze:
+      - later
+      - after some time
+      - in some time
+      - remind me later
+      - wait
+      - baad mein
+    repeat: &a2
+      - repeat
+      - again
+      - say again
+      - once more
+      - what
+      - pardon
+      - did not understand
+      - didn t understand
+      - didnt understand
+    doctor_changed:
+      - doctor changed
+      - doctor changed it
+      - doctor changed the medicine
+      - medicine changed
+      - doctor stopped it
+    unwell:
+      - not feeling well
+      - i am unwell
+      - unwell
+      - feeling sick
+      - i am sick
+    stop: &a1
+      - stop
+      - stop calling
+      - stop the calls
+      - do not call
+      - don t call
+      - dont call
+  consent:
+    confirm:
+      - yes
+      - yes please
+      - okay
+      - ok
+      - sure
+      - haan
+    decline:
+      - no
+      - no thanks
+      - do not want
+      - don t want
+      - dont want
+      - nahi
+    stop: *a1
+    repeat: *a2

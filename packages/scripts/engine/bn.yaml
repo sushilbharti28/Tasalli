@@ -1,0 +1,212 @@
+# GENERATED from bn.yaml by scripts/build-engine.ts. Do not edit by hand.
+# NEEDS NATIVE-SPEAKER REVIEW.
+language: bn
+status: needs native-speaker review
+reminder:
+  full_intro: নমস্কার {person_name}। ওষুধের সময় হয়েছে। {child_name} মনে করিয়ে দিতে বলেছেন। এখন {count} ওষুধ খেতে হবে।
+  full_intro_one: নমস্কার {person_name}। ওষুধের সময় হয়েছে। {child_name} মনে করিয়ে দিতে বলেছেন। এখন একটা ওষুধ খেতে হবে।
+  full_item: "{ordinal}, {spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {food_phrase}। {extra_instruction}"
+  full_outro: ওষুধ খেয়ে নিন, তারপর "খেয়েছি" বলুন, বা 1 টিপুন। আবার শুনতে 0। পনেরো মিনিট পরে মনে করাতে 2। ডাক্তার ওষুধ বদলে দিলে 3 টিপুন।
+  short_intro: "{person_name}, ওষুধের সময় হয়েছে।"
+  short_item: "{spoken_name}: {amount_text}, {food_phrase}।"
+  short_outro: খেয়ে নিলে "খেয়েছি" বলুন, বা 1 টিপুন।
+  short_single: '{person_name}, {spoken_name} খাওয়ার সময়। {amount_text}, {food_phrase}। খেয়ে নিলে "খেয়েছি" বলুন, বা 1 টিপুন।'
+  sunday_line: "{spoken_name}-এর নতুন পাতা খুললে, তার ওপর {number} লিখে দিন।"
+  unclear: মাফ করবেন, বুঝতে পারলাম না। আবার বলুন।
+  keypad_only: ওষুধ খেয়ে থাকলে 1 টিপুন। পরে মনে করাতে 2। আবার শুনতে 0।
+  confirm_ack: ধন্যবাদ। {child_name}-কে জানিয়ে দেব। নমস্কার।
+  snooze_ack: ঠিক আছে। পনেরো মিনিট পরে আবার মনে করাব। নমস্কার।
+  snooze_used: পনেরো মিনিট পরে মনে করানো একবারই হয়। ওষুধ খেয়ে নিলে "খেয়েছি" বলুন, বা 1 টিপুন।
+  declined_ack: ঠিক আছে। {child_name}-কে জানিয়ে দেব। নমস্কার।
+  not_taken_ack: ঠিক আছে। ওষুধ খেয়ে নিলে "খেয়েছি" বলুন, বা 1 টিপুন। পনেরো মিনিট পরে মনে করাতে 2 টিপুন।
+  doctor_changed_ack: ঠিক আছে। ডাক্তার ওষুধ বদলেছেন, এটা {child_name}-কে জানিয়ে দেব। নমস্কার।
+  unwell_ack: ঠিক আছে। {child_name}-কে জানিয়ে দেব। দরকার হলে আপনার ডাক্তারের সঙ্গে কথা বলুন। নমস্কার।
+  stop_ack: ঠিক আছে। আমরা আর কখনও ফোন করব না। {child_name}-কেও জানিয়ে দেব। নমস্কার।
+  no_input_goodbye: উত্তর পেলাম না। নমস্কার।
+consent:
+  prompt: নমস্কার {person_name}। এটা তসল্লি থেকে ফোন। {child_name} চান, ওষুধের সময় মনে করাতে আমরা আপনাকে ফোন করি। রাজি থাকলে "হ্যাঁ" বলুন, বা 1 টিপুন। এই ফোন না চাইলে 9 টিপুন। তাহলে আমরা আর কখনও ফোন করব না।
+  unclear: মাফ করবেন, বুঝতে পারলাম না। রাজি থাকলে 1 টিপুন। ফোন না চাইলে 9 টিপুন।
+  keypad_only: মাফ করবেন, বুঝতে পারলাম না। রাজি থাকলে 1 টিপুন। ফোন না চাইলে 9 টিপুন।
+  yes_ack: ধন্যবাদ। ওষুধের সময় আমরা ফোন করব। প্রতিবার "খেয়েছি" বলুন, বা 1 টিপুন। যে কোনও সময় 9 টিপে ফোন বন্ধ করতে পারেন। নমস্কার।
+  no_ack: ঠিক আছে। আমরা আপনাকে ফোন করব না। নমস্কার।
+  stop_ack: ঠিক আছে। আমরা আর কখনও ফোন করব না। নমস্কার।
+  no_input_goodbye: উত্তর পেলাম না। নমস্কার।
+test:
+  prompt: এটা তসল্লির পরীক্ষার ফোন। আপনার বাড়ির লোক এরকমই ফোন পাবেন।
+  ack: নমস্কার।
+words:
+  person_suffix: ""
+  child_fallback: আপনার পরিবার
+  dose_unit:
+    one: ""
+    many: ""
+  ordinals:
+    - প্রথম ওষুধ
+    - দ্বিতীয় ওষুধ
+    - তৃতীয় ওষুধ
+    - চতুর্থ ওষুধ
+    - পঞ্চম ওষুধ
+    - ষষ্ঠ ওষুধ
+    - সপ্তম ওষুধ
+    - অষ্টম ওষুধ
+  list_joiner: ", "
+  list_last_joiner: " আর "
+  food:
+    before: খাওয়ার আগে
+    after: খাওয়ার পরে
+    with: খাওয়ার সঙ্গে
+    any: ""
+  appearance: "{colour} {shape} {kind}, {size}, {marking}"
+  two_colour: আধা {colour}, আধা {colour2}
+  colours:
+    white: সাদা
+    cream: ক্রিম রঙের
+    yellow: হলুদ
+    orange: কমলা
+    pink: গোলাপি
+    red: লাল
+    maroon: গাঢ় লাল
+    brown: খয়েরি
+    green: সবুজ
+    blue: নীল
+    purple: বেগুনি
+    grey: ছাই রঙের
+    black: কালো
+    silver: রুপোলি
+    golden: সোনালি
+    transparent: কাচের মতো
+  sizes:
+    rai: সর্ষে দানার মতো ছোট
+    dal: ডালের দানার মতো
+    matar: মটরের দানার মতো
+    badam: বাদামের মতো
+    bigger: বাদামের চেয়ে বড়
+  shapes:
+    round: গোল
+    oval: ডিমের মতো
+    long: লম্বা
+    square: চৌকো
+  kinds:
+    tablet: ট্যাবলেট
+    capsule: ক্যাপসুল
+    syrup: সিরাপ
+    other: ওষুধ
+  markings:
+    plain: ""
+    line: মাঝখানে দাগ
+    letters: ওপরে কিছু লেখা আছে
+    unknown: ""
+  pack:
+    strip: "{pack_colour} পাতায়"
+    bottle: "{pack_colour} বোতলে"
+    loose: কৌটোয় খোলা রাখা
+  cap_phrase: "{cap_colour} ঢাকনা"
+  print_phrase: "{print_colour} লেখা"
+  disambiguator_number: যেটার গায়ে {number} লেখা
+  disambiguator_printed_name: যে পাতায় {strip_letters} লেখা আছে
+words_gendered:
+  colours: {}
+  shapes: {}
+  sizes: {}
+phrases:
+  negation_words:
+    - না
+    - খাইনি
+    - শেষ
+    - na
+    - khaini
+    - shesh
+    - no
+  reminder:
+    confirm:
+      - খেয়েছি
+      - খেয়ে নিয়েছি
+      - নিয়েছি
+      - হ্যাঁ
+      - হ্যাঁ খেয়েছি
+      - হয়ে গেছে
+      - yes
+      - kheyechi
+      - kheye niyechi
+      - niyechi
+      - haan
+      - ha
+      - hoye geche
+    decline:
+      - না
+      - খাইনি
+      - খাই নি
+      - এখনও খাইনি
+      - এখন না
+      - শেষ
+      - na
+      - khaini
+      - khai ni
+      - ekhono khaini
+      - ekhon na
+      - shesh
+      - no
+    snooze:
+      - পরে
+      - একটু পরে
+      - পরে খাব
+      - pore
+      - ektu pore
+      - pore khabo
+    repeat: &a2
+      - আবার
+      - আবার বলুন
+      - বুঝতে পারিনি
+      - কী বললেন
+      - abar
+      - abar bolun
+      - bujhte parini
+      - ki bollen
+    doctor_changed:
+      - ডাক্তার বদলে দিয়েছে
+      - ডাক্তার বদলেছে
+      - ডাক্তার ওষুধ বদলেছে
+      - ওষুধ বদলে গেছে
+      - ডাক্তার বন্ধ করে দিয়েছে
+      - daktar bodle diyeche
+      - doctor bodle diyeche
+      - oshudh bodle geche
+      - doctor bondho kore diyeche
+    unwell:
+      - শরীর খারাপ
+      - শরীর ভালো নেই
+      - শরীরটা ভালো নেই
+      - sharir kharap
+      - shorir kharap
+      - shorir bhalo nei
+    stop: &a1
+      - ফোন বন্ধ করুন
+      - ফোন করবেন না
+      - আর ফোন করবেন না
+      - বন্ধ করুন
+      - phone bondho korun
+      - phone korben na
+      - bondho korun
+      - stop
+  consent:
+    confirm:
+      - হ্যাঁ
+      - রাজি
+      - হ্যাঁ রাজি
+      - ঠিক আছে
+      - haan
+      - ha
+      - raji
+      - thik ache
+      - yes
+      - ok
+    decline:
+      - না
+      - চাই না
+      - দরকার নেই
+      - na
+      - chai na
+      - dorkar nei
+      - no
+    stop: *a1
+    repeat: *a2

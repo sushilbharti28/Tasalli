@@ -1,0 +1,296 @@
+# GENERATED from hi.yaml by scripts/build-engine.ts. Do not edit by hand.
+# Status: needs native-speaker review until approved in the source file.
+language: hi
+status: needs native-speaker review
+reminder:
+  full_intro: नमस्ते {person_name} जी, {child_name} की तरफ़ से दवाई का समय। अभी {count} दवाइयाँ लेनी हैं।
+  full_intro_one: नमस्ते {person_name} जी, {child_name} की तरफ़ से दवाई का समय। अभी एक दवाई लेनी है।
+  full_item: "{ordinal}, {spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {food_phrase}। {extra_instruction}"
+  full_outro: दवाई ले लें, फिर बोलिए "ले ली", या 1 दबाइए। दोबारा सुनने के लिए 0। पंद्रह मिनट बाद याद दिलाने के लिए 2। डॉक्टर ने दवाई बदली हो, तो 3 दबाइए।
+  short_intro: "{person_name} जी, दवाई का समय।"
+  short_item: "{spoken_name}: {amount_text}, {food_phrase}।"
+  short_outro: ले ली, तो "ले ली" बोलिए, या 1 दबाइए।
+  short_single: '{person_name} जी, {spoken_name} का समय। {amount_text}, {food_phrase}। ले ली, तो "ले ली" बोलिए, या 1 दबाइए।'
+  sunday_line: "{spoken_name} की नई पत्ती खोली हो, तो उस पर {number} लिख दीजिए।"
+  unclear: माफ़ कीजिए, समझ नहीं आया। फिर से बोलिए।
+  keypad_only: दवाई ले ली हो, तो 1 दबाइए। बाद में याद दिलाने के लिए 2। दोबारा सुनने के लिए 0।
+  confirm_ack: धन्यवाद जी। {child_name} को बता देंगे। नमस्ते।
+  snooze_ack: ठीक है जी। पंद्रह मिनट बाद फिर याद दिलाएँगे। नमस्ते।
+  snooze_used: पंद्रह मिनट वाली याद एक ही बार होती है। दवाई ले लें, तो "ले ली" बोलिए, या 1 दबाइए।
+  declined_ack: ठीक है जी। {child_name} को बता देंगे। नमस्ते।
+  not_taken_ack: ठीक है जी। दवाई ले लें, तो "ले ली" बोलिए, या 1 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2 दबाइए।
+  doctor_changed_ack: ठीक है जी। {child_name} को बता देंगे कि डॉक्टर ने दवाई बदली है। नमस्ते।
+  unwell_ack: ठीक है जी। {child_name} को बता देंगे। ज़रूरत हो, तो अपने डॉक्टर से बात कीजिए। नमस्ते।
+  stop_ack: ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। {child_name} को भी बता देंगे। नमस्ते।
+  no_input_goodbye: जवाब नहीं मिला। नमस्ते।
+consent:
+  prompt: नमस्ते {person_name} जी। यह तसल्ली की तरफ़ से फ़ोन है। {child_name} आपको दवाई की याद दिलाने के लिए फ़ोन करवाना चाहते हैं। अगर आप हाँ कहना चाहते हैं, तो "हाँ" बोलिए, या 1 दबाइए। अगर आप ये फ़ोन नहीं चाहते, तो 9 दबाइए। फिर हम कभी फ़ोन नहीं करेंगे।
+  unclear: माफ़ कीजिए, समझ नहीं आया। हाँ कहना हो, तो 1 दबाइए। फ़ोन नहीं चाहिए, तो 9 दबाइए।
+  keypad_only: माफ़ कीजिए, समझ नहीं आया। हाँ कहना हो, तो 1 दबाइए। फ़ोन नहीं चाहिए, तो 9 दबाइए।
+  yes_ack: धन्यवाद जी। अब दवाई के समय पर हम फ़ोन करेंगे। हर बार "ले ली" बोलिए, या 1 दबाइए। कभी भी 9 दबाकर फ़ोन बंद करवा सकते हैं। नमस्ते।
+  no_ack: ठीक है जी। हम आपको फ़ोन नहीं करेंगे। नमस्ते।
+  stop_ack: ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। नमस्ते।
+  no_input_goodbye: जवाब नहीं मिला। नमस्ते।
+test:
+  prompt: यह तसल्ली की टेस्ट कॉल है। आपके घर वालों को ऐसी ही कॉल आएगी।
+  ack: नमस्ते।
+words:
+  person_suffix: ""
+  child_fallback: आपके परिवार
+  dose_unit:
+    one: ""
+    many: ""
+  ordinals:
+    - पहली दवाई
+    - दूसरी दवाई
+    - तीसरी दवाई
+    - चौथी दवाई
+    - पाँचवीं दवाई
+    - छठी दवाई
+    - सातवीं दवाई
+    - आठवीं दवाई
+  list_joiner: ", "
+  list_last_joiner: " और "
+  food:
+    before: खाने से पहले
+    after: खाने के बाद
+    with: खाने के साथ
+    any: ""
+  appearance: "{colour} {shape} {kind}, {size}, {marking}"
+  two_colour: आधा {colour}, आधा {colour2}
+  colours:
+    white: सफ़ेद
+    cream: क्रीम रंग का
+    yellow: पीला
+    orange: नारंगी
+    pink: गुलाबी
+    red: लाल
+    maroon: गहरा लाल
+    brown: भूरा
+    green: हरा
+    blue: नीला
+    purple: बैंगनी
+    grey: स्लेटी
+    black: काला
+    silver: चाँदी जैसा
+    golden: सुनहरा
+    transparent: शीशे जैसा
+  sizes:
+    rai: राई जितना छोटा
+    dal: दाल के दाने जितना
+    matar: मटर के दाने जितना
+    badam: बादाम जितना
+    bigger: बादाम से बड़ा
+  shapes:
+    round: गोल
+    oval: अंडे के आकार का
+    long: लंबा
+    square: चौकोर
+  kinds:
+    tablet: गोली
+    capsule: कैप्सूल
+    syrup: सिरप
+    other: दवाई
+  markings:
+    plain: ""
+    line: बीच में लाइन
+    letters: ऊपर कुछ लिखा हुआ
+    unknown: ""
+  pack:
+    strip: "{pack_colour} पत्ते वाली"
+    bottle: "{pack_colour} बोतल वाली"
+    loose: डिब्बे में खुली रखी हुई
+  cap_phrase: "{cap_colour} ढक्कन"
+  print_phrase: "{print_colour} लिखाई"
+  disambiguator_number: "{number} नंबर वाली"
+  disambiguator_printed_name: जिस पत्ते पर {strip_letters} लिखा है
+words_gendered:
+  colours:
+    cream:
+      m: क्रीम रंग का
+      f: क्रीम रंग की
+      obl: क्रीम रंग के
+    yellow:
+      m: पीला
+      f: पीली
+      obl: पीले
+    brown:
+      m: भूरा
+      f: भूरी
+      obl: भूरे
+    green:
+      m: हरा
+      f: हरी
+      obl: हरे
+    blue:
+      m: नीला
+      f: नीली
+      obl: नीले
+    black:
+      m: काला
+      f: काली
+      obl: काले
+    silver:
+      m: चाँदी जैसा
+      f: चाँदी जैसी
+      obl: चाँदी जैसे
+    golden:
+      m: सुनहरा
+      f: सुनहरी
+      obl: सुनहरे
+    transparent:
+      m: शीशे जैसा
+      f: शीशे जैसी
+      obl: शीशे जैसे
+  shapes:
+    oval:
+      m: अंडे के आकार का
+      f: अंडे के आकार की
+      obl: अंडे के आकार के
+    long:
+      m: लंबा
+      f: लंबी
+      obl: लंबे
+  sizes:
+    rai:
+      m: राई जितना छोटा
+      f: राई जितनी छोटी
+    dal:
+      m: दाल के दाने जितना
+      f: दाल के दाने जितनी
+    matar:
+      m: मटर के दाने जितना
+      f: मटर के दाने जितनी
+    badam:
+      m: बादाम जितना
+      f: बादाम जितनी
+    bigger:
+      m: बादाम से बड़ा
+      f: बादाम से बड़ी
+phrases:
+  negation_words:
+    - नहीं
+    - ख़त्म
+    - nahi
+    - nahin
+    - nai
+    - khatam
+    - khatm
+    - no
+  reminder:
+    confirm:
+      - ले ली
+      - ले लिया
+      - ले ली है
+      - ले लिया है
+      - लेली
+      - हाँ
+      - हाँ जी
+      - हाँ ले ली
+      - खा ली
+      - खा लिया
+      - हो गया
+      - yes
+      - le li
+      - le liya
+      - le li hai
+      - leli
+      - haan
+      - haa
+      - han
+      - haan ji
+      - haan le li
+      - kha li
+      - kha liya
+      - ho gaya
+    decline:
+      - नहीं
+      - नहीं ली
+      - नहीं लिया
+      - नहीं खाई
+      - अभी नहीं
+      - ख़त्म
+      - nahi
+      - nahin
+      - nai
+      - nahi li
+      - nahi liya
+      - abhi nahi
+      - khatam
+      - khatm
+      - no
+    snooze:
+      - बाद में
+      - थोड़ी देर में
+      - थोड़ी देर बाद
+      - रुको
+      - baad mein
+      - baad me
+      - thodi der mein
+      - thodi der baad
+      - ruko
+    repeat: &a2
+      - फिर से
+      - दोबारा
+      - समझ नहीं आया
+      - क्या
+      - क्या बोला
+      - phir se
+      - dobara
+      - samajh nahi aaya
+      - kya
+      - kya bola
+    doctor_changed:
+      - डॉक्टर ने बदली
+      - डॉक्टर ने बदल दी
+      - डॉक्टर ने बंद की
+      - डॉक्टर ने बंद कर दी
+      - दवाई बदल गई
+      - doctor ne badli
+      - doctor ne badal di
+      - doctor ne band ki
+      - doctor ne band kar di
+      - dawai badal gayi
+    unwell:
+      - तबीयत ख़राब
+      - तबियत ख़राब
+      - तबीयत ठीक नहीं
+      - तबियत ठीक नहीं
+      - tabiyat kharab
+      - tabiyat theek nahi
+      - tabiyat thik nahi
+    stop: &a1
+      - बंद करो
+      - फ़ोन मत करो
+      - मत करो फ़ोन
+      - फ़ोन बंद करो
+      - band karo
+      - phone mat karo
+      - mat karo phone
+      - phone band karo
+      - stop
+  consent:
+    confirm:
+      - हाँ
+      - हाँ जी
+      - ठीक है
+      - हाँ ठीक है
+      - haan
+      - haa
+      - han
+      - haan ji
+      - theek hai
+      - thik hai
+      - yes
+      - ok
+    decline:
+      - नहीं
+      - नहीं चाहिए
+      - मत करो
+      - nahi
+      - nahin
+      - nahi chahiye
+      - mat karo
+      - no
+    stop: *a1
+    repeat: *a2

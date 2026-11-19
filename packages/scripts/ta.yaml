@@ -1,0 +1,145 @@
+# NEEDS NATIVE-SPEAKER REVIEW (Tamil). Draft written without a native speaker. Not approved for real calls.
+# Tasalli call script: Tamil (ta). Same keys as en.yaml. Format: see README.md.
+# {name} = value, [ ... ] = optional segment. Tamil adjectives do not change with gender, so no |forms.
+# Rules: plain spoken Tamil, short sentences, polite "-ங்க" forms. No medical advice or claims.
+
+meta:
+  language: ta
+  name: தமிழ்
+  version: 1
+  review_status: needs_native_speaker_review
+  approved_by: null
+  approved_on: null
+  reviewer_notes:
+    - 'Register: polite spoken Tamil ("சொல்லுங்க", "அழுத்துங்க"), not formal written Tamil. Check that the TTS voice reads these spellings naturally.'
+    - 'No neutral honorific was added to the name. Add "அம்மா"/"ஐயா" style forms only if the app collects them.'
+    - '"அட்டை" is used for a tablet strip. Check this is the common word.'
+    - 'Numbers in counts are in standard spelling for the TTS voice.'
+    - '"தீர்ந்து" (ran out) is in the negative list so "மருந்து தீர்ந்துடுச்சு" never counts as taken.'
+
+templates:
+  consent:
+    ask: 'வணக்கம் {person_name}. இது தசல்லியிலிருந்து வரும் ஃபோன். மருந்து நேரத்தை நினைவுபடுத்த நாங்க உங்களுக்கு ஃபோன் பண்ணணும்னு {child_name} விரும்பறாங்க. சம்மதம்னா "ஆமா"ன்னு சொல்லுங்க, அல்லது 1 அழுத்துங்க. இந்த ஃபோன் வேண்டாம்னா 9 அழுத்துங்க. அப்புறம் நாங்க எப்பவும் ஃபோன் பண்ண மாட்டோம்.'
+    agreed: 'நன்றி. மருந்து நேரத்துல நாங்க ஃபோன் பண்ணுவோம். ஒவ்வொரு தடவையும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க. எப்ப வேணும்னாலும் 9 அழுத்தி ஃபோனை நிறுத்தலாம். வணக்கம்.'
+    declined: 'சரிங்க. நாங்க உங்களுக்கு ஃபோன் பண்ண மாட்டோம். வணக்கம்.'
+    stopped: 'சரிங்க. இனிமே நாங்க எப்பவும் ஃபோன் பண்ண மாட்டோம். வணக்கம்.'
+    unclear: 'மன்னிக்கணும், புரியல. சம்மதம்னா 1 அழுத்துங்க. ஃபோன் வேண்டாம்னா 9 அழுத்துங்க.'
+    no_answer_goodbye: 'பதில் கிடைக்கல. வணக்கம்.'
+
+  reminder_full:
+    greeting: 'வணக்கம் {person_name}. மருந்து சாப்பிடற நேரம். {child_name} நினைவுபடுத்தச் சொன்னாங்க.'
+    count_one: 'இப்போ ஒரு மருந்து சாப்பிடணும்.'
+    count_many: 'இப்போ {count} மருந்து சாப்பிடணும்.'
+    item: '{ordinal}, {spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {food_phrase}.][ {extra_instruction}]'
+    ask: 'மருந்து சாப்பிட்டதும், "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க. மறுபடி கேட்க 0. பதினைந்து நிமிஷம் கழிச்சு நினைவுபடுத்த 2.'
+    more_options: 'டாக்டர் மருந்தை மாத்தியிருந்தா 3 அழுத்துங்க.'
+
+  reminder_short:
+    single: '{person_name}, {spoken_name} சாப்பிடற நேரம். {amount_text}[, {food_phrase}]. சாப்பிட்டதும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க.'
+    group_greeting: '{person_name}, மருந்து சாப்பிடற நேரம்.'
+    group_item: '{spoken_name}: {amount_text}[, {food_phrase}].'
+    ask: 'சாப்பிட்டதும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க.'
+
+  test_call:
+    intro: 'இது தசல்லியின் சோதனை ஃபோன். உங்க வீட்டுப் பெரியவங்களுக்கு இதே மாதிரி ஃபோன் வரும்.'
+
+  repeat:
+    intro: 'மறுபடி கேளுங்க.'
+
+  unclear:
+    first: 'மன்னிக்கணும், புரியல. மறுபடி சொல்லுங்க.'
+    keypad: 'மருந்து சாப்பிட்டிருந்தா 1 அழுத்துங்க. அப்புறம் நினைவுபடுத்த 2. மறுபடி கேட்க 0.'
+    final: 'பதில் கிடைக்கல. வணக்கம்.'
+
+  reply_ack:
+    confirmed: 'நன்றி. {child_name}கிட்ட சொல்லிடறோம். வணக்கம்.'
+    snoozed: 'சரிங்க. பதினைந்து நிமிஷம் கழிச்சு மறுபடி நினைவுபடுத்தறோம். வணக்கம்.'
+    snooze_used_up: 'பதினைந்து நிமிஷ நினைவூட்டல் ஒரு தடவை மட்டும் தான். மருந்து சாப்பிட்டதும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க.'
+    not_taken: 'சரிங்க. மருந்து சாப்பிட்டதும் "சாப்பிட்டேன்"னு சொல்லுங்க, அல்லது 1 அழுத்துங்க. பதினைந்து நிமிஷம் கழிச்சு நினைவுபடுத்த 2 அழுத்துங்க.'
+    doctor_changed: 'சரிங்க. டாக்டர் மருந்தை மாத்தினதை {child_name}கிட்ட சொல்லிடறோம். வணக்கம்.'
+    unwell: 'சரிங்க. {child_name}கிட்ட சொல்லிடறோம். தேவைப்பட்டா உங்க டாக்டர்கிட்ட பேசுங்க. வணக்கம்.'
+    stop: 'சரிங்க. இனிமே நாங்க எப்பவும் ஃபோன் பண்ண மாட்டோம். {child_name}கிட்டயும் சொல்லிடறோம். வணக்கம்.'
+    goodbye: 'வணக்கம்.'
+
+  sunday:
+    new_strip: '{spoken_name} புது அட்டை திறந்திருந்தா, அதுல {number}ன்னு எழுதிடுங்க.'
+
+# Lines the call engine needs that the sections above do not cover (see README, "Call engine format").
+engine_extra:
+  child_fallback: 'உங்க குடும்பம்'   # said when the account holder gave no name
+  list_and: ' மற்றும் '
+  declined_ack: 'சரிங்க. {child_name}கிட்ட சொல்லிடறோம். வணக்கம்.'   # not taken and the 15 minute reminder already used
+
+building:
+  appearance:
+    tablet: '[{colour_primary} ][{shape} ]மாத்திரை[, {size}][, {marking}]'
+    capsule: '[{colour_primary} ]கேப்சூல்[, {size}]'
+    capsule_two_colour: 'பாதி {colour_primary}, பாதி {colour_secondary} கேப்சூல்[, {size}]'
+  pack:
+    strip: '{pack_colour} அட்டையில'
+    strip_with_print: '{pack_colour} அட்டையில, {print_colour} எழுத்து'
+    loose: 'டப்பாவுல தனியா வச்சது'
+    bottle: '{pack_colour} பாட்டில்ல'
+    bottle_with_cap: '{pack_colour} பாட்டில்ல, {cap_colour} மூடி'
+  disambiguator:
+    number: '{number}ன்னு எழுதியிருக்கறது'
+    printed_name: '{strip_name_spelled}ன்னு எழுதியிருக்கற அட்டை'
+
+blocks:
+  colours:
+    white: 'வெள்ளை'
+    cream: 'க்ரீம் கலர்'
+    yellow: 'மஞ்சள்'
+    orange: 'ஆரஞ்சு'
+    pink: 'ரோஸ் கலர்'
+    red: 'சிவப்பு'
+    maroon: 'அடர் சிவப்பு'
+    brown: 'பழுப்பு'
+    green: 'பச்சை'
+    blue: 'நீல'
+    purple: 'ஊதா'
+    grey: 'சாம்பல் கலர்'
+    black: 'கருப்பு'
+    silver: 'வெள்ளி கலர்'
+    golden: 'தங்க கலர்'
+    transparent: 'கண்ணாடி மாதிரி'
+  shapes:
+    round: 'உருண்டையான'
+    oval: 'முட்டை வடிவ'
+    long: 'நீளமான'
+    square: 'சதுரமான'
+  sizes:
+    rai: 'கடுகு அளவு சின்னது'
+    dal: 'பருப்பு அளவு'
+    matar: 'பட்டாணி அளவு'
+    badam: 'பாதாம் அளவு'
+    bigger: 'பாதாமை விடப் பெரியது'
+  markings:
+    plain: ''
+    line: 'நடுவுல கோடு'
+    letters: 'மேல எழுத்து இருக்கும்'
+    unknown: ''
+  food:
+    before: 'சாப்பாட்டுக்கு முன்னாடி'
+    after: 'சாப்பாட்டுக்கு அப்புறம்'
+    with: 'சாப்பாட்டோட'
+    any: ''
+  kinds:
+    tablet: 'மாத்திரை'
+    capsule: 'கேப்சூல்'
+    syrup: 'சிரப்'
+    other: 'மருந்து'
+  ordinals: ['முதல் மருந்து', 'இரண்டாவது மருந்து', 'மூன்றாவது மருந்து', 'நான்காவது மருந்து', 'ஐந்தாவது மருந்து', 'ஆறாவது மருந்து', 'ஏழாவது மருந்து', 'எட்டாவது மருந்து', 'ஒன்பதாவது மருந்து', 'பத்தாவது மருந்து']
+  counts: ['ஒரு', 'இரண்டு', 'மூன்று', 'நான்கு', 'ஐந்து', 'ஆறு', 'ஏழு', 'எட்டு', 'ஒன்பது', 'பத்து']
+
+replies:
+  confirm: ['சாப்பிட்டேன்', 'சாப்டேன்', 'போட்டுக்கிட்டேன்', 'எடுத்துக்கிட்டேன்', 'குடிச்சேன்', 'ஆமா', 'ஆமாம்', 'ஆமா சாப்பிட்டேன்', 'yes', 'saapitten', 'saapten', 'sapten', 'pottukitten', 'eduthukitten', 'kudichen', 'aama', 'aamaa', 'aamam']
+  # "Not taken", plus "ran out" (தீர்ந்து...): never a confirmation.
+  negative: ['இல்ல', 'இல்லை', 'சாப்பிடல', 'சாப்பிடலை', 'இன்னும் இல்ல', 'இன்னும் சாப்பிடல', 'போடல', 'எடுக்கல', 'தீர்ந்துடுச்சு', 'தீர்ந்து போச்சு', 'illa', 'illai', 'saapidala', 'innum illa', 'innum saapidala', 'theernduduchu', 'no']
+  snooze: ['அப்புறம்', 'அப்பறம்', 'அப்புறமா', 'கொஞ்ச நேரம் கழிச்சு', 'appuram', 'appurama', 'konja neram kazhichu']
+  repeat: ['மறுபடி', 'மறுபடியும்', 'திரும்ப சொல்லுங்க', 'புரியல', 'என்ன', 'marupadi', 'marupadiyum', 'thirumba sollunga', 'puriyala', 'enna']
+  doctor_changed: ['டாக்டர் மாத்திட்டாரு', 'டாக்டர் மருந்தை மாத்திட்டாரு', 'மருந்து மாறிடுச்சு', 'டாக்டர் நிறுத்திட்டாரு', 'doctor maathittaru', 'doctor marundha maathittaru', 'marundhu maariduchu', 'doctor niruthittaru']
+  unwell: ['உடம்பு சரியில்ல', 'உடம்பு சரியில்லை', 'முடியல', 'udambu sariyilla', 'mudiyala']
+  stop: ['ஃபோன் பண்ணாதீங்க', 'போன் பண்ணாதீங்க', 'நிறுத்துங்க', 'ஃபோனை நிறுத்துங்க', 'phone pannaatheenga', 'phone pannadheenga', 'niruthunga', 'stop']
+  consent_yes: ['ஆமா', 'ஆமாம்', 'சரி', 'சரிங்க', 'சம்மதம்', 'aama', 'aamaa', 'sari', 'sammadham', 'yes', 'ok']
+  consent_no: ['இல்ல', 'இல்லை', 'வேண்டாம்', 'illa', 'illai', 'vendaam', 'vendam', 'no']
