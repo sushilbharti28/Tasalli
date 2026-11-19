@@ -13,3 +13,5 @@ coverage/
 *.tsbuildinfo
 .terraform.lock.hcl.bak
 backups/
+.recordings/
+.audio/
