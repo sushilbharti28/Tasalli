@@ -1,0 +1,227 @@
+openapi: 3.1.0
+info:
+  title: Tasalli API
+  version: 0.1.0-draft
+  description: >
+    Version 1 API for the child app and admin console. DRAFT: needs founder approval
+    before agents build against it. Field names mirror packages/contracts/schema.sql.
+servers:
+  - url: https://api.staging.tasalli.example
+security:
+  - bearer: []
+paths:
+  /auth/otp/request:
+    post:
+      security: []
+      summary: Send an OTP by SMS
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [phone], properties: { phone: { type: string, description: E.164 } } }
+      responses: { '204': { description: Sent }, '429': { description: Too many requests } }
+  /auth/otp/verify:
+    post:
+      security: []
+      summary: Verify OTP and get a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [phone, code], properties: { phone: { type: string }, code: { type: string } } }
+      responses:
+        '200': { description: Signed in, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        '401': { description: Wrong or expired code }
+  /me:
+    get:
+      summary: Current user
+      responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } } }
+    patch:
+      summary: Update name, time zone, app language
+      requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/UserUpdate' } } } }
+      responses: { '200': { description: OK } }
+  /people:
+    get:
+      summary: People this account sends calls to
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Person' } } } } } }
+    post:
+      summary: Add a person (max 4). Not yourself -> a consent call is placed.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PersonCreate' } } } }
+      responses:
+        '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Person' } } } }
+        '409': { description: Limit reached, or number is blocked }
+  /people/{personId}:
+    parameters: [ { $ref: '#/components/parameters/personId' } ]
+    get: { summary: One person, responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Person' } } } } } }
+    patch: { summary: Update nickname, language, time zone, paused, requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/PersonUpdate' } } } }, responses: { '200': { description: OK } } }
+    delete: { summary: Remove the person and their data, responses: { '204': { description: Deleted } } }
+  /people/{personId}/consent-call:
+    parameters: [ { $ref: '#/components/parameters/personId' } ]
+    post: { summary: Retry the consent call, responses: { '202': { description: Queued }, '409': { description: Already consented or blocked } } }
+  /people/{personId}/medicines:
+    parameters: [ { $ref: '#/components/parameters/personId' } ]
+    get: { summary: Medicines, responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Medicine' } } } } } } }
+    post:
+      summary: Add a medicine with its schedules. Response includes any look-alike conflict.
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/MedicineCreate' } } } }
+      responses: { '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/MedicineSaved' } } } } }
+  /medicines/{medicineId}:
+    parameters: [ { name: medicineId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    patch: { summary: Edit a medicine, requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/MedicineCreate' } } } }, responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/MedicineSaved' } } } } } }
+    delete: { summary: Stop this medicine, responses: { '204': { description: Stopped } } }
+  /medicines/{medicineId}/preview:
+    parameters: [ { name: medicineId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    get: { summary: Audio URL and text of what the call will say, responses: { '200': { description: OK, content: { application/json: { schema: { type: object, properties: { text: { type: string }, audioUrl: { type: string } } } } } } } }
+  /medicine-names:
+    get:
+      summary: Autocomplete medicine names, filtered by kind
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 2 } }
+        - { name: kind, in: query, schema: { $ref: '#/components/schemas/MedicineKind' } }
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { type: object, properties: { name: { type: string }, kind: { $ref: '#/components/schemas/MedicineKind' } } } } } } } }
+  /people/{personId}/doses:
+    parameters: [ { $ref: '#/components/parameters/personId' } ]
+    get:
+      summary: Doses for a date range (Today, History)
+      parameters:
+        - { name: from, in: query, required: true, schema: { type: string, format: date } }
+        - { name: to, in: query, required: true, schema: { type: string, format: date } }
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Dose' } } } } } }
+  /doses/{doseId}/mark-taken:
+    parameters: [ { name: doseId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    post: { summary: Manual "he took it", responses: { '200': { description: OK } } }
+  /doses/{doseId}/calls:
+    parameters: [ { name: doseId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    get: { summary: Call attempts for this dose, responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CallAttempt' } } } } } } }
+  /test-call:
+    post: { summary: Send a sample reminder call to the user's own phone, responses: { '202': { description: Queued }, '429': { description: Daily cap reached } } }
+  /subscription:
+    get: { summary: Plan and trial status, responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Subscription' } } } } } }
+    post:
+      summary: Start a Razorpay subscription
+      requestBody: { content: { application/json: { schema: { type: object, required: [plan], properties: { plan: { type: string, enum: [one_parent, two_parents, family_yearly] } } } } } }
+      responses: { '200': { description: Razorpay checkout details } }
+  /devices:
+    post: { summary: Register a push token, requestBody: { content: { application/json: { schema: { type: object, required: [token], properties: { token: { type: string } } } } } }, responses: { '204': { description: OK } } }
+  /webhooks/telephony/{provider}:
+    post: { security: [], summary: Call status and input events (signature verified, idempotent), parameters: [ { name: provider, in: path, required: true, schema: { type: string } } ], responses: { '200': { description: Next action for the call } } }
+  /webhooks/razorpay:
+    post: { security: [], summary: Payment events (signature verified), responses: { '200': { description: OK } } }
+components:
+  securitySchemes:
+    bearer: { type: http, scheme: bearer }
+  parameters:
+    personId: { name: personId, in: path, required: true, schema: { type: string, format: uuid } }
+  schemas:
+    Session: { type: object, properties: { token: { type: string }, user: { $ref: '#/components/schemas/User' } } }
+    User: { type: object, properties: { id: { type: string }, phone: { type: string }, name: { type: string }, timeZone: { type: string }, locale: { type: string, enum: [en, hi] } } }
+    UserUpdate: { type: object, properties: { name: { type: string }, timeZone: { type: string }, locale: { type: string, enum: [en, hi] } } }
+    CallLanguage: { type: string, enum: [hi, en, bn, mr, ta, te] }
+    ConsentState: { type: string, enum: [pending, consented, declined, opted_out] }
+    Person:
+      type: object
+      properties:
+        id: { type: string }
+        isSelf: { type: boolean }
+        nickname: { type: string }
+        fullName: { type: string }
+        phoneMasked: { type: string, description: 'e.g. +91 ••••• •2861' }
+        language: { $ref: '#/components/schemas/CallLanguage' }
+        timeZone: { type: string }
+        canReadStrip: { type: string, enum: [yes, no, not_sure] }
+        consent: { $ref: '#/components/schemas/ConsentState' }
+        paused: { type: boolean }
+    PersonCreate:
+      type: object
+      required: [isSelf, nickname, language]
+      properties:
+        isSelf: { type: boolean }
+        nickname: { type: string }
+        fullName: { type: string }
+        phone: { type: string, description: 'E.164; ignored when isSelf' }
+        language: { $ref: '#/components/schemas/CallLanguage' }
+        timeZone: { type: string, default: Asia/Kolkata }
+        canReadStrip: { type: string, enum: [yes, no, not_sure] }
+    PersonUpdate: { type: object, properties: { nickname: { type: string }, language: { $ref: '#/components/schemas/CallLanguage' }, timeZone: { type: string }, paused: { type: boolean }, canReadStrip: { type: string, enum: [yes, no, not_sure] } } }
+    MedicineKind: { type: string, enum: [tablet, capsule, syrup, other] }
+    Appearance:
+      type: object
+      properties:
+        colourPrimary: { type: string }
+        colourSecondary: { type: string }
+        shape: { type: string, enum: [round, oval, long, square] }
+        size: { type: string, enum: [rai, dal, matar, badam, bigger] }
+        marking: { type: string, enum: [plain, line, letters, unknown] }
+        keptIn: { type: string, enum: [strip, loose, bottle] }
+        packColour: { type: string }
+        printColour: { type: string }
+        capColour: { type: string }
+    ScheduleInput:
+      type: object
+      required: [localTime, amountText, food]
+      properties:
+        localTime: { type: string, example: '09:00' }
+        amountText: { type: string, description: Verbatim as the family entered it }
+        food: { type: string, enum: [before, after, with, any] }
+        daysOfWeek: { type: array, items: { type: integer, minimum: 1, maximum: 7 } }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date, nullable: true }
+    MedicineCreate:
+      type: object
+      required: [kind, stripName, spokenName, schedules]
+      properties:
+        kind: { $ref: '#/components/schemas/MedicineKind' }
+        stripName: { type: string }
+        strengthText: { type: string }
+        spokenName: { type: string }
+        appearance: { $ref: '#/components/schemas/Appearance' }
+        numberLabel: { type: integer, nullable: true }
+        sayPrintedName: { type: boolean }
+        extraInstruction: { type: string }
+        schedules: { type: array, items: { $ref: '#/components/schemas/ScheduleInput' } }
+    Medicine:
+      allOf:
+        - $ref: '#/components/schemas/MedicineCreate'
+        - type: object
+          properties: { id: { type: string }, active: { type: boolean } }
+    LookAlikeConflict:
+      type: object
+      description: Appearance-only comparison (safety rule 2).
+      properties:
+        otherMedicineId: { type: string }
+        autoResolvedBy: { type: string, nullable: true, enum: [pack_colour, print_colour, marking, null] }
+        recommended: { type: string, enum: [number_label, say_printed_name, print_colour] }
+    MedicineSaved:
+      type: object
+      properties:
+        medicine: { $ref: '#/components/schemas/Medicine' }
+        lookAlike: { type: array, items: { $ref: '#/components/schemas/LookAlikeConflict' } }
+    DoseStatus: { type: string, enum: [upcoming, calling, confirmed, missed, skipped_paused] }
+    Dose:
+      type: object
+      properties:
+        id: { type: string }
+        medicineId: { type: string }
+        spokenName: { type: string }
+        dueAt: { type: string, format: date-time }
+        status: { $ref: '#/components/schemas/DoseStatus' }
+        confirmedAt: { type: string, format: date-time, nullable: true }
+        confirmedVia: { type: string, enum: [key, speech, manual], nullable: true }
+    CallAttempt:
+      type: object
+      properties:
+        id: { type: string }
+        attempt: { type: integer }
+        status: { type: string }
+        result: { type: string, nullable: true }
+        inputKind: { type: string, nullable: true }
+        inputValue: { type: string, nullable: true }
+        startedAt: { type: string, format: date-time }
+        recordingUrl: { type: string, nullable: true }
+    Subscription:
+      type: object
+      properties:
+        plan: { type: string, enum: [trial, one_parent, two_parents, family_yearly] }
+        status: { type: string, enum: [trialing, active, past_due, cancelled] }
+        trialEndsAt: { type: string, format: date-time, nullable: true }
+        currentPeriodEnd: { type: string, format: date-time, nullable: true }
