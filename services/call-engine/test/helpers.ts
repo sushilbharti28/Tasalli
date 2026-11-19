@@ -8,12 +8,12 @@ import { MemoryQueue } from '../src/queue/memory.js';
 import { ScriptLibrary } from '../src/scripts/loader.js';
 import { MemoryStore } from '../src/store/memory.js';
 import { AudioCache, MemoryAudioStorage } from '../src/tts/cache.js';
-import { silentLogger } from '../src/log.js';
+import { silentLogger, type Logger } from '../src/log.js';
 
 export const PARENT = '+919876543210';
 
 /** 2026-03-10 is a Tuesday. 09:00 IST = 03:30Z; default start is one minute before. */
-export function world(start = '2026-03-10T03:29:00Z') {
+export function world(start = '2026-03-10T03:29:00Z', opts: { scripts?: ScriptLibrary; log?: Logger } = {}) {
   const clock = new FakeClock(start);
   const store = new MemoryStore();
   const queue = new MemoryQueue(clock);
@@ -21,13 +21,14 @@ export function world(start = '2026-03-10T03:29:00Z') {
   const speech = new FakeSpeech();
   const audio = new AudioCache(speech, new MemoryAudioStorage());
   const engine = new Engine({
-    store, queue, provider, audio, speech, scripts: new ScriptLibrary(null), sessions: new MemorySessionStore(), clock,
-    log: silentLogger, config: defaultConfig(),
+    store, queue, provider, audio, speech, scripts: opts.scripts ?? new ScriptLibrary(null), sessions: new MemorySessionStore(), clock,
+    log: opts.log ?? silentLogger, config: defaultConfig(),
   });
   queue.setHandler((n, data) => engine.handleJob(n, data));
   provider.connect(async (h, b) => engine.handleWebhook(h, b));
 
   const user = store.addUser({ phone: '+919000000001', name: 'Rohit' });
+  store.addSubscription(user.id); // active: the billing gate lets reminders through
   const mom = store.addPerson({ ownerUserId: user.id, phone: PARENT, nickname: 'Mummy', consent: 'consented' });
   function med(name: string, time: string, over = {}, person = mom) {
     const m = store.addMedicine({ personId: person.id, spokenName: name, ...over });

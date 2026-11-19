@@ -46,3 +46,10 @@ export function localDay(at: Date, zone: string): { start: Date; end: Date; isSu
     date: local.toISODate()!,
   };
 }
+
+/** Next wall-clock `hour`:00 in `zone` strictly after `at`, as a UTC instant, plus that local date. */
+export function nextLocalHour(at: Date, zone: string, hour: number): { at: Date; date: string } {
+  let t = DateTime.fromJSDate(at, { zone }).set({ hour, minute: 0, second: 0, millisecond: 0 });
+  if (t.toMillis() <= at.getTime()) t = t.plus({ days: 1 }).set({ hour, minute: 0, second: 0, millisecond: 0 });
+  return { at: t.toJSDate(), date: t.toISODate()! };
+}

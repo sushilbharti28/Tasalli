@@ -1,8 +1,10 @@
 import { RULES } from '../contracts-values.js';
 import { MINUTE } from '../clock.js';
-import { occurrences, stillMatches } from '../scheduler/time.js';
+import { jobId } from '../queue/jobs.js';
+import { localDay, nextLocalHour, occurrences, stillMatches } from '../scheduler/time.js';
 import type { PersonRow } from '../types.js';
 import { alertFor, newGroupId, placeReminder } from './calls.js';
+import { ownerEntitled } from './billing.js';
 import { encodeAttempt, type Deps } from './deps.js';
 
 const HORIZON_MS = 48 * 60 * MINUTE;
@@ -31,6 +33,22 @@ export async function planPerson(d: Deps, personId: string): Promise<void> {
     if (dose.status !== 'upcoming' || dose.callGroupId) continue;
     await d.queue.add('dose.due', { doseId: dose.id }, { delayMs: Math.max(0, dose.dueAt.getTime() - now.getTime()), jobId: `dose_${dose.id}` });
   }
+  // Evening summary: 20:00 in the parent's time zone (rule 7: wall-clock in their zone, converted here at the edge).
+  const evening = nextLocalHour(now, person.timeZone, EVENING_SUMMARY_HOUR);
+  await d.queue.add('summary.evening', { personId, localDate: evening.date },
+    { delayMs: evening.at.getTime() - now.getTime(), jobId: jobId('summary', personId, evening.date) });
+}
+
+export const EVENING_SUMMARY_HOUR = 20;
+
+/** 20:00 local: one evening_summary alert per person per local date (deduped by job id). */
+export async function eveningSummary(d: Deps, personId: string, localDate: string): Promise<void> {
+  const person = await d.store.getPerson(personId);
+  if (!person || !(await schedulable(d, person)) || !(await ownerEntitled(d, person.ownerUserId))) return;
+  // A late or retried job must not summarise a different day than it was planned for.
+  if (localDay(d.clock.now(), person.timeZone).date !== localDate) return;
+  await d.queue.alert({ kind: 'evening_summary', personId, ownerUserId: person.ownerUserId, callGroupId: null, doseIds: [],
+    at: d.clock.now().toISOString(), localDate }, jobId('evening_summary', personId, localDate));
 }
 
 export async function planAll(d: Deps): Promise<void> {
@@ -73,4 +91,20 @@ export async function doseDue(d: Deps, doseId: string): Promise<void> {
   });
   if (assigned.length === 0) return;
   await placeReminder(d, groupId, encodeAttempt(0, 0));
+}
+
+/**
+ * API asked for one more reminder for a dose. One call only (attempt code = last retry, so an unanswered call is not retried).
+ * placeReminder re-checks consent, paused, block list and billing; place() re-checks the block list and the 6/day cap.
+ */
+export async function doseRemind(d: Deps, doseId: string): Promise<void> {
+  const dose = await d.store.getDose(doseId);
+  if (!dose || (dose.status !== 'upcoming' && dose.status !== 'missed')) return; // confirmed, mid-call, or skipped
+  const person = await d.store.getPerson(dose.personId);
+  if (!person || !(await schedulable(d, person))) return;
+  // A dose that is still far in the future is not "one more reminder"; the normal schedule will call at its time.
+  if (dose.status === 'upcoming' && dose.dueAt.getTime() - d.clock.now().getTime() > RULES.groupWindowMinutes * MINUTE) return;
+  const groupId = newGroupId();
+  if (!(await d.store.regroupDose(doseId, groupId))) return; // duplicate request: someone else already took it
+  await placeReminder(d, groupId, encodeAttempt(0, RULES.retryCount));
 }

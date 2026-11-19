@@ -11,17 +11,23 @@ export interface TwilioConfig {
   fetch?: typeof fetch;
   /** Overrides, e.g. { hi: 'Polly.Aditi' }. */
   voices?: Partial<Record<CallLanguage, string>>;
+  /** Record consent and reminder calls (mono). Default true; TWILIO_RECORD=false turns it off. */
+  record?: boolean;
 }
 
-/** <Say> voice and language per call language. Hindi: Polly.Aditi (hi-IN). Others: Google Standard voices. */
-const VOICES: Record<CallLanguage, { voice: string; language: string }> = {
-  hi: { voice: 'Polly.Aditi', language: 'hi-IN' },
-  en: { voice: 'Polly.Aditi', language: 'en-IN' },
-  bn: { voice: 'Google.bn-IN-Standard-A', language: 'bn-IN' },
-  mr: { voice: 'Google.mr-IN-Standard-A', language: 'mr-IN' },
-  ta: { voice: 'Google.ta-IN-Standard-A', language: 'ta-IN' },
-  te: { voice: 'Google.te-IN-Standard-A', language: 'te-IN' },
-};
+/** What the recording-status webhook tells us. Twilio sends RecordingStatus in-progress | completed | absent | failed. */
+export interface RecordingEvent {
+  callId: string;
+  providerCallId: string;
+  recordingSid: string;
+  status: string;
+  recordingUrl: string | null;
+}
+
+/** <Say> voice and language. v1.1 is Hindi only: Polly.Aditi (hi-IN), also for English text. Every other language falls back to Hindi. */
+const HINDI = { voice: 'Polly.Aditi', language: 'hi-IN' };
+const VOICES = { hi: HINDI, en: { voice: 'Polly.Aditi', language: 'en-IN' } } as unknown as Record<CallLanguage, { voice: string; language: string }>;
+const voiceFor = (language: CallLanguage) => VOICES[language] ?? HINDI;
 const HINTS = 'le li,haan,nahi,nahi li,ho gaya,baad mein,band karo';
 
 /** "Audio" for Twilio is the text itself: <Say> speaks it. Format: say:<lang>:<base64url text>. */
@@ -61,7 +67,7 @@ export class TwilioProvider implements TelephonyProvider {
     this.f = cfg.fetch ?? fetch;
   }
 
-  private url(kind: 'status' | 'input', callId: string, nonce?: string): string {
+  private url(kind: 'status' | 'input' | 'recording', callId: string, nonce?: string): string {
     const q = new URLSearchParams({ c: callId, ...(nonce ? { n: nonce } : {}) });
     return `${this.cfg.publicBaseUrl}/webhooks/twilio/${kind}?${q}`;
   }
@@ -74,6 +80,13 @@ export class TwilioProvider implements TelephonyProvider {
     form.set('StatusCallback', this.url('status', req.callId));
     form.set('StatusCallbackMethod', 'POST');
     for (const e of ['ringing', 'answered', 'completed']) form.append('StatusCallbackEvent', e);
+    if ((this.cfg.record ?? true) && req.purpose !== 'test') { // the test call has no recording notice, so it is not recorded
+      form.set('Record', 'true');
+      form.set('RecordingChannels', 'mono');
+      form.set('RecordingStatusCallback', this.url('recording', req.callId));
+      form.set('RecordingStatusCallbackMethod', 'POST');
+      form.set('RecordingStatusCallbackEvent', 'completed');
+    }
     const res = await this.f(`https://api.twilio.com/2010-04-01/Accounts/${this.cfg.accountSid}/Calls.json`, {
       method: 'POST',
       headers: {
@@ -89,7 +102,7 @@ export class TwilioProvider implements TelephonyProvider {
 
   private say(audioUrl: string): string {
     const { language, text } = decodeSay(audioUrl);
-    const v = VOICES[language] ?? VOICES.en;
+    const v = voiceFor(language);
     const voice = this.cfg.voices?.[language] ?? v.voice;
     return `<Say voice="${xmlEscape(voice)}" language="${v.language}">${xmlEscape(text)}</Say>`;
   }
@@ -97,7 +110,7 @@ export class TwilioProvider implements TelephonyProvider {
   private twiml(step: CallStep, callId: string): string {
     const action = xmlEscape(this.url('input', callId, randomBytes(8).toString('hex')));
     if (!step.listen) return `<Response>${this.say(step.audioUrl)}<Hangup/></Response>`;
-    const lang = VOICES[decodeSay(step.audioUrl).language] ?? VOICES.en;
+    const lang = voiceFor(decodeSay(step.audioUrl).language);
     const attrs = step.listen.speech
       ? `input="dtmf speech" language="${lang.language}" speechTimeout="auto" hints="${HINTS}"`
       : 'input="dtmf"';
@@ -114,6 +127,22 @@ export class TwilioProvider implements TelephonyProvider {
     return { contentType: 'text/xml', body: `<?xml version="1.0" encoding="UTF-8"?>${body}` };
   }
 
+  /** Signed recording-status webhook (<base>/webhooks/twilio/recording). Not a CallEvent: the contract has no recording event yet. */
+  parseRecordingWebhook(headers: Record<string, string>, body: unknown): RecordingEvent {
+    const h = Object.fromEntries(Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v]));
+    const params = (body ?? {}) as Record<string, string>;
+    this.verify(h, params);
+    const callId = new URL(h['x-tasalli-url']!).searchParams.get('c');
+    if (!callId || !params.CallSid || !params.RecordingSid) throw new WebhookPayloadError('missing call or recording id');
+    return { callId, providerCallId: params.CallSid, recordingSid: params.RecordingSid, status: params.RecordingStatus ?? '', recordingUrl: params.RecordingUrl || null };
+  }
+
+  private verify(h: Record<string, string>, params: Record<string, string>): void {
+    const given = Buffer.from(h['x-twilio-signature'] ?? '', 'base64');
+    const expected = Buffer.from(twilioSignature(this.cfg.authToken, h['x-tasalli-url'] ?? '', params), 'base64');
+    if (given.length === 0 || given.length !== expected.length || !timingSafeEqual(given, expected)) throw new WebhookSignatureError('invalid Twilio signature');
+  }
+
   /**
    * Headers must include x-twilio-signature and x-tasalli-url (the full public URL Twilio called,
    * added by the server). Body is the parsed form fields.
@@ -121,9 +150,7 @@ export class TwilioProvider implements TelephonyProvider {
   parseWebhook(headers: Record<string, string>, body: unknown): CallEvent {
     const h = Object.fromEntries(Object.entries(headers).map(([k, v]) => [k.toLowerCase(), v]));
     const params = (body ?? {}) as Record<string, string>;
-    const given = Buffer.from(h['x-twilio-signature'] ?? '', 'base64');
-    const expected = Buffer.from(twilioSignature(this.cfg.authToken, h['x-tasalli-url'] ?? '', params), 'base64');
-    if (given.length === 0 || given.length !== expected.length || !timingSafeEqual(given, expected)) throw new WebhookSignatureError('invalid Twilio signature');
+    this.verify(h, params);
 
     const url = new URL(h['x-tasalli-url']!);
     const callId = url.searchParams.get('c');

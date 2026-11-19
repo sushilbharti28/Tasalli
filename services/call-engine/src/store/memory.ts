@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type {
-  CallRow, ConsentState, DoseDetail, DoseRow, DoseStatus, MedicineRow, PersonRow, ScheduleRow, UserRow,
+  CallRow, ConsentState, DoseDetail, DoseRow, DoseStatus, MedicineRow, PersonRow, ScheduleRow, SubscriptionRow, UserRow,
 } from '../types.js';
 import type { BlockReason, CallPatch, ConsentEventResult, ConsentEventVia, NewCall, Store } from './store.js';
 
@@ -14,12 +14,13 @@ interface State {
   blocked: Map<string, { reason: BlockReason; at: Date }>;
   consentEvents: Array<{ personId: string; result: ConsentEventResult; via: ConsentEventVia; callId: string | null }>;
   webhookEvents: Set<string>;
+  subscriptions: Array<SubscriptionRow & { userId: string }>;
 }
 
 function emptyState(): State {
   return {
     users: new Map(), people: new Map(), medicines: new Map(), schedules: new Map(), doses: new Map(),
-    calls: new Map(), blocked: new Map(), consentEvents: [], webhookEvents: new Set(),
+    calls: new Map(), blocked: new Map(), consentEvents: [], webhookEvents: new Set(), subscriptions: [],
   };
 }
 
@@ -41,6 +42,11 @@ export class MemoryStore implements Store {
   addUser(u: Partial<UserRow> & { phone: string }): UserRow {
     const row: UserRow = { id: randomUUID(), name: null, timeZone: 'Asia/Kolkata', locale: 'en', deleted: false, ...u };
     this.state.users.set(row.id, row);
+    return row;
+  }
+  addSubscription(userId: string, s: Partial<SubscriptionRow> = {}): SubscriptionRow {
+    const row = { userId, status: 'active' as const, currentPeriodEnd: null, trialEndsAt: null, ...s };
+    this.state.subscriptions.push(row);
     return row;
   }
   addPerson(p: Partial<PersonRow> & { ownerUserId: string; phone: string; nickname: string }): PersonRow {
@@ -100,6 +106,9 @@ export class MemoryStore implements Store {
 
   async getUser(id: string) {
     return copy(this.state.users.get(id)) ?? null;
+  }
+  async listSubscriptions(userId: string) {
+    return this.state.subscriptions.filter((s) => s.userId === userId).map((s) => ({ status: s.status, currentPeriodEnd: s.currentPeriodEnd, trialEndsAt: s.trialEndsAt }));
   }
   async getPerson(id: string) {
     const p = this.state.people.get(id);
@@ -188,6 +197,13 @@ export class MemoryStore implements Store {
     }
     return out;
   }
+  async regroupDose(doseId: string, groupId: string) {
+    const d = this.state.doses.get(doseId);
+    if (!d || (d.status !== 'upcoming' && d.status !== 'missed')) return false;
+    d.status = 'calling';
+    d.callGroupId = groupId;
+    return true;
+  }
   async getGroupDetails(groupId: string): Promise<DoseDetail[]> {
     return [...this.state.doses.values()]
       .filter((d) => d.callGroupId === groupId)
@@ -227,7 +243,7 @@ export class MemoryStore implements Store {
   async insertCall(row: NewCall, at: Date) {
     const call: CallRow = {
       id: randomUUID(), ...row, providerCallId: null, result: null, inputKind: null, inputValue: null,
-      startedAt: null, endedAt: null, createdAt: new Date(at),
+      startedAt: null, endedAt: null, recordingUrl: null, createdAt: new Date(at),
     };
     this.state.calls.set(call.id, call);
     return copy(call)!;

@@ -4,7 +4,8 @@ import type { EngineJobName, EngineJobs } from '../queue/jobs.js';
 import { afterNoConfirmation, consentUnanswered, placeConsent, placeReminder, placeTest } from './calls.js';
 import { type Deps, decodeAttempt, encodeAttempt } from './deps.js';
 import { handleInput } from './flows.js';
-import { doseDue, planAll, planPerson } from './scheduler.js';
+import { doseDue, doseRemind, eveningSummary, planAll, planPerson } from './scheduler.js';
+import type { RecordingEvent } from '../providers/twilio.js';
 import { WebhookPayloadError, WebhookSignatureError } from '../providers/fake-telephony.js';
 
 export interface HttpResult {
@@ -36,6 +37,11 @@ export class Engine {
       case 'consent.retry': {
         const j = data as EngineJobs['consent.retry'];
         return placeConsent(d, j.personId, j.attempt);
+      }
+      case 'dose.remind': return doseRemind(d, (data as EngineJobs['dose.remind']).doseId);
+      case 'summary.evening': {
+        const j = data as EngineJobs['summary.evening'];
+        return eveningSummary(d, j.personId, j.localDate);
       }
       case 'test.call': return placeTest(d, (data as EngineJobs['test.call']).userId);
     }
@@ -80,6 +86,32 @@ export class Engine {
       session.responses[ev.eventId] = next;
       await d.sessions.set(session);
       return render(d, next, call.id);
+    });
+  }
+
+  /**
+   * Recording-completed webhook (Twilio only). Verified, de-duplicated by RecordingSid (rule 6) and stored once in calls.recording_url.
+   * Always 200 for a valid event, however many times it arrives.
+   */
+  async handleRecordingWebhook(headers: Record<string, string>, body: unknown): Promise<HttpResult> {
+    const { d } = this;
+    const parse = (d.provider as unknown as { parseRecordingWebhook?: (h: Record<string, string>, b: unknown) => RecordingEvent }).parseRecordingWebhook;
+    if (!parse) return plain(404, 'not found');
+    let ev: RecordingEvent;
+    try {
+      ev = parse.call(d.provider, headers, body);
+    } catch (err) {
+      if (err instanceof WebhookSignatureError || (err as Error).name === 'WebhookSignatureError') return plain(401, 'invalid signature');
+      return plain(400, 'bad payload');
+    }
+    if (ev.status !== 'completed' || !ev.recordingUrl) return plain(200, 'ignored');
+    return this.locked(ev.callId, async () => {
+      const call = await d.store.getCall(ev.callId);
+      if (!call) return plain(200, 'unknown call');
+      if (await d.store.recordWebhookEvent(d.provider.name, `${ev.recordingSid}:recording:completed`, d.clock.now())) {
+        await d.store.updateCall(call.id, { recordingUrl: ev.recordingUrl });
+      }
+      return plain(200, 'ok');
     });
   }
 

@@ -15,6 +15,8 @@ export interface EngineJobs {
   'schedule.replan': { personId: string };
   /** Sample reminder call to the account holder's own phone. */
   'test.call': { userId: string };
+  /** From services/api: "send one more reminder" for this dose. One call, no retries; consent, block list, billing and the daily cap are re-checked. */
+  'dose.remind': { doseId: string };
   /** Internal: re-plan every schedulable person (repeatable, hourly). */
   'schedule.plan_all': Record<string, never>;
   /** Internal: a dose is due now. */
@@ -25,6 +27,8 @@ export interface EngineJobs {
   'reminder.snooze': { callGroupId: string };
   /** Internal: retry an unanswered consent call. */
   'consent.retry': { personId: string; attempt: number };
+  /** Internal: 20:00 in the parent's time zone: emit the evening_summary alert for that local date. */
+  'summary.evening': { personId: string; localDate: string };
 }
 
 export type EngineJobName = keyof EngineJobs;
@@ -36,7 +40,8 @@ export type AlertKind =
   | 'opted_out'          // key 9 / stop phrase: number blocked across all accounts
   | 'consent_given'
   | 'consent_declined'
-  | 'consent_no_answer'; // consent call unanswered after 2 retries
+  | 'consent_no_answer'  // consent call unanswered after 2 retries
+  | 'evening_summary';   // once per person per local day, 20:00 parent's time
 
 export interface AlertJob {
   kind: AlertKind;
@@ -48,6 +53,8 @@ export interface AlertJob {
   at: string;
   /** Extra machine-readable reason, e.g. 'retries_exhausted' | 'said_not_taken' | 'daily_cap' | 'too_late'. */
   reason?: string;
+  /** evening_summary only: the person's local date, YYYY-MM-DD. */
+  localDate?: string;
 }
 
 export interface AddOptions {

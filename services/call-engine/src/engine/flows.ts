@@ -48,10 +48,16 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
     await d.store.updateCall(call.id, { result });
     return { action: 'hangup', finalAudioUrl: await say(text) };
   };
-  const person = call.personId ? await d.store.getPerson(call.personId) : null;
+  const stored = call.personId ? await d.store.getPerson(call.personId) : null;
+  const person = stored && { ...stored, language: s.language }; // scripts follow the language the call was placed in
   const user = person ? await d.store.getUser(person.ownerUserId) : null;
   const child = childName(t, user?.name ?? null);
   s.steps++;
+
+  // Test call: any key (or any speech) ends it; there is nothing to decide.
+  if (s.purpose === 'test') {
+    return bye(ev.kind === 'key' || ev.transcript || ev.audioUrl ? t.test.ack : t.reminder.no_input_goodbye, ev.kind === 'key' || ev.transcript || ev.audioUrl ? 'confirmed' : 'none');
+  }
 
   const { intent, kind, raw } = await interpret(d, s, ev);
   await d.store.updateCall(call.id, { inputKind: kind, inputValue: kind === 'key' ? raw : raw.slice(0, 80) });
@@ -75,9 +81,8 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
     return bye(s.purpose === 'consent' ? t.consent.stop_ack : t.reminder.stop_ack, 'stop');
   }
   if (s.purpose === 'consent' && person) return consentReply(d, call, person, intent, kind, child, bye);
-  if (s.purpose === 'test') return bye(t.test.ack, 'confirmed');
   if (!person || !call.callGroupId) return bye(t.reminder.no_input_goodbye, 'none');
-  return reminderReply(d, call, person, intent, kind as 'key' | 'speech', child, ask, bye);
+  return reminderReply(d, call, s, person, intent, kind as 'key' | 'speech', child, ask, bye);
 }
 
 async function consentReply(d: Deps, call: CallRow, person: PersonRow, intent: ReplyIntent, via: 'key' | 'speech', child: string,
@@ -111,7 +116,7 @@ async function consentReply(d: Deps, call: CallRow, person: PersonRow, intent: R
   return bye(line(t.consent.no_ack, { child_name: child }), 'declined');
 }
 
-async function reminderReply(d: Deps, call: CallRow, person: PersonRow, intent: ReplyIntent, via: 'key' | 'speech', child: string,
+async function reminderReply(d: Deps, call: CallRow, s: CallSession, person: PersonRow, intent: ReplyIntent, via: 'key' | 'speech', child: string,
   ask: (text: string, speech: boolean) => Promise<NextAction>, bye: (text: string, r: CallResultRow) => Promise<NextAction>): Promise<NextAction> {
   const t = d.scripts.get(person.language).templates.reminder;
   const gid = call.callGroupId!;
@@ -129,6 +134,11 @@ async function reminderReply(d: Deps, call: CallRow, person: PersonRow, intent: 
     case 'snooze':
     case 'decline': {
       const used = (await d.store.listCallsForGroup(gid)).some((c) => c.result === 'snoozed');
+      // First "nahi li" while the snooze is still available: tell them to take it, press 1, or 2 for a reminder. Never a confirmation.
+      if (!used && intent === 'decline' && !s.notTakenAsked && t.not_taken_ack) {
+        s.notTakenAsked = true;
+        return ask(t.not_taken_ack, !s.keypadOnly);
+      }
       if (!used) {
         const at = RULES.snoozeMinutes;
         await d.queue.add('reminder.snooze', { callGroupId: gid }, { delayMs: at * MINUTE, jobId: `snooze_${gid}` });

@@ -100,5 +100,14 @@ export interface CallRow {
   inputValue: string | null;
   startedAt: Date | null;
   endedAt: Date | null;
+  /** Twilio recording URL (set once, from the recording-completed webhook). */
+  recordingUrl: string | null;
   createdAt: Date;
+}
+
+/** Mirrors the subscriptions table in packages/contracts/schema.sql. */
+export interface SubscriptionRow {
+  status: 'trialing' | 'active' | 'past_due' | 'cancelled';
+  currentPeriodEnd: Date | null;
+  trialEndsAt: Date | null;
 }

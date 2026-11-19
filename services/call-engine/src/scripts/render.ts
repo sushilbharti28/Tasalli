@@ -26,10 +26,10 @@ export function cleanup(text: string): string {
   for (let i = 0; i < 10; i++) {
     const before = s;
     s = s
-      .replace(/\s+([,.:;!?])/g, '$1')
-      .replace(/([,:;])\s*([,.:;!?])/g, '$2')
-      .replace(/\.\s*\./g, '.')
-      .replace(/^\s*[,.:;]\s*/, '')
+      .replace(/\s+([,.:;!?।])/g, '$1')
+      .replace(/([,:;])\s*([,.:;!?।])/g, '$2')
+      .replace(/([.।])\s*([.।])/g, '$2')
+      .replace(/^\s*[,.:;।]\s*/, '')
       .replace(/\s{2,}/g, ' ');
     if (s === before) break;
   }

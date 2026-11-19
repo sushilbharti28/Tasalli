@@ -14,17 +14,23 @@ export interface ScriptTemplates {
   status?: string;
   reminder: {
     full_intro: string;      // {person_name} {child_name} {count} {dose_unit}
+    /** Optional: used instead of full_intro when exactly one medicine is due. */
+    full_intro_one?: string;
     full_item: string;       // {ordinal} {spoken_name} {amount_text} {appearance_phrase} {pack_phrase} {disambiguator} {food_phrase} {extra_instruction}
     full_outro: string;
     short_intro: string;     // {person_name} {child_name} {names}
     short_item: string;      // {spoken_name} {amount_text} {disambiguator} {food_phrase} {extra_instruction}
     short_outro: string;
+    /** Optional: one sentence for a short call with a single medicine (replaces intro + item + outro). */
+    short_single?: string;
     sunday_line: string;     // {number} {spoken_name}
     unclear: string;         // asked once after unclear speech or silence
     keypad_only: string;     // second time: keypad only
     confirm_ack: string;
     snooze_ack: string;      // {minutes}
     snooze_used: string;     // second snooze request: take it now and press 1
+    /** Optional: "not taken" while the snooze is still available: take it, press 1, or 2 to be reminded. */
+    not_taken_ack?: string;
     declined_ack: string;    // not taken, snooze already used: {child_name} will be told
     doctor_changed_ack: string; // {child_name}
     unwell_ack: string;      // {child_name}
@@ -67,6 +73,8 @@ export interface ScriptTemplates {
     disambiguator_number: string;        // {number}
     disambiguator_printed_name: string;  // {strip_letters}
   };
+  /** Optional gender forms (hi): word key -> { m, f, obl }. Chosen by the noun the word describes. */
+  words_gendered?: Partial<Record<'colours' | 'shapes' | 'sizes', Record<string, Partial<Record<'m' | 'f' | 'obl', string>>>>>;
 }
 
 export const HI_TEMPLATES: ScriptTemplates = {
@@ -92,7 +100,7 @@ export const HI_TEMPLATES: ScriptTemplates = {
     no_input_goodbye: 'Hum thodi der mein phir phone karenge. Namaste.',
   },
   consent: {
-    prompt: 'Namaste {person_name}. {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.',
+    prompt: 'Namaste {person_name}. Is call ko behtar seva ke liye record kiya ja sakta hai. {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.',
     unclear: 'Maaf kijiye, samajh nahi aaya. Haan ke liye 1 dabaiye. Phone nahi chahiye to 9 dabaiye.',
     keypad_only: 'Haan ke liye 1 dabaiye. Phone nahi chahiye to 9 dabaiye.',
     yes_ack: 'Dhanyavaad. Ab hum dawai ke samay par phone karenge. Namaste.',
@@ -154,7 +162,7 @@ export const EN_TEMPLATES: ScriptTemplates = {
     no_input_goodbye: 'We will call again in a little while. Goodbye.',
   },
   consent: {
-    prompt: 'Hello {person_name}. {child_name} would like to send you medicine reminder calls. To agree, say "yes" or press 1. If you do not want these calls, press 9 and we will never call again.',
+    prompt: 'Hello {person_name}. This call may be recorded to improve the service. {child_name} would like to send you medicine reminder calls. To agree, say "yes" or press 1. If you do not want these calls, press 9 and we will never call again.',
     unclear: 'Sorry, I did not understand. Press 1 to agree. Press 9 if you do not want these calls.',
     keypad_only: 'Press 1 to agree. Press 9 if you do not want these calls.',
     yes_ack: 'Thank you. We will call you at medicine time. Goodbye.',

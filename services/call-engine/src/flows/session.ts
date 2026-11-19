@@ -14,6 +14,8 @@ export interface CallSession {
   repeats: number;
   steps: number;
   keypadOnly: boolean;
+  /** "Not taken" was answered once with not_taken_ack (take it, press 1, or 2 for a reminder). */
+  notTakenAsked?: boolean;
   /** NextAction returned per input event id, replayed for duplicate webhooks. */
   responses: Record<string, NextAction>;
 }
