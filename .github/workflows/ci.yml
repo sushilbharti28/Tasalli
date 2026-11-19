@@ -74,6 +74,18 @@ jobs:
             pnpm install --no-frozen-lockfile
           fi
 
+      - name: Postgres 16 client tools (match the server major version)
+        run: |
+          if [ ! -x /usr/lib/postgresql/16/bin/pg_dump ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq postgresql-client-16 || {
+              sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+              sudo apt-get install -y -qq postgresql-client-16
+            }
+          fi
+          echo "PG_BIN=/usr/lib/postgresql/16/bin" >> "$GITHUB_ENV"
+          /usr/lib/postgresql/16/bin/pg_dump --version
+
       - name: Create test database
         run: PGPASSWORD=tasalli psql -h localhost -U tasalli -d tasalli -c 'CREATE DATABASE tasalli_test;'
 
