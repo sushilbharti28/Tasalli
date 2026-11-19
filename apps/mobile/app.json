@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "Tasalli",
+    "slug": "tasalli",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "tasalli",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FBF7F2",
+    "android": {
+      "package": "in.tasalli.app",
+      "adaptiveIcon": { "backgroundColor": "#0F6E64" },
+      "permissions": ["POST_NOTIFICATIONS"],
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      "expo-secure-store",
+      ["expo-notifications", { "color": "#0F6E64" }],
+      ["expo-image-picker", { "photosPermission": "Tasalli uses a photo of the medicine strip only on this phone, to help you recognise it.", "cameraPermission": "Take a photo of the medicine strip to help you recognise it." }],
+      "expo-audio"
+    ],
+    "experiments": { "typedRoutes": false }
+  }
+}
