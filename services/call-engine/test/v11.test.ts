@@ -108,8 +108,8 @@ describe('scripts from packages/scripts/engine', () => {
   });
 
   it('consent scripts carry the recording line', () => {
-    expect(hindi().get('hi').templates.consent.prompt).toContain('रिकॉर्ड किया जा सकता है');
-    expect(hindi().get('en').templates.consent.prompt).toContain('This call may be recorded to improve the service.');
+    expect(hindi().get('hi').templates.consent.prompt).toContain('कॉल रिकॉर्ड की जाएगी');
+    expect(hindi().get('en').templates.consent.prompt).toContain('This call will be recorded.');
   });
 });
 
