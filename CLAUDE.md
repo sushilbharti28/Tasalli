@@ -50,12 +50,24 @@ Work only inside the paths your agent owns. If you need a change elsewhere, open
 
 ## Commands
 
-Filled in by the devops agent as the tooling lands:
+Node 20 (`.nvmrc`), pnpm 9 (`packageManager` in root `package.json`). Full guide: `docs/runbooks/local-setup.md`.
 
 ```
+cp .env.example .env              # local defaults, fake providers, no real keys
 pnpm install
-pnpm test          # all unit tests
-pnpm lint
-pnpm --filter api dev
-pnpm --filter call-engine dev   # uses FakeProvider unless TELEPHONY_PROVIDER is set
+docker compose up -d postgres redis   # or: pnpm db:up
+pnpm build                        # every package that has a build script
+pnpm typecheck                    # tsc --noEmit in every package
+pnpm lint                         # eslint in every package (shared eslint.config.mjs)
+pnpm test                         # all unit tests
+pnpm format                       # prettier --write
+pnpm --filter @tasalli/api dev
+pnpm --filter @tasalli/call-engine dev   # uses FakeProvider unless TELEPHONY_PROVIDER is set
 ```
+
+Package conventions (CI relies on them):
+
+- Each workspace package defines whichever of `build`, `typecheck`, `lint`, `test` it supports. Root scripts run them with `--if-present`, so a missing script is skipped, not an error.
+- `tsconfig.json` extends `../../tsconfig.base.json`. Depend on shared packages with `"workspace:*"`.
+- Tests that need Postgres or Redis read `TEST_DATABASE_URL` / `REDIS_URL` (CI provides both).
+- Lockfile: only the devops agent commits `pnpm-lock.yaml`. Other agents install with `pnpm install --no-frozen-lockfile` and leave the lockfile out of their PRs.
