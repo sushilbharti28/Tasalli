@@ -1,0 +1,281 @@
+{
+ "language": "en",
+ "review": {
+  "status": "draft"
+ },
+ "phrases": [
+  {
+   "id": "en-confirm-001",
+   "text": "yes",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ]
+  },
+  {
+   "id": "en-confirm-002",
+   "text": "Yes.",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "punctuation"
+  },
+  {
+   "id": "en-confirm-003",
+   "text": "taken",
+   "intent": "confirm"
+  },
+  {
+   "id": "en-confirm-004",
+   "text": "I took it",
+   "intent": "confirm"
+  },
+  {
+   "id": "en-confirm-005",
+   "text": "yes I have taken it",
+   "intent": "confirm"
+  },
+  {
+   "id": "en-confirm-006",
+   "text": "done",
+   "intent": "confirm"
+  },
+  {
+   "id": "en-confirm-007",
+   "text": "yeah took it",
+   "intent": "confirm"
+  },
+  {
+   "id": "en-neg-001",
+   "text": "no",
+   "intent": "decline",
+   "tags": [
+    "negative"
+   ]
+  },
+  {
+   "id": "en-neg-002",
+   "text": "not yet",
+   "intent": "decline",
+   "tags": [
+    "negative"
+   ]
+  },
+  {
+   "id": "en-neg-003",
+   "text": "I didn't take it",
+   "intent": "decline",
+   "tags": [
+    "negative"
+   ]
+  },
+  {
+   "id": "en-neg-004",
+   "text": "haven't taken",
+   "intent": "decline",
+   "tags": [
+    "negative"
+   ]
+  },
+  {
+   "id": "en-neg-005",
+   "text": "not taken",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "tricky"
+   ],
+   "gloss": "contains \"taken\""
+  },
+  {
+   "id": "en-neg-006",
+   "text": "yes I haven't taken it",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "tricky"
+   ],
+   "gloss": "starts with yes"
+  },
+  {
+   "id": "en-neg-007",
+   "text": "I have not taken it",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "tricky"
+   ]
+  },
+  {
+   "id": "en-neg-008",
+   "text": "nope",
+   "intent": "decline",
+   "tags": [
+    "negative"
+   ]
+  },
+  {
+   "id": "en-neg-009",
+   "text": "no no I did not",
+   "intent": "decline",
+   "tags": [
+    "negative"
+   ]
+  },
+  {
+   "id": "en-future-001",
+   "text": "I will take it",
+   "intent": "unclear",
+   "alsoAccept": [
+    "snooze"
+   ],
+   "tags": [
+    "future",
+    "tricky"
+   ]
+  },
+  {
+   "id": "en-future-002",
+   "text": "going to take it now",
+   "intent": "unclear",
+   "alsoAccept": [
+    "snooze"
+   ],
+   "tags": [
+    "future",
+    "tricky"
+   ]
+  },
+  {
+   "id": "en-snooze-001",
+   "text": "later",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ]
+  },
+  {
+   "id": "en-snooze-002",
+   "text": "remind me later",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ]
+  },
+  {
+   "id": "en-snooze-003",
+   "text": "call me after some time",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ]
+  },
+  {
+   "id": "en-repeat-001",
+   "text": "repeat",
+   "intent": "repeat"
+  },
+  {
+   "id": "en-repeat-002",
+   "text": "say that again",
+   "intent": "repeat"
+  },
+  {
+   "id": "en-repeat-003",
+   "text": "I didn't understand",
+   "intent": "repeat",
+   "alsoAccept": [
+    "decline",
+    "unclear"
+   ],
+   "tags": [
+    "tricky"
+   ]
+  },
+  {
+   "id": "en-doctor-001",
+   "text": "the doctor changed it",
+   "intent": "doctor_changed",
+   "alsoAccept": [
+    "unclear"
+   ]
+  },
+  {
+   "id": "en-stop-001",
+   "text": "stop calling",
+   "intent": "stop"
+  },
+  {
+   "id": "en-stop-002",
+   "text": "don't call me",
+   "intent": "stop",
+   "alsoAccept": [
+    "decline"
+   ]
+  },
+  {
+   "id": "en-unclear-001",
+   "text": "please don't stop",
+   "intent": "unclear",
+   "alsoAccept": [
+    "decline"
+   ],
+   "mustNot": [
+    "stop"
+   ],
+   "tags": [
+    "tricky"
+   ]
+  },
+  {
+   "id": "en-noise-001",
+   "text": "",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ],
+   "gloss": "silence"
+  },
+  {
+   "id": "en-noise-002",
+   "text": "hello",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "en-noise-003",
+   "text": "who is this",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "en-consent-001",
+   "text": "yes",
+   "intent": "confirm",
+   "context": "consent"
+  },
+  {
+   "id": "en-consent-002",
+   "text": "no",
+   "intent": "decline",
+   "alsoAccept": [
+    "stop"
+   ],
+   "context": "consent",
+   "tags": [
+    "negative"
+   ]
+  },
+  {
+   "id": "en-consent-003",
+   "text": "stop calling",
+   "intent": "stop",
+   "context": "consent"
+  }
+ ]
+}

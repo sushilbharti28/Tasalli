@@ -1,0 +1,247 @@
+{
+ "language": "ta",
+ "review": {
+  "status": "draft"
+ },
+ "phrases": [
+  {
+   "id": "ta-confirm-001",
+   "text": "aamaa",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "yes"
+  },
+  {
+   "id": "ta-confirm-002",
+   "text": "ஆமா",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "ta-confirm-003",
+   "text": "ஆம்",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "ta-confirm-004",
+   "text": "saapten",
+   "intent": "confirm",
+   "tags": [
+    "romanized"
+   ],
+   "gloss": "I ate (took) it"
+  },
+  {
+   "id": "ta-confirm-005",
+   "text": "சாப்பிட்டேன்",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "ta-confirm-006",
+   "text": "மாத்திரை சாப்பிட்டேன்",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ],
+   "gloss": "took the tablet"
+  },
+  {
+   "id": "ta-confirm-007",
+   "text": "எடுத்துட்டேன்",
+   "intent": "confirm",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "ta-neg-001",
+   "text": "illai",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "romanized"
+   ]
+  },
+  {
+   "id": "ta-neg-002",
+   "text": "இல்லை",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ]
+  },
+  {
+   "id": "ta-neg-003",
+   "text": "இல்ல",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ]
+  },
+  {
+   "id": "ta-neg-004",
+   "text": "சாப்பிடல",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ],
+   "gloss": "didn't eat: same stem as the confirm word"
+  },
+  {
+   "id": "ta-neg-005",
+   "text": "saapdala",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "romanized",
+    "tricky"
+   ]
+  },
+  {
+   "id": "ta-neg-006",
+   "text": "இன்னும் சாப்பிடல",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native"
+   ],
+   "gloss": "not eaten yet"
+  },
+  {
+   "id": "ta-neg-007",
+   "text": "ஆமா, சாப்பிடல",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ]
+  },
+  {
+   "id": "ta-neg-008",
+   "text": "எடுக்கல",
+   "intent": "decline",
+   "tags": [
+    "negative",
+    "native",
+    "tricky"
+   ]
+  },
+  {
+   "id": "ta-future-001",
+   "text": "சாப்பிடுவேன்",
+   "intent": "unclear",
+   "alsoAccept": [
+    "snooze"
+   ],
+   "tags": [
+    "native",
+    "future",
+    "tricky"
+   ],
+   "gloss": "I will eat"
+  },
+  {
+   "id": "ta-snooze-001",
+   "text": "அப்புறம்",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline"
+   ],
+   "tags": [
+    "native"
+   ],
+   "gloss": "later"
+  },
+  {
+   "id": "ta-snooze-002",
+   "text": "கொஞ்ச நேரம் கழிச்சு",
+   "intent": "snooze",
+   "alsoAccept": [
+    "decline",
+    "unclear"
+   ],
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "ta-repeat-001",
+   "text": "திரும்ப சொல்லுங்க",
+   "intent": "repeat",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "ta-repeat-002",
+   "text": "புரியல",
+   "intent": "repeat",
+   "alsoAccept": [
+    "decline",
+    "unclear"
+   ],
+   "tags": [
+    "native",
+    "tricky"
+   ],
+   "gloss": "didn't understand"
+  },
+  {
+   "id": "ta-stop-001",
+   "text": "நிறுத்துங்க",
+   "intent": "stop",
+   "tags": [
+    "native"
+   ]
+  },
+  {
+   "id": "ta-noise-001",
+   "text": "",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "ta-noise-002",
+   "text": "ஹலோ",
+   "intent": "unclear",
+   "tags": [
+    "noise"
+   ]
+  },
+  {
+   "id": "ta-consent-001",
+   "text": "ஆமா",
+   "intent": "confirm",
+   "context": "consent"
+  },
+  {
+   "id": "ta-consent-002",
+   "text": "இல்லை",
+   "intent": "decline",
+   "alsoAccept": [
+    "stop"
+   ],
+   "context": "consent",
+   "tags": [
+    "negative"
+   ]
+  }
+ ]
+}
