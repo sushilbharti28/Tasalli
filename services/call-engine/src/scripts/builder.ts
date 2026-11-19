@@ -41,19 +41,30 @@ export function spellOut(stripName: string): string {
     .join(' ');
 }
 
-function word(map: Record<string, string>, key: string | null): string {
+type Form = 'm' | 'f' | 'obl';
+type WordGroup = 'colours' | 'shapes' | 'sizes';
+
+/**
+ * Word for a key. In Hindi the colour, shape and size words agree with the noun they describe
+ * (tablet: feminine, capsule: masculine, strip: oblique, bottle: feminine, cap: masculine); the forms come from
+ * `words_gendered`. A word without a gendered entry (e.g. white) is the same in every form.
+ */
+function word(t: ScriptTemplates, group: WordGroup, key: string | null, form?: Form): string {
   if (!key) return '';
-  return map[key] ?? map[key.toLowerCase()] ?? key; // unknown values are spoken as entered
+  const k = t.words[group][key] !== undefined ? key : key.toLowerCase();
+  const g = form ? t.words_gendered?.[group]?.[k]?.[form] : undefined;
+  return g ?? t.words[group][k] ?? key; // unknown values are spoken as entered
 }
 
 export function appearancePhrase(t: ScriptTemplates, m: MedicineRow): string {
   if (m.kind !== 'tablet' && m.kind !== 'capsule') return '';
   const w = t.words;
+  const f: Form = m.kind === 'tablet' ? 'f' : 'm'; // tablet (goli) is feminine, capsule masculine
   const colour = m.kind === 'capsule' && m.colourSecondary
-    ? render(w.two_colour, { colour: word(w.colours, m.colourPrimary), colour2: word(w.colours, m.colourSecondary) })
-    : word(w.colours, m.colourPrimary);
+    ? render(w.two_colour, { colour: word(t, 'colours', m.colourPrimary, f), colour2: word(t, 'colours', m.colourSecondary, f) })
+    : word(t, 'colours', m.colourPrimary, f);
   return render(w.appearance, {
-    size: word(w.sizes, m.size), colour, shape: word(w.shapes, m.shape), kind: word(w.kinds, m.kind),
+    size: word(t, 'sizes', m.size, f), colour, shape: word(t, 'shapes', m.shape, f), kind: w.kinds[m.kind] ?? m.kind,
     marking: m.marking ? (w.markings[m.marking] ?? '') : '',
   });
 }
@@ -62,9 +73,9 @@ export function packPhrase(t: ScriptTemplates, m: MedicineRow): string {
   if (!m.keptIn) return '';
   const w = t.words;
   return render(w.pack[m.keptIn], {
-    pack_colour: word(w.colours, m.packColour),
-    print_phrase: m.printColour ? render(w.print_phrase, { print_colour: word(w.colours, m.printColour) }) : '',
-    cap_phrase: m.capColour ? render(w.cap_phrase, { cap_colour: word(w.colours, m.capColour) }) : '',
+    pack_colour: word(t, 'colours', m.packColour, m.keptIn === 'strip' ? 'obl' : 'f'),
+    print_phrase: m.printColour ? render(w.print_phrase, { print_colour: word(t, 'colours', m.printColour, 'f') }) : '', // likhai: feminine
+    cap_phrase: m.capColour ? render(w.cap_phrase, { cap_colour: word(t, 'colours', m.capColour, 'm') }) : '', // dhakkan: masculine
   });
 }
 
@@ -88,7 +99,7 @@ export function buildReminderText(input: ReminderScriptInput, mode: 'full' | 'sh
   const parts: string[] = [];
 
   if (mode === 'full') {
-    parts.push(render(r.full_intro, { person_name, child_name, count, dose_unit: count === 1 ? t.words.dose_unit.one : t.words.dose_unit.many }));
+    parts.push(render(count === 1 && r.full_intro_one ? r.full_intro_one : r.full_intro, { person_name, child_name, count, dose_unit: count === 1 ? t.words.dose_unit.one : t.words.dose_unit.many }));
     input.items.forEach((it, i) => {
       parts.push(render(r.full_item, {
         ordinal: count > 1 ? (t.words.ordinals[i] ?? String(i + 1)) : '',
@@ -101,6 +112,14 @@ export function buildReminderText(input: ReminderScriptInput, mode: 'full' | 'sh
         extra_instruction: it.medicine.extraInstruction,
       }));
     });
+  } else if (count === 1 && r.short_single && sundayLines(input).length === 0) {
+    const it = input.items[0]!;
+    // One sentence including its own outro, so nothing else is appended.
+    return joinSentences([render(r.short_single, {
+      person_name, child_name, spoken_name: it.medicine.spokenName, amount_text: it.schedule.amountText,
+      disambiguator: disambiguator(t, it.medicine), food_phrase: foodPhrase(t, it.schedule.food, input.localHour),
+      extra_instruction: it.medicine.extraInstruction,
+    })]);
   } else {
     const names = input.items.map((it) => it.medicine.spokenName);
     const joined = names.length <= 1 ? (names[0] ?? '')

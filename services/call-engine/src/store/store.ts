@@ -1,5 +1,5 @@
 import type {
-  CallRow, ConsentState, DoseDetail, DoseRow, DoseStatus, MedicineRow, PersonRow, ScheduleRow, UserRow,
+  CallRow, ConsentState, DoseDetail, DoseRow, DoseStatus, MedicineRow, PersonRow, ScheduleRow, SubscriptionRow, UserRow,
 } from '../types.js';
 
 export type ConsentEventResult = 'consented' | 'declined' | 'no_answer' | 'opted_out';
@@ -16,7 +16,7 @@ export interface NewCall {
 }
 
 export type CallPatch = Partial<Pick<CallRow,
-  'providerCallId' | 'status' | 'result' | 'inputKind' | 'inputValue' | 'startedAt' | 'endedAt'>>;
+  'providerCallId' | 'status' | 'result' | 'inputKind' | 'inputValue' | 'startedAt' | 'endedAt' | 'recordingUrl'>>;
 
 /**
  * Persistence used by the call engine. Two implementations:
@@ -35,6 +35,8 @@ export interface Store {
   lockPerson(personId: string): Promise<void>;
 
   getUser(id: string): Promise<UserRow | null>;
+  /** All subscription rows of an account (billing gate). */
+  listSubscriptions(userId: string): Promise<SubscriptionRow[]>;
   getPerson(id: string): Promise<PersonRow | null>;
   listPeopleByPhone(phone: string): Promise<PersonRow[]>;
   /** Consented, not paused, not deleted, number not blocked. */
@@ -58,6 +60,11 @@ export interface Store {
   setDoseStatus(ids: string[], from: DoseStatus[], to: DoseStatus): Promise<number>;
   /** Mark doses as part of a call group (status calling). Only upcoming, ungrouped doses change. */
   assignGroup(doseIds: string[], groupId: string): Promise<string[]>;
+  /**
+   * "One more reminder": move one dose that is upcoming or missed (never confirmed, never mid-call) into a new group, status calling.
+   * Atomic, so a duplicate request changes nothing. Returns false if the dose was not in such a state.
+   */
+  regroupDose(doseId: string, groupId: string): Promise<boolean>;
   getGroupDetails(groupId: string): Promise<DoseDetail[]>;
   /** Confirm the group's doses that are still upcoming/calling. Returns rows changed. */
   confirmGroup(groupId: string, via: 'key' | 'speech', at: Date): Promise<number>;

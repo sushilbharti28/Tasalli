@@ -5,11 +5,13 @@ import { buildReminderText, line, personName, childName } from '../scripts/build
 import { localDay } from '../scheduler/time.js';
 import type { CallSession } from '../flows/session.js';
 import type { PersonRow } from '../types.js';
+import { ownerEntitled } from './billing.js';
 import { type Deps, decodeAttempt, encodeAttempt } from './deps.js';
+import { callLanguage } from './language.js';
 import { MINUTE } from '../clock.js';
 
 export function listenStep(d: Deps, audioUrl: string, purpose: 'consent' | 'reminder' | 'test', speech = true): CallStep {
-  const keys = purpose === 'reminder' ? Object.keys(REMINDER_KEYS) : purpose === 'consent' ? Object.keys(CONSENT_KEYS) : ['1', '9'];
+  const keys = purpose === 'reminder' ? Object.keys(REMINDER_KEYS) : purpose === 'consent' ? Object.keys(CONSENT_KEYS) : [...'0123456789*#']; // test call: any key
   return { audioUrl, listen: { keys, speech, timeoutSeconds: d.config.listenSeconds } };
 }
 
@@ -67,9 +69,16 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   };
   if (person.deleted || person.paused || person.consent !== 'consented' || await d.store.isBlocked(person.phone)) return void await stop('skipped_paused');
 
+  // Billing gate: no reminder call (first call, retry or snooze) for an account that is not entitled. No alert: nothing was missed by the parent.
+  if (!(await ownerEntitled(d, person.ownerUserId))) {
+    d.log.info('reminder skipped: subscription not entitled', { personId: person.id, groupId });
+    return void await stop('skipped_paused');
+  }
+
   const now = d.clock.now();
   const day = localDay(now, person.timeZone);
-  const pack = d.scripts.get(person.language);
+  const lang = callLanguage(d, person.language, person.id);
+  const pack = d.scripts.get(lang);
   const prior = await d.store.answeredRemindersBetween(person.id, day.start, day.end, groupId);
   const base = {
     templates: pack.templates, person, childName: user?.name ?? null, isSunday: day.isSunday, localHour: day.hour,
@@ -78,7 +87,7 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   const full = buildReminderText({ ...base, mode: 'full' });
   const mainText = prior.answeredCalls === 0 ? full : buildReminderText({ ...base, mode: 'short' });
   const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode,
-    language: person.language, session: { ...blank, mainText, fullText: full } });
+    language: lang, session: { ...blank, mainText, fullText: full } });
   if (out === 'capped') return void await stop('missed', 'daily_cap');
   if (out === 'blocked') return void await stop('skipped_paused');
   if (out === 'failed') await afterNoConfirmation(d, groupId, attemptCode);
@@ -105,10 +114,11 @@ export async function placeConsent(d: Deps, personId: string, attempt: number): 
   if (!person || person.deleted || person.consent === 'consented' || person.consent === 'opted_out') return;
   if (await d.store.isBlocked(person.phone)) return;
   const user = await d.store.getUser(person.ownerUserId);
-  const t = d.scripts.get(person.language).templates;
+  const lang = callLanguage(d, person.language, person.id);
+  const t = d.scripts.get(lang).templates;
   const text = line(t.consent.prompt, { person_name: personName(t, person), child_name: childName(t, user?.name ?? null) });
   const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'consent', groupId: null, attempt,
-    language: person.language, session: { ...blank, mainText: text, fullText: text } });
+    language: lang, session: { ...blank, mainText: text, fullText: text } });
   if (out === 'capped') return void await alertFor(d, person, 'consent_no_answer', null, [], `consent_noanswer_${person.id}`, 'daily_cap');
   if (out === 'failed') await consentUnanswered(d, personId, attempt);
 }
@@ -129,7 +139,7 @@ export async function placeTest(d: Deps, userId: string): Promise<void> {
   if (!user || user.deleted) return;
   const day = localDay(d.clock.now(), user.timeZone).date;
   if ((await d.sessions.incr(`test_${userId}_${day}`, 86400)) > d.config.testCallsPerDay) return;
-  const lang = user.locale;
+  const lang = callLanguage(d, user.locale, null);
   const t = d.scripts.get(lang).templates;
   const text = line(t.test.prompt, { person_name: personName(t, { nickname: user.name ?? '', fullName: null }) });
   await place(d, { person: null, to: user.phone, zone: user.timeZone, purpose: 'test', groupId: null, attempt: 0, language: lang,

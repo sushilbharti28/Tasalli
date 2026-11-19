@@ -6,7 +6,8 @@ import { createLogger, maskPhone } from './log.js';
 import { FakeSpeech } from './providers/fake-speech.js';
 import { buildTwilio, twilioEnv } from './providers/twilio-factory.js';
 import { MemoryQueue } from './queue/memory.js';
-import { ScriptLibrary } from './scripts/loader.js';
+import { loadRootEnv } from './env.js';
+import { DEFAULT_SCRIPTS_DIR, ScriptLibrary } from './scripts/loader.js';
 import { createWebhookServer } from './server.js';
 import { MemoryStore } from './store/memory.js';
 
@@ -16,6 +17,7 @@ import { MemoryStore } from './store/memory.js';
  * real consent flow, waits for the call to finish and prints the outcome. Needs the tunnel to be up.
  */
 async function main() {
+  loadRootEnv();
   const to = process.argv[2];
   if (!to || !/^\+[1-9]\d{6,14}$/.test(to)) throw new Error('Usage: test-call <E.164 number>, e.g. +919876543210');
   const env = twilioEnv(process.env);
@@ -24,13 +26,14 @@ async function main() {
   const store = new MemoryStore();
   const queue = new MemoryQueue(systemClock);
   const engine = new Engine({
-    store, queue, provider, audio, speech: new FakeSpeech(), sessions: new MemorySessionStore(), scripts: new ScriptLibrary(null, log),
+    store, queue, provider, audio, speech: new FakeSpeech(), sessions: new MemorySessionStore(), scripts: new ScriptLibrary(process.env.SCRIPTS_DIR || DEFAULT_SCRIPTS_DIR, log),
     clock: systemClock, log, config: defaultConfig({ callerId: env.fromNumber, publicBaseUrl: env.publicBaseUrl }),
   });
   queue.setHandler((n, d) => engine.handleJob(n, d));
   const user = store.addUser({ phone: to, name: 'Test', locale: 'hi' });
+  store.addSubscription(user.id); // local test only: the billing gate needs an entitled account
   const person = store.addPerson({ ownerUserId: user.id, phone: to, nickname: 'Test', language: 'hi', consent: 'pending' });
-  const port = Number(process.env.PORT ?? 8080);
+  const port = Number(process.env.CALL_ENGINE_PORT || process.env.PORT || 8080);
   const server = createWebhookServer(engine, provider, env.publicBaseUrl, log).listen(port);
   await queue.add('consent.call', { personId: person.id });
   await queue.runDue();

@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parse } from 'yaml';
 import type { CallLanguage } from '@tasalli/contracts';
 import type { Logger } from '../log.js';
@@ -8,6 +9,9 @@ import { BUILTIN_PHRASES, type ContextPhrases, type PhraseBook } from '../speech
 import { mergePhraseBooks } from '../speech/intent.js';
 import { placeholders } from './render.js';
 import { BUILTIN_TEMPLATES, EN_TEMPLATES, type ScriptTemplates } from './templates.js';
+
+/** The generated engine scripts (pnpm --filter @tasalli/scripts build:engine). SCRIPTS_DIR overrides. */
+export const DEFAULT_SCRIPTS_DIR = fileURLToPath(new URL('../../../../packages/scripts/engine', import.meta.url));
 
 export interface LanguagePack {
   language: CallLanguage;

@@ -20,7 +20,9 @@ const NEGATION = /\b(not|no|never|does not|do not|cannot|can't|without)\b|नह
 
 function flagged(text: string, langs: string[]): string[] {
   const hits: string[] = [];
-  for (const line of text.split('\n')) {
+  for (const raw of text.split('\n')) {
+    // The recording notice ("improve the service") is about the call, not a medicine: exempt exactly that sentence.
+    const line = raw.replace('This call may be recorded to improve the service.', '');
     if (line.trim().startsWith('#') && !line.includes('"')) continue; // YAML comments (reviewer notes)
     for (const l of langs) {
       const m = line.match(CLAIM_WORDS[l]!);

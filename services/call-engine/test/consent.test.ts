@@ -126,6 +126,7 @@ describe('caps (rule 5)', () => {
   it('at most 6 calls per number per day across accounts; the 7th is dropped with a daily_cap alert', async () => {
     const w = world();
     const other = w.store.addUser({ phone: '+919000000002' });
+    w.store.addSubscription(other.id);
     const mom2 = w.store.addPerson({ ownerUserId: other.id, phone: PARENT, nickname: 'Maa', consent: 'consented' });
     w.med('A', '09:00');
     w.med('B', '10:00', {}, mom2);

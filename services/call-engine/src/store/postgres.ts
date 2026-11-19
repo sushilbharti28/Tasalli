@@ -1,6 +1,6 @@
 import pg from 'pg';
 import type {
-  CallRow, ConsentState, DoseDetail, DoseRow, DoseStatus, MedicineRow, PersonRow, ScheduleRow, UserRow,
+  CallRow, ConsentState, DoseDetail, DoseRow, DoseStatus, MedicineRow, PersonRow, ScheduleRow, SubscriptionRow, UserRow,
 } from '../types.js';
 import type { BlockReason, CallPatch, ConsentEventResult, ConsentEventVia, NewCall, Store } from './store.js';
 
@@ -47,6 +47,12 @@ export class PgStore implements Store {
   async getUser(id: string): Promise<UserRow | null> {
     const [r] = await this.q(`select * from users where id = $1`, [id]);
     return r ? { id: r.id, phone: r.phone_e164, name: r.name, timeZone: r.time_zone, locale: r.locale, deleted: r.deleted_at !== null } : null;
+  }
+  async listSubscriptions(userId: string): Promise<SubscriptionRow[]> {
+    return (await this.q(`select status, current_period_end, trial_ends_at from subscriptions where user_id = $1`, [userId])).map((r) => ({
+      status: r.status, currentPeriodEnd: r.current_period_end ? new Date(r.current_period_end) : null,
+      trialEndsAt: r.trial_ends_at ? new Date(r.trial_ends_at) : null,
+    }));
   }
   async getPerson(id: string) {
     const [r] = await this.q(`select * from people where id = $1`, [id]);
@@ -129,6 +135,11 @@ export class PgStore implements Store {
         where id = any($1::uuid[]) and status = 'upcoming' and call_group_id is null returning id`, [doseIds, groupId]);
     return rows.map((r) => r.id as string);
   }
+  async regroupDose(doseId: string, groupId: string) {
+    const rows = await this.q(
+      `update doses set status = 'calling', call_group_id = $2 where id = $1 and status in ('upcoming', 'missed') returning id`, [doseId, groupId]);
+    return rows.length > 0;
+  }
   async getGroupDetails(groupId: string): Promise<DoseDetail[]> {
     const rows = await this.q(
       `select d.id as d_id, d.schedule_id as d_schedule_id, d.person_id as d_person_id, d.due_at as d_due_at,
@@ -177,7 +188,7 @@ export class PgStore implements Store {
   async updateCall(id: string, patch: CallPatch) {
     const cols: Record<keyof CallPatch, string> = {
       providerCallId: 'provider_call_id', status: 'status', result: 'result', inputKind: 'input_kind',
-      inputValue: 'input_value', startedAt: 'started_at', endedAt: 'ended_at',
+      inputValue: 'input_value', startedAt: 'started_at', endedAt: 'ended_at', recordingUrl: 'recording_url',
     };
     const sets: string[] = [];
     const params: unknown[] = [id];
@@ -264,6 +275,6 @@ function mapCall(r: Row): CallRow {
     id: r.id, personId: r.person_id, purpose: r.purpose, callGroupId: r.call_group_id, attempt: r.attempt,
     provider: r.provider, providerCallId: r.provider_call_id, status: r.status, result: r.result,
     inputKind: r.input_kind, inputValue: r.input_value, startedAt: r.started_at ? new Date(r.started_at) : null,
-    endedAt: r.ended_at ? new Date(r.ended_at) : null, createdAt: new Date(r.created_at),
+    endedAt: r.ended_at ? new Date(r.ended_at) : null, recordingUrl: r.recording_url ?? null, createdAt: new Date(r.created_at),
   };
 }
