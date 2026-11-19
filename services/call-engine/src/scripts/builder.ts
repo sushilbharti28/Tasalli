@@ -1,4 +1,4 @@
-import type { MedicineRow, PersonRow, ScheduleRow } from '../types.js';
+import type { CallerRelation, MedicineRow, PersonRow, ScheduleRow } from '../types.js';
 import { joinSentences, render } from './render.js';
 import type { ScriptTemplates } from './templates.js';
 
@@ -18,12 +18,15 @@ export interface ReminderScriptInput {
   isSunday: boolean;
   /** Medicines already announced in an answered call today (Sunday line is said once per medicine per day). */
   announcedTodayMedicineIds: string[];
-  /** Parent's local hour (0-23), for the morning food wording. */
+  /** Parent's local hour (0-23) of the dose time: picks the meal name and the day part. */
   localHour: number;
+  /** Relation of the caller (child) to the parent; unknown means "{child} ki taraf se" alone. */
+  callerRelation?: CallerRelation | null;
 }
 
 export function personName(t: ScriptTemplates, person: Pick<PersonRow, 'nickname' | 'fullName'>): string {
-  const base = (person.fullName ?? '').trim() || person.nickname.trim();
+  // First word of the full name ("Ramesh Sharma" -> "Ramesh ji"); the nickname when there is no full name.
+  const base = (person.fullName ?? '').trim().split(/\s+/)[0] || person.nickname.trim();
   return base + t.words.person_suffix;
 }
 
@@ -147,39 +150,42 @@ export interface ReminderSteps {
   items: Array<{ first: string; full: string }>;
 }
 
-/** One-medicine-at-a-time script (v1.3). Same inputs as buildReminderText; full on the first call of the day, short afterwards. */
+/** {meal_phrase}: "dopahar ke khane ke baad" for food rules, "dopahar ki" when the dose has no food rule. */
+export function mealPhrase(t: ScriptTemplates, food: ScheduleRow['food'], hour: number): string {
+  const r = t.reminder;
+  if (food === 'any') return r.step_day_part[hour < 11 ? 'morning' : hour < 16 ? 'afternoon' : hour < 19 ? 'evening' : 'night'];
+  const meal = r.step_meals[hour < 11 ? 'breakfast' : hour < 16 ? 'lunch' : 'dinner'];
+  return `${meal} ${r.step_food_rel[food]}`;
+}
+
+/**
+ * One-medicine-at-a-time script (v1.3). Same inputs as buildReminderText; full on the first call of the day, short afterwards.
+ * The call's doses share one food timing (the scheduler groups that way), so it is said once in the intro and left out of the item lines.
+ */
 export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const t = input.templates, r = t.reminder;
   const person_name = personName(t, input.person), child_name = childName(t, input.childName);
   const count = input.items.length;
-  const h = input.localHour;
-  const time_of_day = r.step_time_of_day[h < 12 ? 'morning' : h < 17 ? 'afternoon' : h < 21 ? 'evening' : 'night'];
-  const foods = new Set(input.items.map((it) => it.schedule.food));
-  const meal_relation = foods.size === 1 ? foodPhrase(t, [...foods][0]!, input.localHour) : ''; // only when common to every medicine
+  const count_word = r.step_count_words[count - 1] ?? String(count);
+  const relation_phrase = (input.callerRelation && r.step_relations[input.callerRelation as keyof typeof r.step_relations]) || '';
+  const meal_phrase = mealPhrase(t, input.items[0]?.schedule.food ?? 'any', input.localHour);
   const seenNumbers = new Set(input.announcedTodayMedicineIds);
   const items = input.items.map((it, i) => {
-    const ordinal = t.words.ordinals[i] ?? String(i + 1);
     const m = it.medicine;
     const common = {
-      ordinal, time_of_day, meal_relation, spoken_name: m.spokenName, amount_text: it.schedule.amountText, disambiguator: disambiguator(t, m),
-      food_phrase: foodPhrase(t, it.schedule.food, input.localHour), extra_instruction: m.extraInstruction,
+      ordinal: t.words.ordinals[i] ?? String(i + 1), spoken_name: m.spokenName, amount_text: it.schedule.amountText,
+      disambiguator: disambiguator(t, m), extra_instruction: m.extraInstruction,
     };
-    const full = render(count === 1 ? r.step_item_one : r.step_item, {
-      ...common, appearance_phrase: appearancePhrase(t, m), pack_phrase: packPhrase(t, m),
-    });
+    const full = render(count === 1 ? r.step_item_one : r.step_item, { ...common, appearance_phrase: appearancePhrase(t, m), pack_phrase: packPhrase(t, m) });
+    const short = render(count === 1 ? r.step_item_short_one : r.step_item_short, common);
     const sunday = input.isSunday && m.numberLabel !== null && m.numberLabel !== undefined && !seenNumbers.has(m.id)
       ? render(r.sunday_line, { number: m.numberLabel, spoken_name: m.spokenName }) : ''; // said once per medicine per day
     if (sunday) seenNumbers.add(m.id);
-    // A short call with one medicine is a single sentence that greets and asks; no separate intro.
-    const body = input.mode === 'full' ? full
-      : count === 1 && r.short_single
-        ? render(r.short_single, { person_name, child_name, spoken_name: m.spokenName, amount_text: it.schedule.amountText,
-          disambiguator: disambiguator(t, m), food_phrase: foodPhrase(t, it.schedule.food, input.localHour), extra_instruction: m.extraInstruction })
-        : render(r.step_item_short, common);
-    return { first: joinSentences([sunday, body]), full };
+    return { first: joinSentences([sunday, input.mode === 'full' ? full : short]), full };
   });
-  const intro = count === 1 ? (input.mode === 'full' ? render(r.step_intro_one, { person_name, child_name, time_of_day, meal_relation }) : '')
-    : render(input.mode === 'full' ? r.step_intro : r.step_short_intro, { person_name, child_name, count, time_of_day, meal_relation });
+  const vars = { person_name, relation_phrase, child_name, meal_phrase, count_word, count };
+  const intro = input.mode === 'full' ? render(count === 1 ? r.step_intro_one : r.step_intro, vars)
+    : render(count === 1 ? r.step_short_intro_one : r.step_short_intro, vars);
   return { opening: joinSentences([intro, items[0]?.first ?? '']), items };
 }
 

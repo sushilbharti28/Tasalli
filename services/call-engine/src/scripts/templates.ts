@@ -40,14 +40,23 @@ export interface ScriptTemplates {
      * One-medicine-at-a-time flow (v1.3). {ordinal} may already include the word for medicine (yaml) or not (built-in: "Pehli").
      * step_item_one / step_intro_one are used when exactly one medicine is due; step_short_* after the first call of the day.
      */
-    step_intro: string;       // {person_name} {child_name} {count} {time_of_day} {meal_relation}
-    step_intro_one: string;   // {person_name} {child_name} {time_of_day} {meal_relation}
-    step_short_intro: string; // {person_name} {count} {time_of_day} {meal_relation}
-    /** Words for {time_of_day}, by the parent's local hour: morning <12, afternoon <17, evening <21, else night. */
-    step_time_of_day: Record<'morning' | 'afternoon' | 'evening' | 'night', string>;
-    step_item: string;        // {time_of_day} {meal_relation} {ordinal} {spoken_name} {amount_text} {appearance_phrase} {pack_phrase} {disambiguator} {food_phrase} {extra_instruction}
-    step_item_one: string;
-    step_item_short: string;  // {ordinal} {spoken_name} {amount_text} {disambiguator} {food_phrase} {extra_instruction}
+    step_intro: string;       // {person_name} {relation_phrase} {child_name} {meal_phrase} {count_word} {count}
+    step_intro_one: string;   // {person_name} {relation_phrase} {child_name} {meal_phrase}
+    step_short_intro: string; // later calls of the day: {person_name} {meal_phrase} {count_word} {count}
+    step_short_intro_one: string;
+    /** The food timing is said once, in the intro, so the item lines leave it out. */
+    step_item: string;        // {ordinal} {spoken_name} {amount_text} {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}
+    step_item_one: string;    // no ordinal
+    step_item_short: string;  // {ordinal} {spoken_name} {amount_text} {disambiguator} {extra_instruction}
+    step_item_short_one: string;
+    /** {meal_phrase}: with food, "<meal> <relation>" (meal by the dose's local hour: <11 breakfast, 11-16 lunch, else dinner); with food=any, the day part. */
+    step_meals: Record<'breakfast' | 'lunch' | 'dinner', string>;
+    step_food_rel: Record<'before' | 'after' | 'with', string>;
+    /** Day part by local hour: morning <11, afternoon 11-16, evening 16-19, night 19+. */
+    step_day_part: Record<'morning' | 'afternoon' | 'evening' | 'night', string>;
+    /** {relation_phrase} by the caller's relation; missing (or "other") means no phrase. */
+    step_relations: Partial<Record<'son' | 'daughter' | 'grandson' | 'granddaughter' | 'daughter_in_law' | 'son_in_law', string>>;
+    step_count_words: string[]; // [0] is the word for 1
     step_ack_next: string;    // after "le li"
     step_ack_not_now: string; // after "nahi" / "baad mein" / 2
     step_ack_silence: string; // after no usable answer
@@ -118,13 +127,19 @@ export const HI_TEMPLATES: ScriptTemplates = {
     unwell_ack: 'Apna khayal rakhiye. Hum {child_name} ko abhi bata rahe hain.',
     stop_ack: 'Theek hai. Ab hum aapko phone nahi karenge. Namaste.',
     no_input_goodbye: 'Hum thodi der mein phir phone karenge. Namaste.',
-    step_intro: 'Namaste {person_name}, {child_name} ki taraf se dawai ka samay. Abhi {count} dawaiyan leni hain. Ek-ek karke batate hain.',
-    step_intro_one: 'Namaste {person_name}, {child_name} ki taraf se dawai ka samay. Abhi ek dawai leni hai.',
-    step_short_intro: '{person_name}, dawai ka samay. Abhi {count} dawaiyan leni hain. Ek-ek karke batate hain.',
-    step_item: '{ordinal} dawai: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}. Ye dawai le lijiye. Le li ho to "le li" boliye, ya 1 dabaiye.',
-    step_item_one: 'Dawai: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}. Ye dawai le lijiye. Le li ho to "le li" boliye, ya 1 dabaiye.',
-    step_item_short: '{ordinal} dawai: {spoken_name}. {amount_text}, {disambiguator}. {food_phrase}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
-    step_time_of_day: { morning: 'subah', afternoon: 'dopahar', evening: 'shaam', night: 'raat' },
+    step_intro: 'Namaste {person_name}. {relation_phrase} {child_name} ki taraf se yaad dila rahe hain. Aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
+    step_intro_one: 'Namaste {person_name}. {relation_phrase} {child_name} ki taraf se yaad dila rahe hain. Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
+    step_short_intro: '{person_name}, aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
+    step_short_intro_one: '{person_name}, aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
+    step_item: '{ordinal} dawai: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
+    step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
+    step_item_short: '{ordinal} dawai: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
+    step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
+    step_meals: { breakfast: 'nashte', lunch: 'dopahar ke khane', dinner: 'raat ke khane' },
+    step_food_rel: { before: 'se pehle', after: 'ke baad', with: 'ke saath' },
+    step_day_part: { morning: 'subah ki', afternoon: 'dopahar ki', evening: 'shaam ki', night: 'raat ki' },
+    step_relations: { son: 'aapke bete', daughter: 'aapki beti', grandson: 'aapke pote', granddaughter: 'aapki poti', daughter_in_law: 'aapki bahu', son_in_law: 'aapke damad' },
+    step_count_words: ['ek', 'do', 'teen', 'chaar', 'paanch', 'chhah', 'saat', 'aath', 'nau', 'das'],
     step_ack_next: 'Theek hai.',
     step_ack_not_now: 'Koi baat nahi, thodi der mein phir yaad dilayenge.',
     step_ack_silence: 'Koi baat nahi.',
@@ -195,13 +210,19 @@ export const EN_TEMPLATES: ScriptTemplates = {
     unwell_ack: 'Please take care. We are letting {child_name} know now.',
     stop_ack: 'All right. We will not call you again. Goodbye.',
     no_input_goodbye: 'We will call again in a little while. Goodbye.',
-    step_intro: 'Hello {person_name}, this is a medicine reminder from {child_name}. You have {count} medicines to take now. We will go one by one.',
-    step_intro_one: 'Hello {person_name}, this is a medicine reminder from {child_name}. You have one medicine to take now.',
-    step_short_intro: '{person_name}, it is medicine time. You have {count} medicines to take now. We will go one by one.',
-    step_item: '{ordinal} medicine: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}. Please take this medicine. When you have taken it, say "taken" or press 1.',
-    step_item_one: 'Medicine: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}. Please take this medicine. When you have taken it, say "taken" or press 1.',
-    step_item_short: '{ordinal} medicine: {spoken_name}. {amount_text}, {disambiguator}. {food_phrase}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
-    step_time_of_day: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' },
+    step_intro: 'Namaste {person_name}. {relation_phrase} {child_name} asked us to remind you. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
+    step_intro_one: 'Namaste {person_name}. {relation_phrase} {child_name} asked us to remind you. It is time for your {meal_phrase} medicine.',
+    step_short_intro: '{person_name}, it is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
+    step_short_intro_one: '{person_name}, it is time for your {meal_phrase} medicine.',
+    step_item: '{ordinal} medicine: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_item_short: '{ordinal} medicine: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_meals: { breakfast: 'breakfast', lunch: 'lunch', dinner: 'dinner' },
+    step_food_rel: { before: 'before', after: 'after', with: 'with' },
+    step_day_part: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' },
+    step_relations: { son: 'your son', daughter: 'your daughter', grandson: 'your grandson', granddaughter: 'your granddaughter', daughter_in_law: 'your daughter-in-law', son_in_law: 'your son-in-law' },
+    step_count_words: ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'],
     step_ack_next: 'All right.',
     step_ack_not_now: 'No problem, we will remind you again in a little while.',
     step_ack_silence: 'No problem.',

@@ -69,14 +69,20 @@ engine_extra:
 
 # One medicine at a time (call engine v1.3). {ordinal} already says "medicine" (see blocks.ordinals).
 reminder_steps:
-  intro_many: 'Namaste {person_name} ji. It is medicine time. {child_name} asked us to remind you. You have {count} medicines to take now. We will go one by one.'
-  intro_one: 'Namaste {person_name} ji. It is medicine time. {child_name} asked us to remind you. You have one medicine to take now.'
-  short_intro_many: '{person_name} ji, it is medicine time. You have {count} medicines to take now. We will go one by one.'
-  item: '{ordinal}: {spoken_name}. {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {food_phrase}.][ {extra_instruction}.] Please take this medicine. When you have taken it, say "taken", or press 1.'
-  item_one: 'Medicine: {spoken_name}. {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {food_phrase}.][ {extra_instruction}.] Please take this medicine. When you have taken it, say "taken", or press 1.'
-  item_short: '{ordinal}: {spoken_name}. {amount_text}[, {disambiguator}].[ {food_phrase}.][ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
-  # Words for {time_of_day} (parent's local hour). {time_of_day} and {meal_relation} (set only when every medicine shares the food rule) can be used in any line here.
-  time_of_day: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' }
+  # Same variables as hi.yaml. Food timing is said once in the intro; item lines leave it out.
+  intro_many: 'Namaste {person_name} ji. {relation_phrase} {child_name} asked us to remind you. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
+  intro_one: 'Namaste {person_name} ji. {relation_phrase} {child_name} asked us to remind you. It is time for your {meal_phrase} medicine.'
+  short_intro_many: '{person_name} ji, it is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
+  short_intro_one: '{person_name} ji, it is time for your {meal_phrase} medicine.'
+  item: '{ordinal}: {spoken_name}. {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  item_one: '{spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  item_short: '{ordinal}: {spoken_name}. {amount_text}[, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  item_short_one: '{spoken_name}: {amount_text}[, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  meals: { breakfast: 'breakfast', lunch: 'lunch', dinner: 'dinner' }
+  food_rel: { before: 'before', after: 'after', with: 'with' }
+  day_part: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' }
+  relations: { son: 'your son', daughter: 'your daughter', grandson: 'your grandson', granddaughter: 'your granddaughter', daughter_in_law: 'your daughter-in-law', son_in_law: 'your son-in-law' }
+  count_words: ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten']
   ack_next: 'All right.'
   ack_not_now: 'No problem, we will remind you again in a little while.'
   ack_silence: 'No problem.'

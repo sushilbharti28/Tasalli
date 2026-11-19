@@ -11,7 +11,7 @@ pnpm --filter call-engine test        # 102 tests, FakeProvider and recorded Twi
 pnpm --filter call-engine lint        # tsc
 pnpm --filter call-engine dev         # webhook server on PORT (default 8080); FakeProvider unless TELEPHONY_PROVIDER=twilio
 pnpm --filter call-engine test-call +91XXXXXXXXXX   # one real consent-style call, see below
-pnpm --filter call-engine test-reminder +91XXXXXXXXXX   # one real reminder call, 3 medicines, see "Reminder flow"
+pnpm --filter call-engine test-reminder +91XXXXXXXXXX [--split]   # one real reminder call, 3 medicines, see "Reminder flow"
 ```
 
 ## Environment (names only; never commit values)
@@ -42,8 +42,11 @@ The call ends with "all taken" or "baaki dawai ke liye thodi der mein phir phone
 - State: `session.reminder` (items, current index, per-dose outcomes, what was heard) lives in the session store, so a repeated webhook gets its stored reply and never advances twice.
 - Confirmations are per dose (`Store.confirmDoses`). If any dose was "not now", one snooze (15 min) is queued for the group; if the snooze was already used, that dose is missed and the family is told. Doses nobody answered for use the normal 10-minute retries (2 more, then missed).
   Snooze and retry calls only cover doses still unconfirmed, so they may have fewer medicines (and the singular wording).
-- Wording lives in `packages/scripts/{hi,en}.yaml` under `reminder_steps` (exported by `pnpm --filter @tasalli/scripts build:engine`). Placeholders: `{person_name} {child_name} {count} {time_of_day} {meal_relation} {ordinal} {spoken_name} {amount_text} {appearance_phrase} {pack_phrase} {disambiguator} {food_phrase} {extra_instruction}`. `{meal_relation}` is filled only when every medicine in the call has the same food rule.
-- `test-reminder <E.164>`: same setup as test-call (root `.env`, throwaway server on `CALL_ENGINE_PORT`, MemoryStore). Creates "Papa" (child "Rahul", Hindi) with three medicines due now: "BP wali" (tablet, after breakfast), "sugar wali" (capsule, before food), "pet wali dawai" (syrup, after food), places one call (not recorded), and prints each medicine's outcome (confirmed / not taken / no answer) and the inputs heard. No retry or snooze calls are placed.
+- Grouping: one call holds only doses in the same 30-minute window AND with the same food timing (before / after / with / any). A dose with a different food timing waits (re-checked every 2 minutes) until the live call to that person ends, then gets its own call.
+- Opening (said once): "Namaste {first word of full_name or nickname} ji. {aapke bete|aapki beti|aapke pote|aapki poti|aapki bahu|aapke damad} {child} ki taraf se yaad dila rahe hain. Aapki {meal_phrase} wali {teen} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain." The relation comes from the optional person field `callerRelation` (son|daughter|grandson|granddaughter|daughter_in_law|son_in_law|other); unknown or `other` gives "{child} ki taraf se". Postgres reads `caller_relation` if the column exists and treats its absence as unknown.
+  `{meal_phrase}` comes from the dose time in the parent's zone: before 11:00 "nashte", 11:00-16:00 "dopahar ke khane", after 16:00 "raat ke khane", plus "se pehle" / "ke baad" / "ke saath"; with no food rule "subah ki" / "dopahar ki" / "shaam ki" (16-19) / "raat ki". A single medicine drops "ek-ek karke" and the ordinal. Item lines leave the food out: "Pehli dawai: {name}. {amount}, {appearance}, {pack}, {disambiguator}. Le li ho to ...".
+- Wording lives in `packages/scripts/{hi,en}.yaml` under `reminder_steps` (exported by `pnpm --filter @tasalli/scripts build:engine`), with placeholders `{person_name} {relation_phrase} {child_name} {meal_phrase} {count_word} {count} {ordinal} {spoken_name} {amount_text} {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}`, so wording changes need no code change.
+- `test-reminder <E.164> [--split]`: same setup as test-call (root `.env`, throwaway server on `CALL_ENGINE_PORT`, MemoryStore). Creates "Papa" (full name "Ramesh Sharma", son "Rahul", Hindi) with three medicines due now, all after food: "BP wali" (tablet), "sugar wali" (capsule), "pet wali dawai" (syrup), places one call (not recorded), and prints each medicine's outcome (confirmed / not taken / no answer) and the inputs heard. With `--split` the capsule is before food: only the first call (BP wali, pet wali) is placed and the capsule's second call is reported as scheduled. No retry or snooze calls are placed.
 
 ## Call recording (v1.2: recordings live in India)
 

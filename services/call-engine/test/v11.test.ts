@@ -31,7 +31,7 @@ describe('scripts from packages/scripts/engine', () => {
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }] });
     await planned(w);
     await w.advance(5);
-    expect(w.playedText(0)[0]).toContain('अभी एक दवाई लेनी है');
+    expect(w.playedText(0)[0]).toContain('आपकी सुबह की वाली दवाई का समय हो गया है');
 
     const w2 = world(undefined, { scripts: hindi() });
     w2.med('Amlodac', '09:00');
@@ -40,7 +40,7 @@ describe('scripts from packages/scripts/engine', () => {
     await planned(w2);
     await w2.advance(40);
     expect(w2.provider.callsTo(PARENT)).toHaveLength(1); // grouped
-    expect(w2.playedText(0)[0]).toContain('अभी 2 दवाइयाँ लेनी हैं');
+    expect(w2.playedText(0)[0]).toContain('आपकी सुबह की वाली दो दवाइयों का समय हो गया है');
   });
 
   it('Hindi colour words agree with the noun: tablet feminine, capsule masculine, strip oblique, bottle feminine', async () => {
@@ -65,8 +65,8 @@ describe('scripts from packages/scripts/engine', () => {
     await planned(w);
     await w.advance(60 * 13);
     expect(w.provider.callsTo(PARENT)).toHaveLength(2);
-    expect(w.playedText(0)[0]).toContain('अभी एक दवाई लेनी है');
-    expect(w.playedText(1)[0]).toBe('Mummy जी, Metolar का समय। ek goli। ले ली, तो "ले ली" बोलिए, या 1 दबाइए।');
+    expect(w.playedText(0)[0]).toContain('आपकी सुबह की वाली दवाई का समय हो गया है');
+    expect(w.playedText(1)[0]).toBe('Mummy जी, आपकी रात की वाली दवाई का समय हो गया है। Metolar: ek goli। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।');
   });
 
   it('"nahi li" never confirms: says the not-now line, then the dose is snoozed', async () => {

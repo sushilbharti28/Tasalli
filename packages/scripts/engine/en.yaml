@@ -23,17 +23,45 @@ reminder:
   unwell_ack: Okay. We will tell {child_name}. If you need, please talk to your doctor. Namaste.
   stop_ack: Okay. We will never call you again. We will tell {child_name} too. Namaste.
   no_input_goodbye: We did not get an answer. Namaste.
-  step_intro: Namaste {person_name} ji. It is medicine time. {child_name} asked us to remind you. You have {count} medicines to take now. We will go one by one.
-  step_intro_one: Namaste {person_name} ji. It is medicine time. {child_name} asked us to remind you. You have one medicine to take now.
-  step_short_intro: "{person_name} ji, it is medicine time. You have {count} medicines to take now. We will go one by one."
-  step_item: '{ordinal}: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}. Please take this medicine. When you have taken it, say "taken", or press 1.'
-  step_item_one: 'Medicine: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}. Please take this medicine. When you have taken it, say "taken", or press 1.'
-  step_item_short: '{ordinal}: {spoken_name}. {amount_text}, {disambiguator}. {food_phrase}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
-  step_time_of_day:
+  step_intro: Namaste {person_name} ji. {relation_phrase} {child_name} asked us to remind you. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.
+  step_intro_one: Namaste {person_name} ji. {relation_phrase} {child_name} asked us to remind you. It is time for your {meal_phrase} medicine.
+  step_short_intro: "{person_name} ji, it is time for your {count_word} {meal_phrase} medicines. We will go one by one."
+  step_short_intro_one: "{person_name} ji, it is time for your {meal_phrase} medicine."
+  step_item: '{ordinal}: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_item_short: '{ordinal}: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_meals:
+    breakfast: breakfast
+    lunch: lunch
+    dinner: dinner
+  step_food_rel:
+    before: before
+    after: after
+    with: with
+  step_day_part:
     morning: morning
     afternoon: afternoon
     evening: evening
     night: night
+  step_relations:
+    son: your son
+    daughter: your daughter
+    grandson: your grandson
+    granddaughter: your granddaughter
+    daughter_in_law: your daughter-in-law
+    son_in_law: your son-in-law
+  step_count_words:
+    - one
+    - two
+    - three
+    - four
+    - five
+    - six
+    - seven
+    - eight
+    - nine
+    - ten
   step_ack_next: All right.
   step_ack_not_now: No problem, we will remind you again in a little while.
   step_ack_silence: No problem.

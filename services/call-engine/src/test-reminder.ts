@@ -14,8 +14,9 @@ import { MemoryStore } from './store/memory.js';
 import type { MedicineRow } from './types.js';
 
 /**
- * pnpm --filter call-engine test-reminder <E.164>
- * One reminder call with three medicines due now (tablet, capsule, syrup), gone through one at a time.
+ * pnpm --filter call-engine test-reminder <E.164> [--split]
+ * One reminder call with three medicines due now (tablet, capsule, syrup, all after food), gone through one at a time.
+ * --split: the capsule is before food, so it is a separate call; only the first call is placed and the second is reported as scheduled.
  * Throwaway webhook server on CALL_ENGINE_PORT (default 8080), in-memory store, no recording. Prints each medicine's outcome and what was heard.
  * Needs the tunnel to be up (same setup as test-call).
  */
@@ -23,8 +24,9 @@ async function main() {
   process.env.TWILIO_RECORD = 'false'; // test: not recorded
   loadRootEnv();
   process.env.TWILIO_RECORD = 'false';
-  const to = process.argv[2];
-  if (!to || !/^\+[1-9]\d{6,14}$/.test(to)) throw new Error('Usage: test-reminder <E.164 number>, e.g. +919876543210');
+  const split = process.argv.includes('--split');
+  const to = process.argv.slice(2).find((a) => !a.startsWith('--'));
+  if (!to || !/^\+[1-9]\d{6,14}$/.test(to)) throw new Error('Usage: test-reminder <E.164 number> [--split], e.g. +919876543210');
   const env = twilioEnv(process.env);
   const log = createLogger();
   const { provider, audio } = buildTwilio(process.env);
@@ -38,7 +40,7 @@ async function main() {
   queue.setHandler((n, d) => engine.handleJob(n, d));
   const user = store.addUser({ phone: to, name: 'Rahul', locale: 'hi' });
   store.addSubscription(user.id); // local test only: the billing gate needs an entitled account
-  const person = store.addPerson({ ownerUserId: user.id, phone: to, nickname: 'Papa', language: 'hi', consent: 'consented' });
+  const person = store.addPerson({ ownerUserId: user.id, phone: to, nickname: 'Papa', fullName: 'Ramesh Sharma', callerRelation: 'son', language: 'hi', consent: 'consented' });
 
   const now = new Date(Math.floor(Date.now() / 60_000) * 60_000);
   const localTime = DateTime.fromJSDate(now, { zone: person.timeZone }).toFormat('HH:mm');
@@ -46,7 +48,7 @@ async function main() {
     { m: { spokenName: 'BP wali', kind: 'tablet', size: 'dal', colourPrimary: 'white', shape: 'round', marking: 'line', keptIn: 'strip', packColour: 'red' },
       amount: '1 goli', food: 'after' },
     { m: { spokenName: 'sugar wali', kind: 'capsule', colourPrimary: 'yellow', colourSecondary: 'white', keptIn: 'strip', packColour: 'silver' },
-      amount: '1 capsule', food: 'before' },
+      amount: '1 capsule', food: split ? 'before' : 'after' },
     { m: { spokenName: 'pet wali dawai', kind: 'syrup', keptIn: 'bottle', packColour: 'brown', capColour: 'red' },
       amount: '1 chammach (5 ml)', food: 'after' },
   ];
@@ -61,9 +63,9 @@ async function main() {
   }
   const port = Number(process.env.CALL_ENGINE_PORT || process.env.PORT || 8080);
   const server = createWebhookServer(engine, provider, env.publicBaseUrl, log).listen(port);
-  await queue.add('dose.due', { doseId: doseIds[0]! });
+  for (const id of doseIds) await queue.add('dose.due', { doseId: id }); // like the scheduler: same time and food timing share one call
   await queue.runDue();
-  console.log(`Calling ${maskPhone(to)} about 3 medicines. Answer; for each one say "le li"/"haan" or press 1, "nahi li" or 2 for not now, 0 to hear it again. Waiting up to 5 minutes...`);
+  console.log(`Calling ${maskPhone(to)} about ${split ? 'the first call of ' : ''}3 medicines. Answer; for each one say "le li"/"haan" or press 1, "nahi li" or 2 for not now, 0 to hear it again. Waiting up to 5 minutes...`);
   const deadline = Date.now() + 300_000;
   let call = store.allCalls()[0];
   while (Date.now() < deadline) {
@@ -76,6 +78,12 @@ async function main() {
   console.log(`Call ${call?.status ?? 'not placed'}. (Test: no retries or snooze calls are placed.)`);
   for (const id of doseIds) {
     const outcome = session?.reminder?.outcomes[id];
+    const dose = await store.getDose(id);
+    if (!dose?.callGroupId) {
+      const at = queue.nextRunAt();
+      console.log(`- ${names.get(id)}: second call scheduled${at ? ` for ${new Date(at).toLocaleTimeString()}` : ''} (different food timing); not placed in this test`);
+      continue;
+    }
     const label = outcome === 'confirmed' ? 'confirmed' : outcome === 'declined' ? 'not taken' : 'no answer';
     const heard = session?.reminder?.heard[id] ?? [];
     console.log(`- ${names.get(id)}: ${label}; heard: ${heard.length ? heard.map((h) => `"${h}"`).join(', ') : 'nothing'}`);

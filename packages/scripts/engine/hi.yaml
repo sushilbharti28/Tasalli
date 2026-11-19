@@ -23,17 +23,45 @@ reminder:
   unwell_ack: ठीक है जी। {child_name} को बता देंगे। ज़रूरत हो, तो अपने डॉक्टर से बात कीजिए। नमस्ते।
   stop_ack: ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। {child_name} को भी बता देंगे। नमस्ते।
   no_input_goodbye: जवाब नहीं मिला। नमस्ते।
-  step_intro: नमस्ते {person_name} जी, {child_name} की तरफ़ से दवाई का समय। अभी {count} दवाइयाँ लेनी हैं। एक-एक करके बताते हैं।
-  step_intro_one: नमस्ते {person_name} जी, {child_name} की तरफ़ से दवाई का समय। अभी एक दवाई लेनी है।
-  step_short_intro: "{person_name} जी, दवाई का समय। अभी {count} दवाइयाँ लेनी हैं। एक-एक करके बताते हैं।"
-  step_item: '{ordinal}: {spoken_name}। {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {food_phrase}। {extra_instruction}। ये दवाई ले लीजिए। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
-  step_item_one: 'दवाई: {spoken_name}। {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {food_phrase}। {extra_instruction}। ये दवाई ले लीजिए। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
-  step_item_short: '{ordinal}: {spoken_name}। {amount_text}, {disambiguator}। {food_phrase}। {extra_instruction}। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
-  step_time_of_day:
-    morning: सुबह
-    afternoon: दोपहर
-    evening: शाम
-    night: रात
+  step_intro: नमस्ते {person_name} जी। {relation_phrase} {child_name} की तरफ़ से याद दिला रहे हैं। आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।
+  step_intro_one: नमस्ते {person_name} जी। {relation_phrase} {child_name} की तरफ़ से याद दिला रहे हैं। आपकी {meal_phrase} वाली दवाई का समय हो गया है।
+  step_short_intro: "{person_name} जी, आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।"
+  step_short_intro_one: "{person_name} जी, आपकी {meal_phrase} वाली दवाई का समय हो गया है।"
+  step_item: '{ordinal}: {spoken_name}। {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
+  step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
+  step_item_short: '{ordinal}: {spoken_name}। {amount_text}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
+  step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
+  step_meals:
+    breakfast: नाश्ते
+    lunch: दोपहर के खाने
+    dinner: रात के खाने
+  step_food_rel:
+    before: से पहले
+    after: के बाद
+    with: के साथ
+  step_day_part:
+    morning: सुबह की
+    afternoon: दोपहर की
+    evening: शाम की
+    night: रात की
+  step_relations:
+    son: आपके बेटे
+    daughter: आपकी बेटी
+    grandson: आपके पोते
+    granddaughter: आपकी पोती
+    daughter_in_law: आपकी बहू
+    son_in_law: आपके दामाद
+  step_count_words:
+    - एक
+    - दो
+    - तीन
+    - चार
+    - पाँच
+    - छह
+    - सात
+    - आठ
+    - नौ
+    - दस
   step_ack_next: ठीक है।
   step_ack_not_now: कोई बात नहीं, थोड़ी देर में फिर याद दिलाएँगे।
   step_ack_silence: कोई बात नहीं।

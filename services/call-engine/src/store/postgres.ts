@@ -254,7 +254,7 @@ export class PgStore implements Store {
 
 function mapPerson(r: Row): PersonRow {
   return {
-    id: r.id, ownerUserId: r.owner_user_id, isSelf: r.is_self, nickname: r.nickname, fullName: r.full_name,
+    id: r.id, ownerUserId: r.owner_user_id, isSelf: r.is_self, nickname: r.nickname, fullName: r.full_name, callerRelation: (r.caller_relation as PersonRow['callerRelation']) ?? null, // column may not exist yet
     phone: r.phone_e164, language: r.language, timeZone: r.time_zone, canReadStrip: r.can_read_strip,
     consent: r.consent, paused: r.paused, deleted: r.deleted_at !== null,
   };

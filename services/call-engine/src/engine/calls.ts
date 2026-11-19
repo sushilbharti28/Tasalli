@@ -85,7 +85,8 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   const pack = d.scripts.get(lang);
   const prior = await d.store.answeredRemindersBetween(person.id, day.start, day.end, groupId);
   const base = {
-    templates: pack.templates, person, childName: user?.name ?? null, isSunday: day.isSunday, localHour: day.hour,
+    templates: pack.templates, person, childName: user?.name ?? null, isSunday: day.isSunday, callerRelation: person.callerRelation ?? null,
+    localHour: localDay(details[0]!.dose.dueAt, person.timeZone).hour, // the dose time (not the retry time) picks the meal name
     announcedTodayMedicineIds: prior.medicineIds, items: details.map((x) => ({ medicine: x.medicine, schedule: x.schedule })),
   };
   // One medicine at a time: full description on the first answered call of the day, short afterwards.

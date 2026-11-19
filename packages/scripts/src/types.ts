@@ -108,9 +108,13 @@ export type ReplyListName =
 export type ScriptReplies = Record<ReplyListName, string[]>;
 
 export interface ReminderSteps {
-  intro_many: string; intro_one: string; short_intro_many: string;
-  item: string; item_one: string; item_short: string;
-  time_of_day: Record<'morning' | 'afternoon' | 'evening' | 'night', string>;
+  intro_many: string; intro_one: string; short_intro_many: string; short_intro_one: string;
+  item: string; item_one: string; item_short: string; item_short_one: string;
+  meals: Record<'breakfast' | 'lunch' | 'dinner', string>;
+  food_rel: Record<'before' | 'after' | 'with', string>;
+  day_part: Record<'morning' | 'afternoon' | 'evening' | 'night', string>;
+  relations: Partial<Record<'son' | 'daughter' | 'grandson' | 'granddaughter' | 'daughter_in_law' | 'son_in_law', string>>;
+  count_words: string[];
   ack_next: string; ack_not_now: string; ack_silence: string; unclear: string;
   all_done: string; all_done_one: string; some_left: string; some_left_one: string;
 }

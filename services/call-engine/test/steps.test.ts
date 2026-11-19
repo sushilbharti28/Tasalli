@@ -24,7 +24,7 @@ describe('one medicine at a time', () => {
     expect(w.provider.callsTo(PARENT)).toHaveLength(1);
     const said = w.playedText(0);
     expect(said).toHaveLength(4); // intro + BP, Sugar, Pet, then the closing line
-    expect(said[0]).toMatch(/Abhi 3 dawaiyan leni hain\. Ek-ek karke batate hain\. Pehli dawai: BP wali\./);
+    expect(said[0]).toMatch(/Aapki subah ki wali teen dawaiyon ka samay ho gaya hai\. Ek-ek karke batate hain\. Pehli dawai: BP wali\./);
     expect(said[0]).not.toMatch(/Sugar wali|Pet wali/);
     expect(said[1]).toMatch(/^Theek hai\. Doosri dawai: Sugar wali\./);
     expect(said[2]).toMatch(/^Theek hai\. Teesri dawai: Pet wali\./);
@@ -183,7 +183,7 @@ describe('one medicine at a time', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[0]).toMatch(/Abhi ek dawai leni hai\. Dawai: BP wali\./);
+    expect(said[0]).toMatch(/Aapki subah ki wali dawai ka samay ho gaya hai\. BP wali: /);
     expect(said[0]).not.toMatch(/Ek-ek karke|Pehli/);
     expect(said[1]).toBe('Theek hai. Bahut achha. Dawai le li gayi hai. Dhanyavaad.');
   });
@@ -199,7 +199,7 @@ describe('one medicine at a time', () => {
     const full = w.playedText(0)[0]!;
     const short = w.playedText(1)[0]!;
     expect(full).toMatch(/blue|neel/i);
-    expect(short).toMatch(/Abhi 2 dawaiyan leni hain/);
+    expect(short).toMatch(/dopahar ki wali do dawaiyon ka samay ho gaya hai/);
     expect(short).not.toMatch(/patte|patta|round/i);
     expect(short.length).toBeLessThan(full.length + 60);
   });
@@ -218,22 +218,52 @@ describe('test-reminder medicines and wording placeholders', () => {
     expect(said[0]).toMatch(/Pehli dawai: BP wali\. ek goli/);
     expect(said[1]).toMatch(/Doosri dawai: sugar wali\./);
     expect(said[2]).toMatch(/Teesri dawai: pet wali dawai\./);
-    expect(said[2]).toMatch(/Ye dawai le lijiye\. Le li ho to "le li" boliye, ya 1 dabaiye\.$/);
+    expect(said[2]).toMatch(/Le li ho to "le li" boliye, ya 1 dabaiye\.$/);
+    for (const x of said.slice(0, 3)) expect(x).not.toMatch(/Khane|khane/); // food timing is in the opening only
   });
 
-  it('{time_of_day} and {meal_relation} are available to the wording; meal_relation is empty unless every medicine shares the food rule', async () => {
+  it('opening: name, relation, child, meal phrase from time and food, count word', async () => {
     const { buildReminderSteps } = await import('../src/scripts/builder.js');
     const { BUILTIN_TEMPLATES } = await import('../src/scripts/templates.js');
-    const base = BUILTIN_TEMPLATES.hi!;
-    const templates = { ...base, reminder: { ...base.reminder, step_intro: '{time_of_day} / {meal_relation} / {count}', step_intro_one: '{time_of_day} / {meal_relation}' } };
+    const templates = BUILTIN_TEMPLATES.hi!;
     const w = three();
-    const mk = (foods: Array<'after' | 'before'>) => foods.map((food, i) => ({
-      medicine: [...w.store.state.medicines.values()][i]!, schedule: { ...[...w.store.state.schedules.values()][i]!, food },
-    }));
-    const input = (foods: Array<'after' | 'before'>) => ({ templates, person: { nickname: 'Papa', fullName: null }, childName: 'Rahul', items: mk(foods),
-      mode: 'full' as const, isSunday: false, announcedTodayMedicineIds: [], localHour: 13 });
-    expect(buildReminderSteps(input(['after', 'after', 'after'])).opening).toMatch(/^dopahar \/ Khane ke baad \/ 3 /);
-    expect(buildReminderSteps(input(['after', 'before', 'after'])).opening).toMatch(/^dopahar \/ \/ 3 /);
-    expect(buildReminderSteps(input(['after'])).opening).toMatch(/^dopahar \/ Khane ke baad /);
+    const meds = [...w.store.state.medicines.values()];
+    const scheds = [...w.store.state.schedules.values()];
+    const open = (n: number, food: 'before' | 'after' | 'with' | 'any', hour: number, rel: any = 'son', fullName: string | null = 'Ramesh Sharma') =>
+      buildReminderSteps({ templates, person: { nickname: 'Papa', fullName }, childName: 'Rahul', callerRelation: rel,
+        items: meds.slice(0, n).map((m, i) => ({ medicine: m, schedule: { ...scheds[i]!, food } })),
+        mode: 'full', isSunday: false, announcedTodayMedicineIds: [], localHour: hour }).opening;
+    expect(open(3, 'after', 13)).toMatch(/^Namaste Ramesh ji\. aapke bete Rahul ki taraf se yaad dila rahe hain\. Aapki dopahar ke khane ke baad wali teen dawaiyon ka samay ho gaya hai\. Ek-ek karke batate hain\./i);
+    expect(open(1, 'before', 8)).toMatch(/Aapki nashte se pehle wali dawai ka samay ho gaya hai\. BP wali:/);
+    expect(open(2, 'with', 20)).toMatch(/Aapki raat ke khane ke saath wali do dawaiyon/);
+    expect(open(2, 'any', 17)).toMatch(/Aapki shaam ki wali do dawaiyon/);
+    expect(open(2, 'any', 11)).toMatch(/Aapki dopahar ki wali/);
+    expect(open(1, 'after', 15, 'daughter_in_law')).toMatch(/aapki bahu Rahul ki taraf se/);
+    expect(open(1, 'after', 15, null, null)).toMatch(/^Namaste Papa ji\. Rahul ki taraf se yaad dila rahe hain/); // no relation, no full name
+    expect(open(1, 'after', 15, 'other')).toMatch(/^Namaste Ramesh ji\. Rahul ki taraf se/);
+  });
+});
+
+describe('grouping by food timing', () => {
+  it('doses at the same time but different food timing go in separate calls, one after the other', async () => {
+    const w = world();
+    w.med('BP wali', '09:00', {}, w.mom);
+    w.med('Sugar wali', '09:00', {}, w.mom);
+    w.med('Pet wali', '09:00', {}, w.mom);
+    for (const s of w.store.state.schedules.values()) s.food = 'after';
+    const sugar = [...w.store.state.medicines.values()].find((m) => m.spokenName === 'Sugar wali')!;
+    [...w.store.state.schedules.values()].find((s) => s.medicineId === sugar.id)!.food = 'before';
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }] });
+    await planned(w);
+    await w.advance(5);
+    expect(w.provider.callsTo(PARENT)).toHaveLength(2);
+    const first = w.playedText(0).join(' '), second = w.playedText(1).join(' ');
+    expect(first).toMatch(/BP wali/);
+    expect(first).toMatch(/Pet wali/);
+    expect(first).not.toMatch(/Sugar wali/);
+    expect(first).toMatch(/nashte ke baad/);
+    expect(second).toMatch(/nashte se pehle/);
+    expect(second).toMatch(/Sugar wali/);
+    expect(Object.values(status(w))).toEqual(['confirmed', 'confirmed', 'confirmed']);
   });
 });
