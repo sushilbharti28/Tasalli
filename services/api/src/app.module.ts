@@ -15,7 +15,13 @@ import { AppConfig, CONFIG, loadConfig } from './config';
 import { Db } from './db/db.service';
 import { ApiEventsWorker } from './doses/api-events.worker';
 import { DoseGenerator } from './doses/dose-generator.service';
+import { DosesController } from './doses/doses.controller';
+import { DosesService } from './doses/doses.service';
 import { HealthController } from './health/health.controller';
+import { MEDICINE_NAME_SOURCE, SeedMedicineNameSource } from './medicines/medicine-names';
+import { MedicinesController } from './medicines/medicines.controller';
+import { MedicinesService } from './medicines/medicines.service';
+import { FakeScriptPreviewer, SCRIPT_PREVIEWER } from './medicines/script-previewer';
 import { PeopleController } from './people/people.controller';
 import { PeopleService } from './people/people.service';
 import { EventsService } from './queues/events.service';
@@ -34,15 +40,17 @@ export class AppModule {
       // Fakes only (founder rule: no paid services). Real ones implement the same interfaces.
       { provide: OTP_SENDER, useClass: FakeOtpSender },
       { provide: BILLING_PROVIDER, useClass: FakeBillingProvider },
+      { provide: SCRIPT_PREVIEWER, useClass: FakeScriptPreviewer },
+      { provide: MEDICINE_NAME_SOURCE, useClass: SeedMedicineNameSource },
       { provide: APP_GUARD, useClass: AuthGuard },
       Db, AuditService, OtpStore, SessionService, UsersService, EventsService,
-      PeopleService, DoseGenerator, ApiEventsWorker,
+      PeopleService, MedicinesService, DoseGenerator, DosesService, ApiEventsWorker,
     ];
     return {
       module: AppModule,
       controllers: [
-        HealthController, AuthController, MeController, PeopleController,
-        TestCallController, SubscriptionController,
+        HealthController, AuthController, MeController, PeopleController, MedicinesController,
+        DosesController, TestCallController, SubscriptionController,
       ],
       providers,
     };
