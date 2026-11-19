@@ -1,0 +1,41 @@
+# Local Postgres 16 + Redis 7 for development and tests.
+#   docker compose up -d     (or: pnpm db:up)
+# Credentials match .env.example. Local only; never reuse these anywhere else.
+name: tasalli
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tasalli
+      POSTGRES_PASSWORD: tasalli
+      POSTGRES_DB: tasalli
+      TZ: UTC
+    ports:
+      - '${POSTGRES_PORT:-5432}:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./infra/local/postgres-init.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U tasalli -d tasalli']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    # BullMQ requires noeviction so scheduled jobs are never dropped.
+    command: ['redis-server', '--appendonly', 'yes', '--maxmemory-policy', 'noeviction']
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  pgdata:
+  redisdata:
