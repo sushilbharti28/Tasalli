@@ -17,14 +17,14 @@ export interface TemplateDefinition {
 export const WHATSAPP_TEMPLATES: Record<WhatsAppTemplateName, TemplateDefinition> = {
   missed_dose_alert: {
     category: 'UTILITY',
-    params: ['person_name', 'time', 'medicines', 'attempts'],
+    params: ['person_name', 'time', 'medicines'],
     text: {
       en:
         'Tasalli: {{person_name}} did not confirm the {{time}} medicine reminder ({{medicines}}). ' +
-        'We called {{attempts}} times. You may want to check on them.',
+        'You may want to check on them.',
       hi:
         'तसल्ली: {{person_name}} ने {{time}} की दवाई की याद वाली कॉल पर पुष्टि नहीं की ({{medicines}})। ' +
-        'हमने {{attempts}} बार कॉल किया। एक बार उनसे बात कर लीजिए।',
+        'एक बार उनसे बात कर लीजिए।',
     },
   },
   evening_summary: {

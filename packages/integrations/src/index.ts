@@ -6,3 +6,4 @@ export * from './util/idempotency';
 export * from './otp';
 export * from './push';
 export * from './whatsapp';
+export * from './alerts';

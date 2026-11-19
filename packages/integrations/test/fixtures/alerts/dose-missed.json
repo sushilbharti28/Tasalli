@@ -1,0 +1,15 @@
+{
+  "_comment": "BullMQ job as enqueued by the call engine (BullQueues.alert): queue integrations-alerts, name alert.",
+  "id": "dose_missed_g1",
+  "name": "alert",
+  "data": {
+    "kind": "dose_missed",
+    "personId": "p1",
+    "ownerUserId": "u1",
+    "callGroupId": "g1",
+    "doseIds": ["d1", "d2"],
+    "at": "2026-11-19T03:52:00.000Z",
+    "reason": "retries_exhausted"
+  },
+  "opts": { "attempts": 5, "backoff": { "type": "exponential", "delay": 10000 } }
+}

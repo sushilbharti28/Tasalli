@@ -12,6 +12,7 @@ the WhatsApp Business API and Razorpay are interfaces plus fakes only. See
 | OTP by SMS | `OtpSender` + `OtpService` | none yet (paid) | `FakeOtpSender`, `DevConsoleOtpSender` |
 | Push | `PushSender` | `FcmPushSender` (FCM HTTP v1, free) | `FakePushSender` |
 | WhatsApp templates | `WhatsAppSender` | none yet (paid) | `FakeWhatsAppSender` |
+| Alerts to the child | `handleAlertJob`, `startAlertWorker` | BullMQ worker | `InMemoryAlertData` |
 
 All configuration is read from environment variables by name (safety rule 8). Phone numbers
 are masked to the last 4 digits in every log line (`maskPhone`, `Logger`).
@@ -61,6 +62,75 @@ tabs or long runs of spaces); `sanitizeParam` cleans free text first.
 | Env var | Meaning |
 | --- | --- |
 | `WHATSAPP_PROVIDER` | Only `fake` exists. Production refuses to start until a real provider is added. |
+
+## Alert worker
+
+Consumes the call engine's alerts and sends them to the child by push and WhatsApp.
+
+**Queue interface** (matches `services/call-engine/src/queue/jobs.ts` on `call-engine/v1`):
+
+| | |
+| --- | --- |
+| Queue | `integrations-alerts` (same BullMQ `prefix` as the call engine) |
+| Job name | `alert` |
+| jobId | dedupe key, one per kind and call group or person, e.g. `dose_missed_<callGroupId>`; never contains `:` |
+| Options | producer sets `attempts: 5`, exponential backoff |
+
+```ts
+interface AlertJob {
+  kind: 'dose_missed' | 'doctor_changed' | 'unwell' | 'opted_out'
+      | 'consent_given' | 'consent_declined' | 'consent_no_answer'
+      | 'evening_summary';            // PROPOSED, see below
+  personId: string;
+  ownerUserId: string;
+  callGroupId: string | null;
+  doseIds: string[];
+  at: string;                         // ISO UTC
+  reason?: string;                    // 'retries_exhausted' | 'said_not_taken' | ...
+  localDate?: string;                 // PROPOSED, evening_summary only: parent's YYYY-MM-DD
+}
+```
+
+**Proposed for alignment with the call engine:** an `evening_summary` alert per person per local
+day, jobId `evening_summary_<personId>_<YYYY-MM-DD>` (`eveningSummaryJobId`), enqueued by the
+scheduler at the parent's evening (proposed 8:30 pm local, or after the day's last dose). If
+`localDate` is missing it is derived from `at` in the parent's time zone. Once agreed, these
+types should move to `packages/contracts`.
+
+**What is sent**
+
+| Kind | Push | WhatsApp |
+| --- | --- | --- |
+| `dose_missed` | yes | `missed_dose_alert` (if opted in) |
+| `evening_summary` | yes | `evening_summary` (if opted in) |
+| others | yes | no |
+
+**Data it reads** through `AlertDataSource` (services/api implements it over Postgres):
+person (nickname, time zone), the account holder (phone, app language, time zone, WhatsApp
+opt-in, push tokens), doses by id, doses of a local date, and `removePushToken` for dead tokens.
+The job carries ids only; names and statuses are read at send time, so:
+
+- a missed alert is skipped if the family marked the doses taken meanwhile, and lists only the
+  doses still missed;
+- deleted people and accounts get nothing (rule 9).
+
+Texts use the family's words verbatim (rule 1). Times are shown in the parent's time zone, with
+the zone name added when the child's time zone differs (rule 7).
+
+**Exactly once** (rule 6, gate "2 retries, then missed, then exactly one alert"): BullMQ ignores
+a second enqueue with the same jobId; inside a job each channel is claimed in the
+`IdempotencyStore` as `<jobId>:push:<userId>` / `<jobId>:whatsapp:<userId>`. A retried job only
+re-sends channels that failed temporarily. A permanent failure is logged (phone masked) and not
+retried. If the process dies between sending and recording, the claim expires after 10 minutes
+and that one channel may be sent again (at-least-once in that crash case only).
+
+```ts
+startAlertWorker(
+  { data, push: createPushSenderFromEnv(process.env), whatsapp: createWhatsAppSenderFromEnv(process.env),
+    idempotency: new RedisIdempotencyStore(redis), logger, androidChannelId: 'alerts' },
+  { connection, prefix },
+);
+```
 
 ## Testing
 
