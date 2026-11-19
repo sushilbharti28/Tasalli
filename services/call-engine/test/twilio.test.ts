@@ -70,7 +70,7 @@ describe('Twilio TwiML', () => {
     const { contentType, body } = p.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1', '9'], speech: true, timeoutSeconds: 8 } } }, { callId: 'call-1' });
     expect(contentType).toBe('text/xml');
     expect(body).toContain('<Gather input="dtmf speech" language="hi-IN" speechTimeout="auto" hints="le li,haan,nahi,nahi li,ho gaya,baad mein,band karo"');
-    expect(body).toContain('<Say voice="Polly.Aditi" language="hi-IN">Namaste &lt;ji&gt; &amp; &quot;dawai&quot;</Say>');
+    expect(body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN">Namaste &lt;ji&gt; &amp; &quot;dawai&quot;</Say>');
     expect(body).toMatch(/action="https:\/\/abc\.trycloudflare\.com\/webhooks\/twilio\/input\?c=call-1&amp;n=[0-9a-f]{16}"/);
     expect(body).toContain('<Redirect method="POST">');
   });
@@ -81,7 +81,7 @@ describe('Twilio TwiML', () => {
   });
   it('hangup with and without a final message', async () => {
     expect(p.renderNextAction({ action: 'hangup' }).body).toBe('<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>');
-    expect(p.renderNextAction({ action: 'hangup', finalAudioUrl: await say.urlFor('Dhanyavaad', 'hi') }).body).toContain('<Say voice="Polly.Aditi" language="hi-IN">Dhanyavaad</Say><Hangup/>');
+    expect(p.renderNextAction({ action: 'hangup', finalAudioUrl: await say.urlFor('Dhanyavaad', 'hi') }).body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN">Dhanyavaad</Say><Hangup/>');
   });
   it('Devanagari text survives the round trip', async () => {
     expect(decodeSay(await say.urlFor('नमस्ते जी', 'hi')).text).toBe('नमस्ते जी');
