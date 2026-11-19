@@ -67,6 +67,7 @@ export interface ScriptBuilding {
     loose: string;
     bottle: string;
     bottle_with_cap: string;
+    cap_phrase: string;
   };
   disambiguator: { number: string; printed_name: string };
 }

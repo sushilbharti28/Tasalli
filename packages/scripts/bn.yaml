@@ -80,7 +80,8 @@ building:
     strip_with_print: '{pack_colour} পাতায়, {print_colour} লেখা'
     loose: 'কৌটোয় খোলা রাখা'
     bottle: '{pack_colour} বোতলে'
-    bottle_with_cap: '{pack_colour} বোতলে, {cap_colour} ঢাকনা'
+    bottle_with_cap: '{pack_colour} বোতলে, {cap_phrase}'
+    cap_phrase: '{cap_colour} ঢাকনা'
   disambiguator:
     number: 'যেটার গায়ে {number} লেখা'
     printed_name: 'যে পাতায় {strip_name_spelled} লেখা আছে'

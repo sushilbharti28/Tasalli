@@ -51,6 +51,7 @@ export function packPhrase(script: CallScript, med: MedicineForCall): string {
     print_colour: colourWord(script, med.printColour),
     cap_colour: colourWord(script, med.capColour),
   };
+  values.cap_phrase = med.capColour ? render(p.cap_phrase, values, { strict: false }) : undefined;
   switch (med.keptIn) {
     case 'strip':
       return render(med.printColour ? p.strip_with_print : p.strip, values, { strict: false });

@@ -47,6 +47,12 @@ describe.each(LANGUAGES)('engine export %s', (lang) => {
     }
   });
 
+  it('syrup bottles say the cap colour: pack.bottle carries {cap_phrase}, which holds {cap_colour}', () => {
+    const w = out.words as any;
+    expect(w.pack.bottle).toContain('{cap_phrase}');
+    expect(w.cap_phrase).toContain('{cap_colour}');
+  });
+
   it('leaves no optional-segment brackets or gender hints', () => {
     for (const s of strings([out.reminder, out.consent, out.words])) expect(s).not.toMatch(/[[\]|]/);
   });

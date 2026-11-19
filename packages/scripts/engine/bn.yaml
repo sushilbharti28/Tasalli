@@ -98,7 +98,7 @@ words:
     unknown: ""
   pack:
     strip: "{pack_colour} পাতায়"
-    bottle: "{pack_colour} বোতলে"
+    bottle: "{pack_colour} বোতলে, {cap_phrase}"
     loose: কৌটোয় খোলা রাখা
   cap_phrase: "{cap_colour} ঢাকনা"
   print_phrase: "{print_colour} লেখা"

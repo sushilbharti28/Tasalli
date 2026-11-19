@@ -43,7 +43,7 @@ const ALLOWED: Record<string, string[]> = {
   'templates.reply_ack': ['child_name'],
   'templates.sunday': ['spoken_name', 'number'],
   'building.appearance': ['colour_primary', 'colour_secondary', 'shape', 'size', 'marking'],
-  'building.pack': ['pack_colour', 'print_colour', 'cap_colour'],
+  'building.pack': ['pack_colour', 'print_colour', 'cap_colour', 'cap_phrase'],
   'building.disambiguator': ['number', 'strip_name_spelled'],
 };
 

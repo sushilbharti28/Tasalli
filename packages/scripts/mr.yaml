@@ -79,7 +79,8 @@ building:
     strip_with_print: '{pack_colour|n} पाकीट, {print_colour|obl} रंगाची अक्षरं'
     loose: 'डब्यात सुटी ठेवलेली'
     bottle: '{pack_colour|f} बाटली'
-    bottle_with_cap: '{pack_colour|f} बाटली, {cap_colour|n} झाकण'
+    bottle_with_cap: '{pack_colour|f} बाटली, {cap_phrase}'
+    cap_phrase: '{cap_colour|n} झाकण'
   disambiguator:
     number: 'ज्यावर {number} लिहिलं आहे'
     printed_name: 'ज्या पाकिटावर {strip_name_spelled} लिहिलं आहे'

@@ -35,7 +35,7 @@ export function toEngineTemplates(s: CallScript): Record<string, unknown> {
   const twoColour = rename(flat(b.appearance.capsule_two_colour), { colour_primary: 'colour', colour_secondary: 'colour2' })
     .replace(/,?\s*\{size\}\s*$/, '').replace(capsuleNoun, '').replace(/\s+/g, ' ').trim();
   const strip = rename(flat(b.pack.strip), {}) ;
-  const bottle = flat(b.pack.bottle);
+  const bottle = flat(b.pack.bottle_with_cap); // ends in {cap_phrase}; the engine drops it when no cap colour was entered
   const intro = (count: string) => `${t.reminder_full.greeting} ${count}`;
   const review = 'needs native-speaker review';
   const status = s.meta.review_status === 'approved' ? 'approved' : review;
@@ -90,7 +90,7 @@ export function toEngineTemplates(s: CallScript): Record<string, unknown> {
       kinds: w.kinds,
       markings: mapWords(w.markings),
       pack: { strip, bottle, loose: b.pack.loose },
-      cap_phrase: tailAfter(b.pack.bottle_with_cap, b.pack.bottle).replace('{cap_colour}', '{cap_colour}'),
+      cap_phrase: flat(b.pack.cap_phrase),
       print_phrase: tailAfter(b.pack.strip_with_print, b.pack.strip),
       disambiguator_number: b.disambiguator.number,
       disambiguator_printed_name: rename(b.disambiguator.printed_name, { strip_name_spelled: 'strip_letters' }),

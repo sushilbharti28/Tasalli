@@ -98,7 +98,7 @@ words:
     unknown: ""
   pack:
     strip: "{pack_colour} पाकीट"
-    bottle: "{pack_colour} बाटली"
+    bottle: "{pack_colour} बाटली, {cap_phrase}"
     loose: डब्यात सुटी ठेवलेली
   cap_phrase: "{cap_colour} झाकण"
   print_phrase: "{print_colour} रंगाची अक्षरं"

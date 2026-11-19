@@ -61,6 +61,11 @@ describe.each(LANGUAGES)('%s composition', (lang) => {
       expect(item).not.toMatch(/,\s*,|\s{2,}|^\s|\s$/);
     }
     expect(appearancePhrase(script, meds[2]!)).toBe(''); // syrup: appearance comes from the bottle
+    const withCap = packPhrase(script, meds[2]!);
+    const noCap = packPhrase(script, { ...meds[2]!, capColour: null });
+    expect(withCap).not.toContain('{');
+    expect(withCap.length).toBeGreaterThan(noCap.length); // the cap colour is spoken only when the family entered one
+    expect(withCap.startsWith(noCap.replace(/[,\s]+$/, ''))).toBe(true);
     expect(packPhrase(script, { ...meds[0]!, keptIn: null })).toBe('');
     expect(packPhrase(script, { ...meds[0]!, packColour: null })).toBe('');
     expect(disambiguatorPhrase(script, { ...meds[0]!, numberLabel: null, sayPrintedName: false })).toBe('');
