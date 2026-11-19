@@ -12,7 +12,13 @@ export function createWebhookServer(engine: Engine, provider: TelephonyProvider,
     if (req.method !== 'POST' || !m || m[1] !== provider.name) return void res.writeHead(404).end();
     const raw = Buffer.concat((await req.toArray()) as Buffer[]).toString('utf8');
     const ctype = String(req.headers['content-type'] ?? '');
-    const body = ctype.includes('json') ? JSON.parse(raw || '{}') : Object.fromEntries(new URLSearchParams(raw));
+    let body: unknown;
+    try {
+      body = ctype.includes('json') ? JSON.parse(raw || '{}') : Object.fromEntries(new URLSearchParams(raw));
+    } catch {
+      log.warn('webhook body not parseable', { path: url.pathname });
+      return void res.writeHead(400, { 'content-type': 'text/plain' }).end('bad request');
+    }
     const headers = Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, String(v)]));
     headers['x-tasalli-url'] = base + (req.url ?? '');
     const out = await engine.handleWebhook(headers, body).catch((e) => {
