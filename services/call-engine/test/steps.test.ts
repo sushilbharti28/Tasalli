@@ -218,7 +218,7 @@ describe('test-reminder medicines and wording placeholders', () => {
     expect(said[0]).toMatch(/Pehli dawai: BP wali\. ek goli/);
     expect(said[1]).toMatch(/Doosri dawai: sugar wali\./);
     expect(said[2]).toMatch(/Teesri dawai: pet wali dawai\./);
-    expect(said[2]).toMatch(/Le li ho to "le li" boliye, ya 1 dabaiye\.$/);
+    expect(said[2]).toMatch(/Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye\. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye\.$/);
     for (const x of said.slice(0, 3)) expect(x).not.toMatch(/Khane|khane/); // food timing is in the opening only
   });
 

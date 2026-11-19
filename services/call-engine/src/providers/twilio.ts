@@ -13,6 +13,26 @@ export interface TwilioConfig {
   voices?: Partial<Record<CallLanguage, string>>;
   /** Record consent and reminder calls (mono). Default true; TWILIO_RECORD=false turns it off. */
   record?: boolean;
+  /** Speak with SSML (slower rate, pauses). Default true; TWILIO_SSML=off turns it off (plain text). */
+  ssml?: boolean;
+}
+
+/** PlaceCallRequest plus the hard call limit (contract change requested: not in packages/contracts yet). */
+export type PlaceCallWithLimit = PlaceCallRequest & { timeLimitSeconds?: number };
+
+/** Pace of every <Say>: 85% of normal speed, and a 400 ms pause between the parts of a line and between sentences. */
+export const SSML_RATE = '85%';
+export const SSML_BREAK_MS = 400;
+
+/**
+ * Plain text -> SSML for <Say>. The text is cut at sentence ends (. । ? !) and at the commas/colons that separate
+ * the parts of a medicine line (name: amount, appearance, pack), each part is XML-escaped on its own, and a
+ * <break> goes between parts. Everything is wrapped in one <prosody rate>. Digits and words are never changed.
+ */
+export function toSsml(text: string): string {
+  const parts = text.split(/[.।?!,:;]+/).map((p) => p.trim()).filter(Boolean);
+  const body = parts.map(xmlEscape).join(`<break time="${SSML_BREAK_MS}ms"/>`);
+  return `<prosody rate="${SSML_RATE}">${body}</prosody>`;
 }
 
 /** What the recording-status webhook tells us. Twilio sends RecordingStatus in-progress | completed | absent | failed. */
@@ -30,7 +50,9 @@ export interface RecordingEvent {
 const hindi = () => ({ voice: process.env.TWILIO_VOICE || 'Google.hi-IN-Chirp3-HD-Aoede', language: 'hi-IN' });
 // Hindi only for now: every language, English included, uses the Hindi voice so accents don't mix within a call.
 const voiceFor = (_language: CallLanguage) => hindi();
-const HINTS = 'le li,le liya,haan,ho gaya,nahi,nahi li,baad mein,phir se,band karo';
+// Speech hints: the confirm words (including how Twilio's recogniser has been heard to spell "le li"), then the other replies.
+const HINTS = ['le li', 'le liya', 'le lee', 'leli', 'lelee', 'lily', 'लिली', 'ले ली', 'ले लिया', 'लेली', 'हाँ', 'हां', 'haan', 'han',
+  'ho gaya', 'हो गया', 'nahi', 'nahi li', 'नहीं', 'नहीं ली', 'baad mein', 'phir se', 'फिर से', 'band karo'].join(',');
 
 /** "Audio" for Twilio is the text itself: <Say> speaks it. Format: say:<lang>:<base64url text>. */
 export class SayUrls implements AudioSource {
@@ -74,7 +96,7 @@ export class TwilioProvider implements TelephonyProvider {
     return `${this.cfg.publicBaseUrl}/webhooks/twilio/${kind}?${q}`;
   }
 
-  async placeCall(req: PlaceCallRequest): Promise<PlaceCallResult> {
+  async placeCall(req: PlaceCallWithLimit): Promise<PlaceCallResult> {
     const form = new URLSearchParams();
     form.set('To', req.to);
     form.set('From', req.callerId);
@@ -82,6 +104,7 @@ export class TwilioProvider implements TelephonyProvider {
     form.set('StatusCallback', this.url('status', req.callId));
     form.set('StatusCallbackMethod', 'POST');
     for (const e of ['ringing', 'answered', 'completed']) form.append('StatusCallbackEvent', e);
+    if (req.timeLimitSeconds && req.timeLimitSeconds > 0) form.set('TimeLimit', String(Math.ceil(req.timeLimitSeconds))); // hard backstop, in seconds
     if ((this.cfg.record ?? true) && req.purpose !== 'test') { // the test call has no recording notice, so it is not recorded
       form.set('Record', 'true');
       form.set('RecordingChannels', 'mono');
@@ -106,7 +129,7 @@ export class TwilioProvider implements TelephonyProvider {
     const { language, text } = decodeSay(audioUrl);
     const v = voiceFor(language);
     const voice = this.cfg.voices?.[language] ?? v.voice;
-    return `<Say voice="${xmlEscape(voice)}" language="${v.language}">${xmlEscape(text)}</Say>`;
+    return `<Say voice="${xmlEscape(voice)}" language="${v.language}">${this.cfg.ssml === false ? xmlEscape(text) : toSsml(text)}</Say>`;
   }
 
   private twiml(step: CallStep, callId: string): string {

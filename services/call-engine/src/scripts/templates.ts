@@ -65,6 +65,10 @@ export interface ScriptTemplates {
     step_all_done_one: string;
     step_some_left: string;
     step_some_left_one: string;
+    /** Said when a medicine has been heard 3 times (repeated twice): the dose stays unconfirmed and the call moves on. */
+    step_repeat_limit?: string;
+    /** Said when the call's soft time limit is reached: the call ends and the unconfirmed doses follow the normal retry/snooze rules. */
+    step_time_up?: string;
   };
   consent: {
     prompt: string;          // {person_name} {relation_phrase} {child_name}
@@ -112,12 +116,12 @@ export const HI_TEMPLATES: ScriptTemplates = {
   reminder: {
     full_intro: 'Namaste {person_name}, {child_name} ki taraf se dawai ka samay. Abhi {count} {dose_unit} leni hain.',
     full_item: '{ordinal}, {spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {food_phrase}. {extra_instruction}',
-    full_outro: 'Dawai le lein, phir boliye "le li", ya 1 dabaiye. Dobara sunne ke liye 0. Pandrah minute baad yaad dilane ke liye 2.',
+    full_outro: 'Dawai le lein, phir boliye "le li" ya "haan", ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye. Pandrah minute baad yaad dilane ke liye 2.',
     short_intro: '{person_name}, {names} ka samay.',
     short_item: '{spoken_name}, {disambiguator}: {amount_text}, {food_phrase}. {extra_instruction}',
-    short_outro: 'Le li to "le li" boliye ya 1 dabaiye.',
+    short_outro: 'Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
     sunday_line: 'Nayi patti kholi ho to us par {number} likh dijiye.',
-    unclear: 'Maaf kijiye, samajh nahi aaya. Dawai le li ho to "le li" boliye ya 1 dabaiye.',
+    unclear: 'Maaf kijiye, samajh nahi aaya. Dawai le li ho to "le li" ya "haan" boliye, ya 1 dabaiye.',
     keypad_only: 'Dawai le li ho to 1 dabaiye. Dobara sunne ke liye 0.',
     confirm_ack: 'Dhanyavaad. Apna khayal rakhiye.',
     snooze_ack: 'Theek hai, {minutes} minute baad phir yaad dilayenge.',
@@ -131,10 +135,10 @@ export const HI_TEMPLATES: ScriptTemplates = {
     step_intro_one: 'Namaste {person_name}. Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
     step_short_intro: '{person_name}, aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
     step_short_intro_one: '{person_name}, aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
-    step_item: '{ordinal} dawai: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
-    step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
-    step_item_short: '{ordinal} dawai: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
-    step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" boliye, ya 1 dabaiye.',
+    step_item: '{ordinal} dawai: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
+    step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
+    step_item_short: '{ordinal} dawai: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
+    step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
     step_meals: { breakfast: 'nashte', lunch: 'dopahar ke khane', dinner: 'raat ke khane' },
     step_food_rel: { before: 'se pehle', after: 'ke baad', with: 'ke saath' },
     step_day_part: { morning: 'subah ki', afternoon: 'dopahar ki', evening: 'shaam ki', night: 'raat ki' },
@@ -148,6 +152,8 @@ export const HI_TEMPLATES: ScriptTemplates = {
     step_all_done_one: 'Bahut achha. Dawai le li gayi hai. Dhanyavaad.',
     step_some_left: 'Dhanyavaad. Baaki dawai ke liye thodi der mein phir phone karenge.',
     step_some_left_one: 'Dhanyavaad. Dawai ke liye thodi der mein phir phone karenge.',
+    step_repeat_limit: 'Koi baat nahi, aage badhte hain.',
+    step_time_up: 'Samay poora ho gaya. Baaki dawai ke liye thodi der mein phir phone karenge. Dhanyavaad.',
   },
   consent: {
     prompt: 'Namaste {person_name}. Yeh Tasalli ki taraf se phone hai. {relation_phrase} {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Yeh call record ki jayegi. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.',

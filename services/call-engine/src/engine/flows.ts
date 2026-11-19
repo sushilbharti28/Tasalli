@@ -4,6 +4,7 @@ import { MINUTE } from '../clock.js';
 import { fetchAudio } from '../providers/fake-speech.js';
 import { joinSentences } from '../scripts/render.js';
 import { line, childName } from '../scripts/builder.js';
+import { MAX_REPEATS_PER_MEDICINE, softLimitSeconds } from '../flows/limits.js';
 import { matchIntent } from '../speech/intent.js';
 import type { CallSession } from '../flows/session.js';
 import type { CallResultRow, CallRow, PersonRow } from '../types.js';
@@ -54,6 +55,7 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
   const user = person ? await d.store.getUser(person.ownerUserId) : null;
   const child = childName(t, user?.name ?? null);
   s.steps++;
+  if (s.answeredAtMs === undefined) s.answeredAtMs = d.clock.now().getTime(); // 'answered' status never arrived: count from the first input
 
   // Test call: any key (or any speech) ends it; there is nothing to decide.
   if (s.purpose === 'test') {
@@ -137,7 +139,11 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
   const n = r.items.length;
   const openDoseIds = async () => (await d.store.getGroupDetails(gid)).filter((x) => x.dose.status === 'calling' || x.dose.status === 'upcoming').map((x) => x.dose.id);
 
-  const finish = async (ack: string): Promise<NextAction> => {
+  // Soft call-time limit: counted from answer, checked before any step that would start (next medicine, repeat, re-ask).
+  const elapsedSeconds = (d.clock.now().getTime() - (s.answeredAtMs ?? d.clock.now().getTime())) / 1000;
+  const overLimit = () => elapsedSeconds >= softLimitSeconds(n);
+
+  const finish = async (ack: string, timeUp = false): Promise<NextAction> => {
     const ids = r.items.map((i) => i.doseId);
     const declined = ids.filter((id) => r.outcomes[id] === 'declined');
     const silent = ids.filter((id) => r.outcomes[id] === 'none');
@@ -155,17 +161,22 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
     } else if (silent.length > 0) {
       result = 'none'; // the normal 10-minute retry covers the doses nobody answered for
     }
-    const end = result === 'confirmed' ? (n === 1 ? t.step_all_done_one : t.step_all_done) : (n === 1 ? t.step_some_left_one : t.step_some_left);
+    const end = timeUp ? (t.step_time_up ?? t.step_some_left) : result === 'confirmed' ? (n === 1 ? t.step_all_done_one : t.step_all_done) : (n === 1 ? t.step_some_left_one : t.step_some_left);
     return bye(joinSentences([ack, end]), result);
   };
-  const advance = async (outcome: 'confirmed' | 'declined' | 'none', ack: string): Promise<NextAction> => {
+  const advance = async (outcome: 'confirmed' | 'declined' | 'none', ack: string, forceTimeUp = false): Promise<NextAction> => {
     r.outcomes[cur.doseId] = outcome;
     r.index++;
     s.unclearCount = 0;
     s.repeats = 0;
     s.keypadOnly = false;
     const upcoming = r.items[r.index];
-    if (!upcoming) return finish(ack);
+    if (!upcoming) return finish(forceTimeUp ? '' : ack, forceTimeUp);
+    if (overLimit()) { // the next step would start after the limit: end politely; the doses not yet asked about stay unconfirmed (normal retry/snooze rules)
+      for (const rest of r.items.slice(r.index)) r.outcomes[rest.doseId] = 'none';
+      r.index = r.items.length;
+      return finish(ack, true);
+    }
     s.fullText = upcoming.full;
     return ask(joinSentences([ack, upcoming.first]), true);
   };
@@ -187,11 +198,14 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
     case 'decline':
       return advance('declined', t.step_ack_not_now);
     case 'repeat':
-      if (++s.repeats > 3) return advance('none', t.step_ack_silence);
+      if (overLimit()) return advance('none', '', true);
+      if (s.repeats >= MAX_REPEATS_PER_MEDICINE) return advance('none', t.step_repeat_limit ?? t.step_ack_silence); // heard 3 times: leave it, move on
+      s.repeats++;
       return ask(cur.full, !s.keypadOnly);
     default: { // unclear or silence: ask once (keypad only), then leave this medicine unconfirmed
       s.unclearCount++;
       if (s.unclearCount === 1) {
+        if (overLimit()) return advance('none', '', true);
         s.keypadOnly = true;
         return ask(t.step_unclear, false);
       }

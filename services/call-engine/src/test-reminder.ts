@@ -1,6 +1,7 @@
 import { systemClock } from './clock.js';
 import { defaultConfig } from './engine/deps.js';
 import { Engine } from './engine/engine.js';
+import { softLimitSeconds } from './flows/limits.js';
 import { MemorySessionStore } from './flows/session.js';
 import { createLogger, maskPhone } from './log.js';
 import { FakeSpeech } from './providers/fake-speech.js';
@@ -65,7 +66,7 @@ async function main() {
   const server = createWebhookServer(engine, provider, env.publicBaseUrl, log).listen(port);
   for (const id of doseIds) await queue.add('dose.due', { doseId: id }); // like the scheduler: same time and food timing share one call
   await queue.runDue();
-  console.log(`Calling ${maskPhone(to)} about ${split ? 'the first call of ' : ''}3 medicines. Answer; for each one say "le li"/"haan" or press 1, "nahi li" or 2 for not now, 0 to hear it again. Waiting up to 5 minutes...`);
+  console.log(`Calling ${maskPhone(to)} about ${split ? 'the first call of ' : ''}3 medicines. Answer; for each one say "le li"/"haan" or press 1, "nahi li" or 2 for not now, "phir se" or 0 to hear it again (at most twice). Waiting up to 5 minutes...`);
   const deadline = Date.now() + 300_000;
   let call = store.allCalls()[0];
   while (Date.now() < deadline) {
@@ -76,6 +77,10 @@ async function main() {
   if (!call?.endedAt) console.log('The call did not finish in time.');
   const session = call ? await sessions.get(call.id) : null;
   console.log(`Call ${call?.status ?? 'not placed'}. (Test: no retries or snooze calls are placed.)`);
+  // Elapsed call time, from answer to hang-up: the soft limit is 180 s for up to 5 medicines, +40 s per medicine above 5.
+  const from = session?.answeredAtMs ?? call?.startedAt?.getTime();
+  const to2 = call?.endedAt?.getTime();
+  console.log(from !== undefined && to2 !== undefined ? `Elapsed call seconds: ${Math.round((to2 - from) / 1000)} (soft limit ${softLimitSeconds(doseIds.length)} s)` : 'Elapsed call seconds: unknown (the call did not connect or finish)');
   for (const id of doseIds) {
     const outcome = session?.reminder?.outcomes[id];
     const dose = await store.getDose(id);

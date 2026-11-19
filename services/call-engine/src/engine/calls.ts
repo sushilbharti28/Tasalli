@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import type { CallStep } from '@tasalli/contracts';
+import type { CallStep, PlaceCallRequest } from '@tasalli/contracts';
 import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
 import { buildReminderSteps, relationPhrase, line, personName, childName } from '../scripts/builder.js';
 import { localDay } from '../scheduler/time.js';
@@ -9,6 +9,7 @@ import { ownerEntitled } from './billing.js';
 import { type Deps, decodeAttempt, encodeAttempt } from './deps.js';
 import { callLanguage } from './language.js';
 import { MINUTE } from '../clock.js';
+import { hardLimitSeconds } from '../flows/limits.js';
 
 export function listenStep(d: Deps, audioUrl: string, purpose: 'consent' | 'reminder' | 'test', speech = true): CallStep {
   const keys = purpose === 'reminder' ? Object.keys(REMINDER_KEYS) : purpose === 'consent' ? Object.keys(CONSENT_KEYS) : [...'0123456789*#']; // test call: any key
@@ -42,9 +43,11 @@ async function place(d: Deps, o: { person: PersonRow | null; to: string; zone: s
   await d.sessions.set({ callId, purpose: o.purpose, language: o.language, to: o.to, ...o.session });
   try {
     const first = listenStep(d, await d.audio.urlFor(o.session.mainText, o.language), o.purpose);
-    const res = await d.provider.placeCall({ callId, to: o.to, callerId: d.config.callerId, language: o.language, purpose: o.purpose,
+    const req: PlaceCallRequest & { timeLimitSeconds?: number } = { callId, to: o.to, callerId: d.config.callerId, language: o.language, purpose: o.purpose,
       firstStep: first, statusWebhookUrl: `${d.config.publicBaseUrl}/webhooks/${d.provider.name}/status`,
-      inputWebhookUrl: `${d.config.publicBaseUrl}/webhooks/${d.provider.name}/input` });
+      inputWebhookUrl: `${d.config.publicBaseUrl}/webhooks/${d.provider.name}/input` };
+    if (o.purpose === 'reminder' && o.session.reminder) req.timeLimitSeconds = hardLimitSeconds(o.session.reminder.items.length); // hard backstop behind the soft limit
+    const res = await d.provider.placeCall(req);
     await d.store.updateCall(callId, { providerCallId: res.providerCallId });
     return 'placed';
   } catch (err) {

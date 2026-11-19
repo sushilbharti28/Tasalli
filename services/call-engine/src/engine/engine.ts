@@ -127,6 +127,10 @@ export class Engine {
     const at = new Date(ev.at);
     if (ev.status === 'ringing' || ev.status === 'answered') {
       await d.store.updateCall(call.id, { status: ev.status, ...(ev.status === 'answered' ? { startedAt: at } : {}) });
+      if (ev.status === 'answered') {
+        const s = await d.sessions.get(call.id);
+        if (s && s.answeredAtMs === undefined) { s.answeredAtMs = at.getTime(); await d.sessions.set(s); } // the call-time limit counts from here
+      }
       return;
     }
     if (!TERMINAL.has(ev.status)) return;

@@ -32,8 +32,11 @@ export const BUILTIN_PHRASES: Record<'hi' | 'en', PhraseBook> = {
       snooze: ['baad mein', 'bad mein', 'baad me', 'thodi der mein', 'thodi der me', 'thodi der baad', 'बाद में', 'थोड़ी देर में', 'थोड़ी देर बाद'],
       repeat: hiRepeat,
       decline: ['nahi', 'nahin', 'nahi li', 'nahin li', 'nahi liya', 'abhi nahi', 'abhi nahin', 'nahi khayi', 'नहीं', 'नहीं ली', 'अभी नहीं', 'नहीं लिया'],
-      confirm: ['le li', 'le liya', 'le li hai', 'le liye', 'le lee', 'haan', 'haa', 'han', 'haan ji', 'ji haan', 'haan le li',
-        'kha li', 'kha liya', 'kha liye', 'ho gaya', 'ho gayi', 'ले ली', 'ले लिया', 'हाँ', 'हां', 'हाँ ले ली', 'खा ली', 'खा लिया', 'हो गया'],
+      // Twilio heard "le li" as "लिली": the sound-alike spellings are listed on purpose. Negatives are checked first (rule 4).
+      confirm: ['le li', 'le liya', 'le liye', 'le li hai', 'le lee', 'lelee', 'leli', 'le liya', 'leliya', 'lily', 'lili', 'li li',
+        'haan', 'haa', 'han', 'haan ji', 'ji haan', 'haan le li', 'kha li', 'kha liya', 'kha liye', 'ho gaya', 'ho gayi',
+        'ले ली', 'ले ली है', 'ले लिया', 'ले लिया है', 'लेली', 'लेलिया', 'लिली', 'लीली', 'ली ली',
+        'हाँ', 'हां', 'हा', 'हाँ ले ली', 'खा ली', 'खा लिया', 'हो गया', 'हो गई'],
     },
     consent: {
       stop: hiStop,
