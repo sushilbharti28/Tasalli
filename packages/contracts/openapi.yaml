@@ -90,6 +90,16 @@ paths:
   /doses/{doseId}/mark-taken:
     parameters: [ { name: doseId, in: path, required: true, schema: { type: string, format: uuid } } ]
     post: { summary: Manual "he took it", responses: { '200': { description: OK } } }
+  /doses/{doseId}/remind:
+    parameters: [ { name: doseId, in: path, required: true, schema: { type: string, format: uuid } } ]
+    post:
+      summary: One extra reminder call for this dose (counts toward the 6 calls per number per day cap)
+      description: Only for doses that are missed or upcoming, and only for people who are consented, not paused and not blocked. Another account's dose returns 404.
+      responses:
+        '202': { description: Queued }
+        '404': { description: Not found }
+        '409': { description: "Dose not missed/upcoming, person not consented, or number blocked (code: dose_not_remindable | not_consented | number_blocked)" }
+        '429': { description: Daily call cap reached }
   /doses/{doseId}/calls:
     parameters: [ { name: doseId, in: path, required: true, schema: { type: string, format: uuid } } ]
     get: { summary: Call attempts for this dose, responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CallAttempt' } } } } } } }
@@ -101,10 +111,19 @@ paths:
       summary: Start a Razorpay subscription
       requestBody: { content: { application/json: { schema: { type: object, required: [plan], properties: { plan: { type: string, enum: [one_parent, two_parents, family_yearly] } } } } } }
       responses: { '200': { description: Razorpay checkout details } }
+  /subscription/cancel:
+    post:
+      summary: Cancel the subscription. Access continues until the end of the paid period.
+      responses: { '200': { description: OK, content: { application/json: { schema: { $ref: '#/components/schemas/Subscription' } } } }, '409': { description: Nothing to cancel } }
   /devices:
     post: { summary: Register a push token, requestBody: { content: { application/json: { schema: { type: object, required: [token], properties: { token: { type: string } } } } } }, responses: { '204': { description: OK } } }
   /webhooks/telephony/{provider}:
     post: { security: [], summary: Call status and input events (signature verified, idempotent), parameters: [ { name: provider, in: path, required: true, schema: { type: string } } ], responses: { '200': { description: Next action for the call } } }
+  /webhooks/billing:
+    post:
+      security: []
+      summary: Billing events (HMAC-SHA256 signature over the raw body in the X-Signature header; idempotent by event id). Used by the fake billing provider.
+      responses: { '200': { description: OK (applied, duplicate or ignored) }, '400': { description: Bad payload }, '401': { description: Bad signature } }
   /webhooks/razorpay:
     post: { security: [], summary: Payment events (signature verified), responses: { '200': { description: OK } } }
 components:
@@ -225,3 +244,6 @@ components:
         status: { type: string, enum: [trialing, active, past_due, cancelled] }
         trialEndsAt: { type: string, format: date-time, nullable: true }
         currentPeriodEnd: { type: string, format: date-time, nullable: true }
+        pastDueSince: { type: string, format: date-time, nullable: true }
+        entitled: { type: boolean, description: "May schedule reminders now: trialing, active, past_due for at most 3 days, or cancelled until the paid period ends" }
+        graceEndsAt: { type: string, format: date-time, nullable: true, description: "past_due_since + 3 days, while past_due" }

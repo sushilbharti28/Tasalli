@@ -168,6 +168,7 @@ create table subscriptions (
   trial_ends_at      timestamptz,
   razorpay_sub_id    text unique,
   current_period_end timestamptz,
+  past_due_since     timestamptz,                  -- set when a payment fails; 3-day grace period from here
   created_at         timestamptz not null default now()
 );
 
@@ -183,3 +184,13 @@ create table audit_log (
   after         jsonb,
   created_at    timestamptz not null default now()
 );
+
+-- Internal support notes about a person (admin console)
+create table support_notes (
+  id          uuid primary key default gen_random_uuid(),
+  person_id   uuid not null references people(id),
+  author      text not null,
+  body        text not null,
+  created_at  timestamptz not null default now()
+);
+create index on support_notes (person_id, created_at);
