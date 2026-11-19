@@ -5,6 +5,8 @@ import type { TelephonyProvider } from '@tasalli/contracts';
 import { systemClock } from './clock.js';
 import { defaultConfig, type AudioSource } from './engine/deps.js';
 import { Engine } from './engine/engine.js';
+import { LocalFsRecordingStorage } from './recordings/storage.js';
+import { TwilioRecordingClient } from './recordings/twilio-client.js';
 import { buildTwilio } from './providers/twilio-factory.js';
 import { createWebhookServer } from './server.js';
 import { MemorySessionStore, RedisSessionStore } from './flows/session.js';
@@ -38,7 +40,12 @@ export async function start() {
   const store = env.DATABASE_URL ? new PgStore(new pg.Pool({ connectionString: env.DATABASE_URL })) : new MemoryStore();
   const redis = env.REDIS_URL ? new Redis(env.REDIS_URL, { maxRetriesPerRequest: null }) : null;
   const queue = redis ? new BullQueues(redis) : new MemoryQueue(systemClock);
+  // Recordings are copied to RECORDINGS_DIR (production: storage in the Mumbai region) and then deleted at Twilio.
+  const recStorage = new LocalFsRecordingStorage(env.RECORDINGS_DIR || join(process.cwd(), '.recordings'));
+  const recordings = env.TELEPHONY_PROVIDER === 'twilio'
+    ? { storage: recStorage, client: new TwilioRecordingClient(env.TWILIO_ACCOUNT_SID!, env.TWILIO_AUTH_TOKEN!) } : undefined;
   const engine = new Engine({
+    recordings,
     store, queue, provider, audio, speech, sessions: redis ? new RedisSessionStore(redis) : new MemorySessionStore(),
     scripts: new ScriptLibrary(env.SCRIPTS_DIR || DEFAULT_SCRIPTS_DIR, log), clock: systemClock, log,
     config: defaultConfig({ callerId: env.CALLER_ID || env.TWILIO_FROM_NUMBER || '+910000000000', publicBaseUrl: base }),
@@ -51,7 +58,7 @@ export async function start() {
     setInterval(() => void queue.runDue().catch((e) => log.error('job error', { err: String(e) })), 1000);
   }
 
-  createWebhookServer(engine, provider, base, log).listen(port, () => log.info('call-engine listening', { port, provider: provider.name }));
+  createWebhookServer(engine, provider, base, log, { storage: recStorage, readToken: env.RECORDINGS_READ_TOKEN }).listen(port, () => log.info('call-engine listening', { port, provider: provider.name }));
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) void start();

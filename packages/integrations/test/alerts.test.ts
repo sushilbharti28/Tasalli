@@ -212,3 +212,33 @@ describe('evening_summary', () => {
     expect(await handleAlertJob('s3', { ...job, localDate: '2026-11-25' }, w.deps)).toMatchObject({ status: 'skipped' });
   });
 });
+
+describe('plan_lapsed', () => {
+  const job: AlertJob = {
+    kind: 'plan_lapsed', personId: 'p1', ownerUserId: 'u1', callGroupId: null, doseIds: [],
+    at: '2026-11-19T03:30:00Z', localDate: '2026-11-19', reason: 'plan_not_entitled',
+  };
+
+  it('pushes and WhatsApps the founder text with the nickname (English recipient)', async () => {
+    const w = world();
+    await handleAlertJob('plan_lapsed_u1_2026-11-19', job, w.deps);
+    expect(w.push.sent[0]!.body).toBe("Papa's medicine reminder calls have stopped because payment is pending. Please renew your plan in the app.");
+    expect(w.whatsapp.sent).toHaveLength(1);
+    expect(w.whatsapp.sent[0]).toMatchObject({ template: 'plan_lapsed', params: { person_name: 'Papa' } });
+  });
+
+  it('uses the Hindi wording for a Hindi recipient', async () => {
+    const w = world();
+    w.data.recipients.get('u1')!.locale = 'hi';
+    await handleAlertJob('plan_lapsed_u1_2026-11-19', job, w.deps);
+    expect(w.push.sent[0]!.body).toBe('Papa ke dawai ke reminder calls ruk gaye hain kyunki payment baaki hai. App mein plan renew karein.');
+  });
+
+  it('is sent once for a repeated job id', async () => {
+    const w = world();
+    await handleAlertJob('plan_lapsed_u1_2026-11-19', job, w.deps);
+    await handleAlertJob('plan_lapsed_u1_2026-11-19', job, w.deps);
+    expect(w.whatsapp.sent).toHaveLength(1);
+    expect(w.push.sent).toHaveLength(2); // one per device token, not repeated
+  });
+});

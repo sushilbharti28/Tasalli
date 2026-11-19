@@ -4,6 +4,7 @@ import type { Logger } from '../log.js';
 import type { AlertSink, JobQueue } from '../queue/jobs.js';
 import type { ScriptLibrary } from '../scripts/loader.js';
 import type { SessionStore } from '../flows/session.js';
+import type { RecordingClient, RecordingStorage } from '../recordings/types.js';
 import type { Store } from '../store/store.js';
 
 /** Text -> something the provider can play. AudioCache (TTS files) or SayUrls (Twilio <Say>). */
@@ -30,6 +31,8 @@ export interface Deps {
   clock: Clock;
   log: Logger;
   config: EngineConfig;
+  /** Recordings are copied to `storage` (India) and removed from the provider with `client`. Absent: recording webhooks are ignored. */
+  recordings?: { storage: RecordingStorage; client: RecordingClient };
 }
 
 export const defaultConfig = (over: Partial<EngineConfig> = {}): EngineConfig => ({

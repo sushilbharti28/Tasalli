@@ -29,23 +29,32 @@ pnpm --filter call-engine test-call +91XXXXXXXXXX   # one real consent-style cal
 
 `pnpm dev` and `pnpm test-call` read the repo-root `.env` (variables already in the environment win).
 
-## Call recording (v1.1)
+## Call recording (v1.2: recordings live in India)
 
 Consent and reminder calls are created with `Record=true`, `RecordingChannels=mono` and a `RecordingStatusCallback` to
-`<base>/webhooks/twilio/recording?c=<callId>` (signed like the other webhooks). On `RecordingStatus=completed` the
-`RecordingUrl` is stored once in `calls.recording_url` (deduplicated by `RecordingSid`). Test calls are not recorded. Both consent scripts
+`<base>/webhooks/twilio/recording?c=<callId>` (signed like the other webhooks). Test calls are not recorded. Both consent scripts
 say "This call may be recorded to improve the service." / the Hindi equivalent.
 
-**Data residency (pilot item):** recordings stay in Twilio, and Twilio stores them outside India by default. CLAUDE.md rule 9
-(health data stays in India) needs a decision before real parents are recorded: move recordings to Mumbai storage or a Twilio
-region that keeps them in India, or turn recording off with `TWILIO_RECORD=false`. Recording also starts when the call is answered, so the notice is heard
-after the first second of audio is already being recorded.
+On `RecordingStatus=completed` the webhook enqueues a `recording.fetch` job (job id `recording_<RecordingSid>`, so a repeated webhook is a no-op; 8 attempts, exponential backoff). The job:
+
+1. downloads the audio from Twilio (authenticated GET on `RecordingUrl` + `.mp3`; credentials only go to `api.twilio.com`),
+2. saves it through `RecordingStorage` (`LocalFsRecordingStorage` under `RECORDINGS_DIR`, default `./.recordings`, key `<callId>/<RecordingSid>.mp3`) and checks the stored size equals the downloaded size (and the `Content-Length`),
+3. writes our own path `/internal/recordings/<callId>/<RecordingSid>.mp3` to `calls.recording_url` (never a Twilio URL),
+4. only then `DELETE`s the recording from Twilio (a 404 counts as already deleted).
+
+Every step can be re-run; a failure throws and the queue retries. Nothing is deleted at Twilio before the local copy is saved and size-checked.
+**Production:** implement `RecordingStorage` over object storage in the Mumbai region (for example S3 in ap-south-1); `LocalFsRecordingStorage` is for dev and a single-box pilot.
+Deleting a person's data on request: remove the file named in `calls.recording_url`.
+
+**Admin console access:** the call engine serves `GET /internal/recordings/<callId>/<RecordingSid>.mp3` only with `Authorization: Bearer $RECORDINGS_READ_TOKEN`
+(constant-time compare; route is off while the variable is empty). The admin backend calls it server-side and streams the audio to the logged-in admin; the token never goes to a browser.
 
 ## Billing gate and evening summary
 
-- Reminder calls (first call, retries, snooze) are skipped, with no alert, when the owner has no entitled subscription: `trialing`, `active`,
-  `past_due` for at most 3 days (counted from `current_period_end`, the schema has no "became past_due" column), or `cancelled` before `current_period_end`.
+- Reminder calls (first call, retries, snooze) are skipped when the owner has no entitled subscription: `trialing`, `active`,
+  `past_due` for at most 3 days counted from `subscriptions.past_due_since` (falls back to `current_period_end` only if that is null), or `cancelled` before `current_period_end`.
   Consent calls are not gated. Doses of a gated call group become `skipped_paused`.
+- A skipped reminder emits one `plan_lapsed` alert per owner per local day (owner's time zone), job id `plan_lapsed_<userId>_<localDate>`, carrying the skipped person (the alert worker uses the nickname). Push and WhatsApp.
 - At 20:00 in the parent's time zone the engine emits one `evening_summary` alert (`localDate`, job id `evening_summary_<personId>_<localDate>`) per person, for people who are consented, not paused and entitled.
 
 ## Try a real call locally (free tunnel)
