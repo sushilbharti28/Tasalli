@@ -1,0 +1,17 @@
+**/node_modules
+**/dist
+**/.next
+**/.expo
+**/coverage
+**/.turbo
+**/*.tsbuildinfo
+.git
+.github
+.env
+.env.*
+!.env.example
+**/.terraform
+apps/mobile
+tests
+docs
+*.log

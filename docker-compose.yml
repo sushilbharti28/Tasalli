@@ -1,6 +1,10 @@
-# Local Postgres 16 + Redis 7 for development and tests.
-#   docker compose up -d     (or: pnpm db:up)
+# Local stack. Free, runs on a laptop, fake telephony and speech by default.
+#   docker compose up -d postgres redis      data stores only (or: pnpm db:up)
+#   docker compose --profile app up --build  whole system: + api, call-engine, admin
+#                                            (or: pnpm stack:up)
 # Credentials match .env.example. Local only; never reuse these anywhere else.
+# App containers read .env if present, then the overrides below point them at
+# the compose Postgres and Redis.
 name: tasalli
 
 services:
@@ -35,6 +39,76 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+
+  api:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: infra/docker/service.Dockerfile
+      args:
+        PACKAGE: '@tasalli/api'
+        PACKAGE_DIR: services/api
+    env_file:
+      - path: .env
+        required: false
+    environment: &app-env
+      NODE_ENV: production
+      APP_ENV: dev
+      DATABASE_URL: postgres://tasalli:tasalli@postgres:5432/tasalli
+      REDIS_URL: redis://redis:6379
+      TELEPHONY_PROVIDER: ${TELEPHONY_PROVIDER:-fake}
+      SPEECH_PROVIDER: ${SPEECH_PROVIDER:-fake}
+      JWT_SECRET: ${JWT_SECRET:-change-me-local-only}
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:3000}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      PORT: '3000'
+    ports:
+      - '${API_PORT:-3000}:3000'
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3000/health >/dev/null || exit 1']
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 20s
+
+  call-engine:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: infra/docker/service.Dockerfile
+      args:
+        PACKAGE: '@tasalli/call-engine'
+        PACKAGE_DIR: services/call-engine
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      <<: *app-env
+      PORT: '3001'
+    ports:
+      - '${CALL_ENGINE_PORT:-3001}:3001'
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  admin:
+    profiles: [app]
+    build:
+      context: .
+      dockerfile: infra/docker/admin.Dockerfile
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      ADMIN_API_BASE_URL: http://api:3000
+      PORT: '3002'
+    ports:
+      - '${ADMIN_PORT:-3002}:3002'
+    depends_on:
+      - api
 
 volumes:
   pgdata:
