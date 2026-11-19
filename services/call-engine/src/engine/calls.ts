@@ -1,0 +1,138 @@
+import { randomUUID } from 'node:crypto';
+import { REMINDER_KEYS, RULES, CONSENT_KEYS, type CallStep } from '@tasalli/contracts';
+import { buildReminderText, line, personName, childName } from '../scripts/builder.js';
+import { localDay } from '../scheduler/time.js';
+import type { CallSession } from '../flows/session.js';
+import type { PersonRow } from '../types.js';
+import { type Deps, decodeAttempt, encodeAttempt } from './deps.js';
+import { MINUTE } from '../clock.js';
+
+export function listenStep(d: Deps, audioUrl: string, purpose: 'consent' | 'reminder' | 'test', speech = true): CallStep {
+  const keys = purpose === 'reminder' ? Object.keys(REMINDER_KEYS) : purpose === 'consent' ? Object.keys(CONSENT_KEYS) : ['1', '9'];
+  return { audioUrl, listen: { keys, speech, timeoutSeconds: d.config.listenSeconds } };
+}
+
+export async function alertFor(d: Deps, person: PersonRow, kind: Parameters<Deps['queue']['alert']>[0]['kind'],
+  groupId: string | null, doseIds: string[], jobKey: string, reason?: string) {
+  await d.queue.alert({ kind, personId: person.id, ownerUserId: person.ownerUserId, callGroupId: groupId, doseIds,
+    at: d.clock.now().toISOString(), reason }, jobKey);
+}
+
+type PlaceOutcome = 'placed' | 'capped' | 'blocked' | 'failed';
+
+/** Cap + block check, call row, provider call. Phone lock makes the 6/day cap race-free (rule 5). */
+async function place(d: Deps, o: { person: PersonRow | null; to: string; zone: string; purpose: 'consent' | 'reminder' | 'test';
+  groupId: string | null; attempt: number; language: PersonRow['language']; session: Omit<CallSession, 'callId' | 'to' | 'purpose' | 'language'> }): Promise<PlaceOutcome> {
+  const now = d.clock.now();
+  const gate = await d.store.transaction(async (tx) => {
+    await tx.lockPhone(o.to);
+    if (await tx.isBlocked(o.to)) return { out: 'blocked' as const };
+    if (o.purpose !== 'test' && await tx.countCallsToPhoneSince(o.to, localDay(now, o.zone).start) >= RULES.maxCallsPerNumberPerDay) {
+      return { out: 'capped' as const };
+    }
+    const row = await tx.insertCall({ personId: o.person?.id ?? null, purpose: o.purpose, callGroupId: o.groupId, attempt: o.attempt,
+      provider: d.provider.name, status: 'queued' }, now);
+    return { out: 'ok' as const, row };
+  });
+  if (gate.out !== 'ok') return gate.out;
+  const callId = gate.row.id;
+  await d.sessions.set({ callId, purpose: o.purpose, language: o.language, to: o.to, ...o.session });
+  try {
+    const first = listenStep(d, await d.audio.urlFor(o.session.mainText, o.language), o.purpose);
+    const res = await d.provider.placeCall({ callId, to: o.to, callerId: d.config.callerId, language: o.language, purpose: o.purpose,
+      firstStep: first, statusWebhookUrl: `${d.config.publicBaseUrl}/webhooks/${d.provider.name}/status`,
+      inputWebhookUrl: `${d.config.publicBaseUrl}/webhooks/${d.provider.name}/input` });
+    await d.store.updateCall(callId, { providerCallId: res.providerCallId });
+    return 'placed';
+  } catch (err) {
+    d.log.error('placeCall failed', { callId, to: o.to, err: (err as Error).message });
+    await d.store.updateCall(callId, { status: 'failed', endedAt: d.clock.now() });
+    return 'failed';
+  }
+}
+
+const blank = { unclearCount: 0, repeats: 0, steps: 0, keypadOnly: false, responses: {} };
+
+/** Reminder call for a dose group. attemptCode = encodeAttempt(cycle, n). */
+export async function placeReminder(d: Deps, groupId: string, attemptCode: number): Promise<void> {
+  const details = (await d.store.getGroupDetails(groupId)).filter((x) => x.dose.status === 'calling' || x.dose.status === 'upcoming');
+  if (details.length === 0) return; // confirmed in the app meanwhile, or closed
+  const person = await d.store.getPerson(details[0]!.dose.personId);
+  if (!person) return;
+  const user = await d.store.getUser(person.ownerUserId);
+  const doseIds = details.map((x) => x.dose.id);
+  const stop = async (to: 'skipped_paused' | 'missed', reason?: string) => {
+    if ((await d.store.closeGroup(groupId, to)) > 0 && reason) await alertFor(d, person, 'dose_missed', groupId, doseIds, `missed_${groupId}`, reason);
+  };
+  if (person.deleted || person.paused || person.consent !== 'consented' || await d.store.isBlocked(person.phone)) return void await stop('skipped_paused');
+
+  const now = d.clock.now();
+  const day = localDay(now, person.timeZone);
+  const pack = d.scripts.get(person.language);
+  const prior = await d.store.answeredRemindersBetween(person.id, day.start, day.end, groupId);
+  const base = {
+    templates: pack.templates, person, childName: user?.name ?? null, isSunday: day.isSunday, localHour: day.hour,
+    announcedTodayMedicineIds: prior.medicineIds, items: details.map((x) => ({ medicine: x.medicine, schedule: x.schedule })),
+  };
+  const full = buildReminderText({ ...base, mode: 'full' });
+  const mainText = prior.answeredCalls === 0 ? full : buildReminderText({ ...base, mode: 'short' });
+  const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode,
+    language: person.language, session: { ...blank, mainText, fullText: full } });
+  if (out === 'capped') return void await stop('missed', 'daily_cap');
+  if (out === 'blocked') return void await stop('skipped_paused');
+  if (out === 'failed') await afterNoConfirmation(d, groupId, attemptCode);
+}
+
+/** Unanswered, busy, failed, or hung up without confirming: retry 10 minutes later, or give up. */
+export async function afterNoConfirmation(d: Deps, groupId: string, attemptCode: number): Promise<void> {
+  const { cycle, n } = decodeAttempt(attemptCode);
+  if (n < RULES.retryCount) {
+    const next = encodeAttempt(cycle, n + 1);
+    await d.queue.add('reminder.retry', { callGroupId: groupId, attempt: next, cycle }, { delayMs: RULES.retryGapMinutes * MINUTE, jobId: `retry_${groupId}_${next}` });
+    return;
+  }
+  const details = await d.store.getGroupDetails(groupId);
+  if (details.length === 0) return;
+  const person = await d.store.getPerson(details[0]!.dose.personId);
+  if (person && (await d.store.closeGroup(groupId, 'missed')) > 0) {
+    await alertFor(d, person, 'dose_missed', groupId, details.map((x) => x.dose.id), `missed_${groupId}`, 'retries_exhausted');
+  }
+}
+
+export async function placeConsent(d: Deps, personId: string, attempt: number): Promise<void> {
+  const person = await d.store.getPerson(personId);
+  if (!person || person.deleted || person.consent === 'consented' || person.consent === 'opted_out') return;
+  if (await d.store.isBlocked(person.phone)) return;
+  const user = await d.store.getUser(person.ownerUserId);
+  const t = d.scripts.get(person.language).templates;
+  const text = line(t.consent.prompt, { person_name: personName(t, person), child_name: childName(t, user?.name ?? null) });
+  const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'consent', groupId: null, attempt,
+    language: person.language, session: { ...blank, mainText: text, fullText: text } });
+  if (out === 'capped') return void await alertFor(d, person, 'consent_no_answer', null, [], `consent_noanswer_${person.id}`, 'daily_cap');
+  if (out === 'failed') await consentUnanswered(d, personId, attempt);
+}
+
+export async function consentUnanswered(d: Deps, personId: string, attempt: number): Promise<void> {
+  if (attempt < RULES.retryCount) {
+    await d.queue.add('consent.retry', { personId, attempt: attempt + 1 }, { delayMs: RULES.retryGapMinutes * MINUTE, jobId: `cretry_${personId}_${attempt + 1}` });
+    return;
+  }
+  const person = await d.store.getPerson(personId);
+  if (!person || person.consent !== 'pending') return;
+  await d.store.insertConsentEvent({ personId, result: 'no_answer', via: 'key', callId: null });
+  await alertFor(d, person, 'consent_no_answer', null, [], `consent_noanswer_${personId}`, 'retries_exhausted');
+}
+
+export async function placeTest(d: Deps, userId: string): Promise<void> {
+  const user = await d.store.getUser(userId);
+  if (!user || user.deleted) return;
+  const day = localDay(d.clock.now(), user.timeZone).date;
+  if ((await d.sessions.incr(`test_${userId}_${day}`, 86400)) > d.config.testCallsPerDay) return;
+  const lang = user.locale;
+  const t = d.scripts.get(lang).templates;
+  const text = line(t.test.prompt, { person_name: personName(t, { nickname: user.name ?? '', fullName: null }) });
+  await place(d, { person: null, to: user.phone, zone: user.timeZone, purpose: 'test', groupId: null, attempt: 0, language: lang,
+    session: { ...blank, mainText: text, fullText: text } });
+}
+
+export const newGroupId = () => randomUUID();
