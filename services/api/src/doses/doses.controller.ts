@@ -24,6 +24,12 @@ export class DosesController {
     return this.doses.markTaken(user, doseId);
   }
 
+  @Post('doses/:doseId/remind')
+  @HttpCode(202)
+  remind(@CurrentUser() user: AuthUser, @Param('doseId', UuidParam) doseId: string) {
+    return this.doses.remind(user, doseId);
+  }
+
   @Get('doses/:doseId/calls')
   calls(@CurrentUser() user: AuthUser, @Param('doseId', UuidParam) doseId: string) {
     return this.doses.calls(user, doseId);

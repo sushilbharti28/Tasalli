@@ -8,6 +8,7 @@ import { FakeOtpSender, OTP_SENDER } from './auth/otp-sender';
 import { OtpStore, REDIS } from './auth/otp-store';
 import { SessionService } from './auth/session.service';
 import { BILLING_PROVIDER, FakeBillingProvider } from './billing/billing-provider';
+import { BillingWebhookController } from './billing/billing-webhook.controller';
 import { SubscriptionController } from './billing/subscription.controller';
 import { TestCallController } from './calls/test-call.controller';
 import { CLOCK, SystemClock } from './common/clock';
@@ -50,7 +51,7 @@ export class AppModule {
       module: AppModule,
       controllers: [
         HealthController, AuthController, MeController, PeopleController, MedicinesController,
-        DosesController, TestCallController, SubscriptionController,
+        DosesController, TestCallController, SubscriptionController, BillingWebhookController,
       ],
       providers,
     };

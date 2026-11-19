@@ -1,9 +1,8 @@
-import { Body, Controller, Get, HttpCode, Inject, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post } from '@nestjs/common';
 import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
-import Redis from 'ioredis';
 import { AuthUser, CurrentUser } from '../common/decorators';
 import { IsIanaTimeZone, IsNotBlank } from '../common/validators';
-import { REDIS } from '../auth/otp-store';
+import { Db } from '../db/db.service';
 import { UsersService } from './users.service';
 
 export class UserUpdateDto {
@@ -20,7 +19,7 @@ export class DeviceDto {
 export class MeController {
   constructor(
     private readonly users: UsersService,
-    @Inject(REDIS) private readonly redis: Redis,
+    private readonly db: Db,
   ) {}
 
   @Get('me')
@@ -33,13 +32,14 @@ export class MeController {
     return this.users.toApi(await this.users.update(user.id, dto));
   }
 
-  /**
-   * Push tokens. schema.sql has no devices table, so tokens are kept in a Redis set
-   * per user (key tasalli:devices:<userId>) until one is added (contract change requested).
-   */
+  /** Push tokens live in the devices table. A token seen again (or on a new account) just moves and refreshes. */
   @Post('devices')
   @HttpCode(204)
   async registerDevice(@CurrentUser() user: AuthUser, @Body() dto: DeviceDto): Promise<void> {
-    await this.redis.sadd(`tasalli:devices:${user.id}`, dto.token);
+    await this.db.query(
+      `insert into devices (user_id, push_token) values ($1, $2)
+       on conflict (push_token) do update set user_id = excluded.user_id, last_seen_at = now()`,
+      [user.id, dto.token],
+    );
   }
 }

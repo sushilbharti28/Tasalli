@@ -20,11 +20,14 @@ export interface StartSubscriptionResult {
 export interface BillingProvider {
   readonly name: string;
   startSubscription(userId: string, plan: PaidPlan): Promise<StartSubscriptionResult>;
+  /** Asks the provider to stop renewals. The fake has nothing to stop. */
+  cancelSubscription(providerSubscriptionId: string | null): Promise<void>;
 }
 
 @Injectable()
 export class FakeBillingProvider implements BillingProvider {
   readonly name = 'fake';
+  async cancelSubscription(): Promise<void> { /* nothing to stop */ }
   async startSubscription(_userId: string, plan: PaidPlan): Promise<StartSubscriptionResult> {
     return {
       providerSubscriptionId: `fake_sub_${randomUUID()}`,

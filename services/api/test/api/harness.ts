@@ -22,10 +22,11 @@ export class RecordingPublisher implements JobPublisher {
 }
 
 export const CODE = '123456';
+export const WEBHOOK_SECRET = 'test-billing-secret';
 
 export async function createApp(now = '2026-11-20T06:00:00Z') {
   const config = loadConfig({
-    NODE_ENV: 'test', DATABASE_URL: TEST_DB_URL, OTP_FIXED_CODE: CODE, RUN_WORKERS: 'false',
+    NODE_ENV: 'test', DATABASE_URL: TEST_DB_URL, OTP_FIXED_CODE: CODE, RUN_WORKERS: 'false', BILLING_WEBHOOK_SECRET: WEBHOOK_SECRET,
     REDIS_URL: process.env.REDIS_URL ?? 'redis://localhost:6379',
   } as NodeJS.ProcessEnv);
   const publisher = new RecordingPublisher();
@@ -34,7 +35,7 @@ export async function createApp(now = '2026-11-20T06:00:00Z') {
     .overrideProvider(JOB_PUBLISHER).useValue(publisher)
     .overrideProvider(CLOCK).useValue(clock)
     .compile();
-  const app = configureApp(mod.createNestApplication());
+  const app = configureApp(mod.createNestApplication({ rawBody: true }));
   await app.init();
   const db = app.get(Db);
   await db.query('truncate users, blocked_numbers, audit_log, webhook_events cascade');

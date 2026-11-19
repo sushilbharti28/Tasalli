@@ -15,6 +15,8 @@ export interface AppConfig {
   doseHorizonDays: number;
   /** Run the BullMQ worker for call-engine events and the daily dose window job in this process. */
   runWorkers: boolean;
+  /** HMAC secret for POST /webhooks/billing. Empty means every billing webhook is rejected (fail closed). */
+  billingWebhookSecret: string;
 }
 
 /** Reads configuration from environment variables by name only (safety rule 8). */
@@ -47,5 +49,6 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     otpFixedCode,
     doseHorizonDays: Number(env.DOSE_HORIZON_DAYS ?? 7),
     runWorkers: env.RUN_WORKERS !== 'false',
+    billingWebhookSecret: env.BILLING_WEBHOOK_SECRET ?? '',
   };
 }

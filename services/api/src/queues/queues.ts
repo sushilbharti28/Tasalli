@@ -19,6 +19,8 @@ export const JOBS = {
   consentCall: 'consent.call',
   scheduleReplan: 'schedule.replan',
   testCall: 'test.call',
+  /** NOT yet in call-engine's EngineJobs: one extra reminder call for a dose. Needs a call-engine handler. */
+  doseRemind: 'dose.remind',
   /** tasalli-api-events */
   consentRecorded: 'consent-recorded',
   numberBlocked: 'number-blocked',
@@ -29,6 +31,7 @@ export const JOBS = {
 export interface ConsentCallJob { personId: string }
 export interface ScheduleReplanJob { personId: string }
 export interface TestCallJob { userId: string }
+export interface DoseRemindJob { doseId: string }
 
 /**
  * Queue tasalli-api-events, job consent-recorded. OPTIONAL, sent by call-engine AFTER it has

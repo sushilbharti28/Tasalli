@@ -1,4 +1,8 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { RULES } from '@tasalli/contracts';
+import { createHash } from 'crypto';
+import Redis from 'ioredis';
+import { REDIS } from '../auth/otp-store';
 import { DateTime } from 'luxon';
 import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../common/decorators';
@@ -10,6 +14,8 @@ import { EventsService } from '../queues/events.service';
 import { localDateRangeToUtc } from './dose-times';
 
 export const MAX_RANGE_DAYS = 92;
+/** Extra reminder requests per number per day, so the queue cannot be flooded; call-engine enforces the 6/day cap itself. */
+export const MAX_EXTRA_REMINDERS_PER_DAY = 3;
 /** A dose may be marked taken up to this long before it is due (parent took it early). */
 export const MARK_TAKEN_EARLY_MINUTES = 120;
 
@@ -48,6 +54,7 @@ export class DosesService {
     private readonly audit: AuditService,
     private readonly events: EventsService,
     @Inject(CLOCK) private readonly clock: Clock,
+    @Inject(REDIS) private readonly redis: Redis,
   ) {}
 
   /**
@@ -101,6 +108,39 @@ export class DosesService {
     });
     if (changed) await this.events.doseManuallyConfirmed({ doseId, personId: dose.person_id, byUserId: user.id, at: now.toISOString() });
     return doseToApi(dose);
+  }
+
+  /**
+   * One extra reminder call. Only for missed or upcoming doses of a consented, unpaused,
+   * unblocked person (safety rule 3). Counts toward the 6 calls per number per day
+   * across all accounts (rule 5): refused here if the number already had 6 today, and
+   * call-engine checks again when it places the call.
+   */
+  async remind(user: AuthUser, doseId: string) {
+    const d = await this.getOwned(this.db, user, doseId);
+    if (d.status !== 'missed' && d.status !== 'upcoming') throw conflict('dose_not_remindable', 'Only missed or upcoming doses can be reminded');
+    const p = (await this.db.one<{ consent: string; paused: boolean; phone_e164: string; time_zone: string }>(
+      this.db, 'select consent, paused, phone_e164, time_zone from people where id = $1', [d.person_id],
+    ))!;
+    if (p.consent !== 'consented') throw conflict('not_consented', 'This person has not agreed to calls');
+    if (await this.people.isBlocked(this.db, p.phone_e164)) throw conflict('number_blocked', 'This number has asked not to be called');
+    if (p.paused) throw conflict('person_paused', 'Reminders are paused for this person');
+
+    const now = DateTime.fromJSDate(this.clock.now(), { zone: p.time_zone });
+    const placed = await this.db.one<{ n: string }>(
+      this.db,
+      `select count(*) as n from calls c join people q on q.id = c.person_id where q.phone_e164 = $1 and c.created_at >= $2`,
+      [p.phone_e164, now.startOf('day').toJSDate()],
+    );
+    const key = `tasalli:extra-reminders:${createHash('sha256').update(p.phone_e164).digest('hex').slice(0, 24)}:${now.toISODate()}`;
+    const queued = Number((await this.redis.get(key)) ?? 0);
+    if (Number(placed!.n) >= RULES.maxCallsPerNumberPerDay || queued >= MAX_EXTRA_REMINDERS_PER_DAY) {
+      throw new HttpException({ statusCode: 429, code: 'daily_cap', message: 'Daily call limit reached' }, HttpStatus.TOO_MANY_REQUESTS);
+    }
+    await this.audit.record(this.db, { actorUserId: user.id, actorKind: 'user', entity: 'dose', entityId: doseId, action: 'extra_reminder_requested', after: { status: d.status } });
+    await this.events.doseRemindRequested(doseId);
+    await this.redis.multi().incr(key).expire(key, 2 * 86400).exec();
+    return { status: 'queued' };
   }
 
   /** Reminder call attempts for the call this dose was grouped into. */

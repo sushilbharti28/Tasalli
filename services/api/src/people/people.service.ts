@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { RULES } from '@tasalli/contracts';
 import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../common/decorators';
@@ -8,7 +8,7 @@ import { maskPhoneForDisplay, maskPhoneForLog, normalizeE164 } from '../common/p
 import { Db, Queryable } from '../db/db.service';
 import { DoseGenerator } from '../doses/dose-generator.service';
 import { EventsService } from '../queues/events.service';
-import { PersonCreateDto, PersonUpdateDto } from './people.dto';
+import { PersonCreateDto, PersonUpdateDto, SUPPORTED_NEW_LANGUAGES } from './people.dto';
 
 export interface PersonRow {
   id: string;
@@ -44,6 +44,12 @@ export function personToApi(p: PersonRow) {
 function snapshot(p: PersonRow) {
   const { phone_e164: _phone, ...rest } = p;
   return rest;
+}
+
+function assertLanguageSupported(language: string) {
+  if (!(SUPPORTED_NEW_LANGUAGES as readonly string[]).includes(language)) {
+    throw new BadRequestException({ statusCode: 400, code: 'language_not_supported', message: 'Only Hindi (hi) is supported right now' });
+  }
 }
 
 @Injectable()
@@ -87,6 +93,7 @@ export class PeopleService {
   }
 
   async create(user: AuthUser, dto: PersonCreateDto): Promise<PersonRow> {
+    assertLanguageSupported(dto.language);
     const phone = dto.isSelf ? user.phone : normalizeE164(dto.phone!)!;
     const person = await this.db.tx(async (c) => {
       // Lock the account row so two concurrent adds cannot both pass the limit check.
@@ -138,6 +145,7 @@ export class PeopleService {
   async update(user: AuthUser, personId: string, dto: PersonUpdateDto): Promise<PersonRow> {
     const { before, after } = await this.db.tx(async (c) => {
       const before = await this.getOwned(c, user.id, personId, true);
+      if (dto.language && dto.language !== before.language) assertLanguageSupported(dto.language);
       const after = (await this.db.one<PersonRow>(
         c,
         `update people set nickname = coalesce($2, nickname), language = coalesce($3::call_language, language),

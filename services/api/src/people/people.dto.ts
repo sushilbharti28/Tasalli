@@ -3,6 +3,8 @@ import { IsE164Phone, IsIanaTimeZone, IsNotBlank } from '../common/validators';
 
 export const CALL_LANGUAGES = ['hi', 'en', 'bn', 'mr', 'ta', 'te'] as const;
 export type CallLanguage = (typeof CALL_LANGUAGES)[number];
+/** Hindi only for now (founder decision, v1.1). The enum stays; the API narrows it. */
+export const SUPPORTED_NEW_LANGUAGES: readonly CallLanguage[] = ['hi'];
 export const CAN_READ = ['yes', 'no', 'not_sure'] as const;
 
 export class PersonCreateDto {
