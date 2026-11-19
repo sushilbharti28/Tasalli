@@ -107,10 +107,20 @@ export type ReplyListName =
 
 export type ScriptReplies = Record<ReplyListName, string[]>;
 
+export interface ReminderSteps {
+  intro_many: string; intro_one: string; short_intro_many: string;
+  item: string; item_one: string; item_short: string;
+  time_of_day: Record<'morning' | 'afternoon' | 'evening' | 'night', string>;
+  ack_next: string; ack_not_now: string; ack_silence: string; unclear: string;
+  all_done: string; all_done_one: string; some_left: string; some_left_one: string;
+}
+
 export interface CallScript {
   meta: ScriptMeta;
   templates: ScriptTemplates;
   engine_extra: { child_fallback: string; list_and: string; declined_ack: string };
+  /** One-medicine-at-a-time call lines (hi and en for now; other languages use the engine's built-ins). */
+  reminder_steps?: ReminderSteps;
   building: ScriptBuilding;
   blocks: ScriptBlocks;
   replies: ScriptReplies;

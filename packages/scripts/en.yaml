@@ -67,6 +67,25 @@ engine_extra:
   list_and: ' and '
   declined_ack: 'All right. We will let {child_name} know. Goodbye.'   # not taken and the 15 minute reminder already used
 
+# One medicine at a time (call engine v1.3). {ordinal} already says "medicine" (see blocks.ordinals).
+reminder_steps:
+  intro_many: 'Namaste {person_name} ji. It is medicine time. {child_name} asked us to remind you. You have {count} medicines to take now. We will go one by one.'
+  intro_one: 'Namaste {person_name} ji. It is medicine time. {child_name} asked us to remind you. You have one medicine to take now.'
+  short_intro_many: '{person_name} ji, it is medicine time. You have {count} medicines to take now. We will go one by one.'
+  item: '{ordinal}: {spoken_name}. {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {food_phrase}.][ {extra_instruction}.] Please take this medicine. When you have taken it, say "taken", or press 1.'
+  item_one: 'Medicine: {spoken_name}. {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {food_phrase}.][ {extra_instruction}.] Please take this medicine. When you have taken it, say "taken", or press 1.'
+  item_short: '{ordinal}: {spoken_name}. {amount_text}[, {disambiguator}].[ {food_phrase}.][ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  # Words for {time_of_day} (parent's local hour). {time_of_day} and {meal_relation} (set only when every medicine shares the food rule) can be used in any line here.
+  time_of_day: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' }
+  ack_next: 'All right.'
+  ack_not_now: 'No problem, we will remind you again in a little while.'
+  ack_silence: 'No problem.'
+  unclear: 'Sorry, I did not understand. If you have taken it, press 1.'
+  all_done: 'Very good. All the medicines have been taken. Thank you.'
+  all_done_one: 'Very good. The medicine has been taken. Thank you.'
+  some_left: 'Thank you. We will call again in a little while for the remaining medicine.'
+  some_left_one: 'Thank you. We will call again in a little while for the medicine.'
+
 building:
   appearance:
     tablet: '[{colour_primary} ][{shape} ]tablet[, {size}][, {marking}]'

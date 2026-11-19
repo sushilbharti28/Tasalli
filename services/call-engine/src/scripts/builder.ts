@@ -140,6 +140,49 @@ export function buildReminderText(input: ReminderScriptInput, mode: 'full' | 'sh
   return joinSentences(parts);
 }
 
+export interface ReminderSteps {
+  /** Intro, then the first medicine: one prompt (the call needs one listen step). */
+  opening: string;
+  /** Per medicine: `first` is said the first time (full or short mode), `full` is the repeat for key 0 / "phir se". */
+  items: Array<{ first: string; full: string }>;
+}
+
+/** One-medicine-at-a-time script (v1.3). Same inputs as buildReminderText; full on the first call of the day, short afterwards. */
+export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
+  const t = input.templates, r = t.reminder;
+  const person_name = personName(t, input.person), child_name = childName(t, input.childName);
+  const count = input.items.length;
+  const h = input.localHour;
+  const time_of_day = r.step_time_of_day[h < 12 ? 'morning' : h < 17 ? 'afternoon' : h < 21 ? 'evening' : 'night'];
+  const foods = new Set(input.items.map((it) => it.schedule.food));
+  const meal_relation = foods.size === 1 ? foodPhrase(t, [...foods][0]!, input.localHour) : ''; // only when common to every medicine
+  const seenNumbers = new Set(input.announcedTodayMedicineIds);
+  const items = input.items.map((it, i) => {
+    const ordinal = t.words.ordinals[i] ?? String(i + 1);
+    const m = it.medicine;
+    const common = {
+      ordinal, time_of_day, meal_relation, spoken_name: m.spokenName, amount_text: it.schedule.amountText, disambiguator: disambiguator(t, m),
+      food_phrase: foodPhrase(t, it.schedule.food, input.localHour), extra_instruction: m.extraInstruction,
+    };
+    const full = render(count === 1 ? r.step_item_one : r.step_item, {
+      ...common, appearance_phrase: appearancePhrase(t, m), pack_phrase: packPhrase(t, m),
+    });
+    const sunday = input.isSunday && m.numberLabel !== null && m.numberLabel !== undefined && !seenNumbers.has(m.id)
+      ? render(r.sunday_line, { number: m.numberLabel, spoken_name: m.spokenName }) : ''; // said once per medicine per day
+    if (sunday) seenNumbers.add(m.id);
+    // A short call with one medicine is a single sentence that greets and asks; no separate intro.
+    const body = input.mode === 'full' ? full
+      : count === 1 && r.short_single
+        ? render(r.short_single, { person_name, child_name, spoken_name: m.spokenName, amount_text: it.schedule.amountText,
+          disambiguator: disambiguator(t, m), food_phrase: foodPhrase(t, it.schedule.food, input.localHour), extra_instruction: m.extraInstruction })
+        : render(r.step_item_short, common);
+    return { first: joinSentences([sunday, body]), full };
+  });
+  const intro = count === 1 ? (input.mode === 'full' ? render(r.step_intro_one, { person_name, child_name, time_of_day, meal_relation }) : '')
+    : render(input.mode === 'full' ? r.step_intro : r.step_short_intro, { person_name, child_name, count, time_of_day, meal_relation });
+  return { opening: joinSentences([intro, items[0]?.first ?? '']), items };
+}
+
 export function sundayLines(input: ReminderScriptInput): string[] {
   if (!input.isSunday) return [];
   const seen = new Set(input.announcedTodayMedicineIds);

@@ -69,6 +69,26 @@ engine_extra:
   list_and: ' और '
   declined_ack: 'ठीक है जी। {child_name} को बता देंगे। नमस्ते।'   # not taken and the 15 minute reminder already used
 
+# One medicine at a time (call engine v1.3): the call goes through the due medicines in order and confirms each one.
+# {ordinal} already says "medicine" (see blocks.ordinals). Not in the other languages yet: the engine falls back to its built-in lines.
+reminder_steps:
+  intro_many: 'नमस्ते {person_name} जी, {child_name} की तरफ़ से दवाई का समय। अभी {count} दवाइयाँ लेनी हैं। एक-एक करके बताते हैं।'
+  intro_one: 'नमस्ते {person_name} जी, {child_name} की तरफ़ से दवाई का समय। अभी एक दवाई लेनी है।'
+  short_intro_many: '{person_name} जी, दवाई का समय। अभी {count} दवाइयाँ लेनी हैं। एक-एक करके बताते हैं।'
+  item: '{ordinal}: {spoken_name}। {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {food_phrase}।][ {extra_instruction}।] ये दवाई ले लीजिए। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
+  item_one: 'दवाई: {spoken_name}। {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {food_phrase}।][ {extra_instruction}।] ये दवाई ले लीजिए। ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
+  item_short: '{ordinal}: {spoken_name}। {amount_text}[, {disambiguator}]।[ {food_phrase}।][ {extra_instruction}।] ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
+  # Words for {time_of_day} (parent's local hour). {time_of_day} and {meal_relation} (set only when every medicine shares the food rule) can be used in any line here.
+  time_of_day: { morning: 'सुबह', afternoon: 'दोपहर', evening: 'शाम', night: 'रात' }
+  ack_next: 'ठीक है।'
+  ack_not_now: 'कोई बात नहीं, थोड़ी देर में फिर याद दिलाएँगे।'
+  ack_silence: 'कोई बात नहीं।'
+  unclear: 'माफ़ कीजिए, समझ नहीं आया। ले ली हो, तो 1 दबाइए।'
+  all_done: 'बहुत अच्छा। सब दवाइयाँ ले ली गई हैं। धन्यवाद।'
+  all_done_one: 'बहुत अच्छा। दवाई ले ली गई है। धन्यवाद।'
+  some_left: 'धन्यवाद। बाकी दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे।'
+  some_left_one: 'धन्यवाद। दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे।'
+
 building:
   appearance:
     tablet: '[{colour_primary|f} ][{shape|f} ]गोली[, {size|f}][, {marking}]'

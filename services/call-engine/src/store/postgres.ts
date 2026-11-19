@@ -166,6 +166,19 @@ export class PgStore implements Store {
         where call_group_id = $1 and status in ('upcoming', 'calling') returning id`, [groupId, via, at]);
     return rows.length;
   }
+  async confirmDoses(ids: string[], via: 'key' | 'speech', at: Date) {
+    if (ids.length === 0) return 0;
+    const rows = await this.q(
+      `update doses set status = 'confirmed', confirmed_at = $3, confirmed_via = $2
+        where id = any($1::uuid[]) and status in ('upcoming', 'calling') returning id`, [ids, via, at]);
+    return rows.length;
+  }
+  async closeDoses(ids: string[], to: 'missed' | 'skipped_paused') {
+    if (ids.length === 0) return 0;
+    const rows = await this.q(
+      `update doses set status = $2 where id = any($1::uuid[]) and status in ('upcoming', 'calling') returning id`, [ids, to]);
+    return rows.length;
+  }
   async closeGroup(groupId: string, to: 'missed' | 'skipped_paused') {
     const rows = await this.q(
       `update doses set status = $2 where call_group_id = $1 and status in ('upcoming', 'calling') returning id`, [groupId, to]);

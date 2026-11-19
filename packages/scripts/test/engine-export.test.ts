@@ -15,7 +15,7 @@ const REQUIRED: Record<string, string[]> = {
 };
 const ALLOWED: Record<string, string[]> = {
   reminder: ['person_name', 'child_name', 'count', 'dose_unit', 'ordinal', 'spoken_name', 'amount_text', 'appearance_phrase',
-    'pack_phrase', 'disambiguator', 'food_phrase', 'extra_instruction', 'names', 'number', 'minutes'],
+    'pack_phrase', 'disambiguator', 'food_phrase', 'extra_instruction', 'names', 'number', 'minutes', 'time_of_day', 'meal_relation'],
   consent: ['person_name', 'child_name'],
   test: ['person_name'],
   words: ['size', 'colour', 'colour2', 'shape', 'kind', 'marking', 'pack_colour', 'print_colour', 'cap_colour', 'cap_phrase',

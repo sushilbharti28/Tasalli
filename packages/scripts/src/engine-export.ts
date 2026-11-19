@@ -27,6 +27,14 @@ const tailAfter = (full: string, base: string): string => {
   return f.startsWith(b) ? f.slice(b.length).replace(/^[\s,;]+/, '') : f;
 };
 
+/** Lines for the one-medicine-at-a-time flow; optional keys in the engine format. */
+const stepLines = (r: NonNullable<CallScript['reminder_steps']>) => ({
+  step_intro: r.intro_many, step_intro_one: r.intro_one, step_short_intro: r.short_intro_many,
+  step_item: flat(r.item), step_item_one: flat(r.item_one), step_item_short: flat(r.item_short),
+  step_time_of_day: r.time_of_day, step_ack_next: r.ack_next, step_ack_not_now: r.ack_not_now, step_ack_silence: r.ack_silence, step_unclear: r.unclear,
+  step_all_done: r.all_done, step_all_done_one: r.all_done_one, step_some_left: r.some_left, step_some_left_one: r.some_left_one,
+});
+
 export function toEngineTemplates(s: CallScript): Record<string, unknown> {
   const t = s.templates, b = s.building, w = s.blocks;
   const kindTablet = w.kinds.tablet;
@@ -63,6 +71,7 @@ export function toEngineTemplates(s: CallScript): Record<string, unknown> {
       unwell_ack: t.reply_ack.unwell,
       stop_ack: t.reply_ack.stop,
       no_input_goodbye: t.unclear.final,
+      ...(s.reminder_steps ? stepLines(s.reminder_steps) : {}),
     },
     consent: {
       prompt: t.consent.ask,

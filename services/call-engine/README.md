@@ -11,6 +11,7 @@ pnpm --filter call-engine test        # 102 tests, FakeProvider and recorded Twi
 pnpm --filter call-engine lint        # tsc
 pnpm --filter call-engine dev         # webhook server on PORT (default 8080); FakeProvider unless TELEPHONY_PROVIDER=twilio
 pnpm --filter call-engine test-call +91XXXXXXXXXX   # one real consent-style call, see below
+pnpm --filter call-engine test-reminder +91XXXXXXXXXX   # one real reminder call, 3 medicines, see "Reminder flow"
 ```
 
 ## Environment (names only; never commit values)
@@ -28,6 +29,21 @@ pnpm --filter call-engine test-call +91XXXXXXXXXX   # one real consent-style cal
 | `TWILIO_*` voices | edit `VOICES` in `src/providers/twilio.ts` (hi and en use `Polly.Aditi`) |
 
 `pnpm dev` and `pnpm test-call` read the repo-root `.env` (variables already in the environment win).
+
+## Reminder flow (v1.3: one medicine at a time)
+
+A call for a dose group says the intro and the first medicine, then goes through the medicines in order. Per medicine:
+"le li" / "haan" / 1 confirms only that dose ("Theek hai.", next medicine); "nahi" / "nahi li" / "baad mein" / 2 leaves it unconfirmed
+("Koi baat nahi, thodi der mein phir yaad dilayenge.") and moves on; "phir se" / 0 repeats the same medicine in full;
+unclear speech asks once ("... Le li ho to 1 dabaiye."), then keypad only, and a second miss or silence leaves it unconfirmed and moves on;
+9 stops everything and blocks the number; 3 closes the unconfirmed doses and alerts the family. "No" is checked before "yes"; silence never confirms.
+The call ends with "all taken" or "baaki dawai ke liye thodi der mein phir phone karenge".
+
+- State: `session.reminder` (items, current index, per-dose outcomes, what was heard) lives in the session store, so a repeated webhook gets its stored reply and never advances twice.
+- Confirmations are per dose (`Store.confirmDoses`). If any dose was "not now", one snooze (15 min) is queued for the group; if the snooze was already used, that dose is missed and the family is told. Doses nobody answered for use the normal 10-minute retries (2 more, then missed).
+  Snooze and retry calls only cover doses still unconfirmed, so they may have fewer medicines (and the singular wording).
+- Wording lives in `packages/scripts/{hi,en}.yaml` under `reminder_steps` (exported by `pnpm --filter @tasalli/scripts build:engine`). Placeholders: `{person_name} {child_name} {count} {time_of_day} {meal_relation} {ordinal} {spoken_name} {amount_text} {appearance_phrase} {pack_phrase} {disambiguator} {food_phrase} {extra_instruction}`. `{meal_relation}` is filled only when every medicine in the call has the same food rule.
+- `test-reminder <E.164>`: same setup as test-call (root `.env`, throwaway server on `CALL_ENGINE_PORT`, MemoryStore). Creates "Papa" (child "Rahul", Hindi) with three medicines due now: "BP wali" (tablet, after breakfast), "sugar wali" (capsule, before food), "pet wali dawai" (syrup, after food), places one call (not recorded), and prints each medicine's outcome (confirmed / not taken / no answer) and the inputs heard. No retry or snooze calls are placed.
 
 ## Call recording (v1.2: recordings live in India)
 
