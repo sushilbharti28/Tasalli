@@ -1,4 +1,3 @@
-import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { Redis } from 'ioredis';
 import pg from 'pg';
@@ -6,6 +5,8 @@ import type { TelephonyProvider } from '@tasalli/contracts';
 import { systemClock } from './clock.js';
 import { defaultConfig, type AudioSource } from './engine/deps.js';
 import { Engine } from './engine/engine.js';
+import { buildTwilio } from './providers/twilio-factory.js';
+import { createWebhookServer } from './server.js';
 import { MemorySessionStore, RedisSessionStore } from './flows/session.js';
 import { createLogger } from './log.js';
 import { FakeProvider } from './providers/fake-telephony.js';
@@ -26,7 +27,9 @@ export async function start() {
   const speech = new FakeSpeech();
   let provider: TelephonyProvider;
   let audio: AudioSource;
-  {
+  if (env.TELEPHONY_PROVIDER === 'twilio') {
+    ({ provider, audio } = buildTwilio(env));
+  } else {
     provider = new FakeProvider(env.FAKE_WEBHOOK_SECRET ?? 'dev-secret', systemClock);
     audio = new AudioCache(speech, new LocalFsAudioStorage(env.AUDIO_DIR ?? join(process.cwd(), '.audio'), `${base}/audio`));
   }
@@ -46,23 +49,7 @@ export async function start() {
     setInterval(() => void queue.runDue().catch((e) => log.error('job error', { err: String(e) })), 1000);
   }
 
-  const server = createServer(async (req, res) => {
-    const url = new URL(req.url ?? '/', base);
-    if (req.method === 'GET' && url.pathname === '/health') return void res.writeHead(200).end('ok');
-    const m = /^\/webhooks\/([a-z]+)\/(status|input)$/.exec(url.pathname);
-    if (req.method !== 'POST' || !m || m[1] !== provider.name) return void res.writeHead(404).end();
-    const raw = Buffer.concat(await req.toArray() as Buffer[]).toString('utf8');
-    const ctype = String(req.headers['content-type'] ?? '');
-    const body = ctype.includes('json') ? JSON.parse(raw || '{}') : Object.fromEntries(new URLSearchParams(raw));
-    const headers = Object.fromEntries(Object.entries(req.headers).map(([k, v]) => [k, String(v)]));
-    headers['x-tasalli-url'] = base + (req.url ?? '');
-    const out = await engine.handleWebhook(headers, body).catch((e) => {
-      log.error('webhook error', { err: String(e) });
-      return { status: 500, contentType: 'text/plain', body: 'error' };
-    });
-    res.writeHead(out.status, { 'content-type': out.contentType }).end(out.body);
-  });
-  server.listen(port, () => log.info('call-engine listening', { port, provider: provider.name }));
+  createWebhookServer(engine, provider, base, log).listen(port, () => log.info('call-engine listening', { port, provider: provider.name }));
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) void start();

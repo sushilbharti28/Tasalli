@@ -8,7 +8,8 @@
     "start": "tsx src/main.ts",
     "test": "vitest run",
     "lint": "tsc --noEmit -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test-call": "tsx src/test-call.ts"
   },
   "dependencies": {
     "@tasalli/contracts": "workspace:*",

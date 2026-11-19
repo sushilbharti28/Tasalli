@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { REMINDER_KEYS, RULES, CONSENT_KEYS, type CallStep } from '@tasalli/contracts';
+import type { CallStep } from '@tasalli/contracts';
+import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
 import { buildReminderText, line, personName, childName } from '../scripts/builder.js';
 import { localDay } from '../scheduler/time.js';
 import type { CallSession } from '../flows/session.js';

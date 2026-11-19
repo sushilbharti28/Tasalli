@@ -1,4 +1,4 @@
-import { RULES } from '@tasalli/contracts';
+import { RULES } from '../contracts-values.js';
 import { MINUTE } from '../clock.js';
 import { occurrences, stillMatches } from '../scheduler/time.js';
 import type { PersonRow } from '../types.js';

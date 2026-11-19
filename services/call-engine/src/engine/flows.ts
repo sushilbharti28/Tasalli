@@ -1,4 +1,5 @@
-import { CONSENT_KEYS, REMINDER_KEYS, RULES, type CallEvent, type NextAction, type ReplyIntent } from '@tasalli/contracts';
+import type { CallEvent, NextAction, ReplyIntent } from '@tasalli/contracts';
+import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
 import { MINUTE } from '../clock.js';
 import { fetchAudio } from '../providers/fake-speech.js';
 import { line, childName } from '../scripts/builder.js';
