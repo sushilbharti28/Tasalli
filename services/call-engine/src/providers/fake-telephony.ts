@@ -1,7 +1,7 @@
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import type { CallEvent, CallStep, NextAction, PlaceCallRequest, PlaceCallResult, TelephonyProvider } from '@tasalli/contracts';
 import type { Clock } from '../clock.js';
-import { systemClock } from '../clock.js';
+import { FakeClock, systemClock } from '../clock.js';
 
 export type FakeAnswer = 'answered' | 'no_answer' | 'busy' | 'failed';
 
@@ -29,6 +29,11 @@ export interface FakeScenario {
   resendTerminalWithNewId?: boolean;
   /** placeCall throws this message (provider outage). */
   placeCallError?: string;
+  /**
+   * Seconds that pass (listening to the prompt, then answering) before each input. Moves the clock only when it is a FakeClock.
+   * A number applies to every step; an array gives each step its own value (the last one repeats).
+   */
+  secondsPerStep?: number | number[];
   /** Sign webhooks with a wrong secret (they must be rejected). */
   badSignature?: boolean;
 }
@@ -117,6 +122,8 @@ export class FakeProvider implements TelephonyProvider {
     const inputs = [...(s.inputs ?? [])];
     for (let i = 0; step?.listen && i < MAX_STEPS; i++) {
       const input = inputs.shift() ?? { silence: true as const };
+      const sec = Array.isArray(s.secondsPerStep) ? (s.secondsPerStep[i] ?? s.secondsPerStep[s.secondsPerStep.length - 1] ?? 0) : (s.secondsPerStep ?? 0);
+      if (sec > 0 && this.clock instanceof FakeClock) this.clock.advance(sec * 1000);
       if ('hangup' in input) break;
       let ev: Record<string, unknown>;
       if ('key' in input) ev = { type: 'input', kind: 'key', value: input.key };

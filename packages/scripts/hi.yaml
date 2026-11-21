@@ -19,7 +19,7 @@ meta:
 templates:
   consent:
     ask: 'नमस्ते {person_name} जी। यह तसल्ली की तरफ़ से फ़ोन है। {relation_phrase} {child_name} आपको दवाई की याद दिलाने के लिए फ़ोन करवाना चाहते हैं। यह कॉल रिकॉर्ड की जाएगी। अगर आप हाँ कहना चाहते हैं, तो "हाँ" बोलिए, या 1 दबाइए। अगर आप ये फ़ोन नहीं चाहते, तो 9 दबाइए। फिर हम कभी फ़ोन नहीं करेंगे।'
-    agreed: 'धन्यवाद जी। अब दवाई के समय पर हम फ़ोन करेंगे। हर बार "ले ली" बोलिए, या 1 दबाइए। कभी भी 9 दबाकर फ़ोन बंद करवा सकते हैं। नमस्ते।'
+    agreed: 'धन्यवाद जी। अब दवाई के समय पर हम फ़ोन करेंगे। हर बार "ले ली" या "हाँ" बोलिए, या 1 दबाइए। कभी भी 9 दबाकर फ़ोन बंद करवा सकते हैं। नमस्ते।'
     declined: 'ठीक है जी। हम आपको फ़ोन नहीं करेंगे। नमस्ते।'
     stopped: 'ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। नमस्ते।'
     unclear: 'माफ़ कीजिए, समझ नहीं आया। हाँ कहना हो, तो 1 दबाइए। फ़ोन नहीं चाहिए, तो 9 दबाइए।'
@@ -30,14 +30,14 @@ templates:
     count_one: 'अभी एक दवाई लेनी है।'
     count_many: 'अभी {count} दवाइयाँ लेनी हैं।'
     item: '{ordinal}, {spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {food_phrase}।][ {extra_instruction}]'
-    ask: 'दवाई ले लें, फिर बोलिए "ले ली", या 1 दबाइए। दोबारा सुनने के लिए 0। पंद्रह मिनट बाद याद दिलाने के लिए 2।'
+    ask: 'दवाई ले लें, फिर बोलिए "ले ली" या "हाँ", या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2।'
     more_options: 'डॉक्टर ने दवाई बदली हो, तो 3 दबाइए।'
 
   reminder_short:
-    single: '{person_name} जी, {spoken_name} का समय। {amount_text}[, {food_phrase}]। ले ली, तो "ले ली" बोलिए, या 1 दबाइए।'
+    single: '{person_name} जी, {spoken_name} का समय। {amount_text}[, {food_phrase}]। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
     group_greeting: '{person_name} जी, दवाई का समय।'
     group_item: '{spoken_name}: {amount_text}[, {food_phrase}]।'
-    ask: 'ले ली, तो "ले ली" बोलिए, या 1 दबाइए।'
+    ask: 'ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
 
   test_call:
     intro: 'यह तसल्ली की टेस्ट कॉल है। आपके घर वालों को ऐसी ही कॉल आएगी।'
@@ -53,8 +53,8 @@ templates:
   reply_ack:
     confirmed: 'धन्यवाद जी। {child_name} को बता देंगे। नमस्ते।'
     snoozed: 'ठीक है जी। पंद्रह मिनट बाद फिर याद दिलाएँगे। नमस्ते।'
-    snooze_used_up: 'पंद्रह मिनट वाली याद एक ही बार होती है। दवाई ले लें, तो "ले ली" बोलिए, या 1 दबाइए।'
-    not_taken: 'ठीक है जी। दवाई ले लें, तो "ले ली" बोलिए, या 1 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2 दबाइए।'
+    snooze_used_up: 'पंद्रह मिनट वाली याद एक ही बार होती है। दवाई ले लें, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए।'
+    not_taken: 'ठीक है जी। दवाई ले लें, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2 दबाइए।'
     doctor_changed: 'ठीक है जी। {child_name} को बता देंगे कि डॉक्टर ने दवाई बदली है। नमस्ते।'
     unwell: 'ठीक है जी। {child_name} को बता देंगे। ज़रूरत हो, तो अपने डॉक्टर से बात कीजिए। नमस्ते।'
     stop: 'ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। {child_name} को भी बता देंगे। नमस्ते।'
@@ -79,10 +79,10 @@ reminder_steps:
   intro_one: 'नमस्ते {person_name} जी। आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
   short_intro_many: '{person_name} जी, आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
   short_intro_one: '{person_name} जी, आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
-  item: '{ordinal}: {spoken_name}। {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
-  item_one: '{spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
-  item_short: '{ordinal}: {spoken_name}। {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
-  item_short_one: '{spoken_name}: {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" बोलिए, या 1 दबाइए।'
+  item: '{ordinal}: {spoken_name}। {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  item_one: '{spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  item_short: '{ordinal}: {spoken_name}। {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  item_short_one: '{spoken_name}: {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
   # {meal_phrase} = meal + relation (dose hour: before 11 breakfast, 11-16 lunch, after 16 dinner); with no food rule, the day part.
   meals: { breakfast: 'नाश्ते', lunch: 'दोपहर के खाने', dinner: 'रात के खाने' }
   food_rel: { before: 'से पहले', after: 'के बाद', with: 'के साथ' }
@@ -97,6 +97,9 @@ reminder_steps:
   all_done_one: 'बहुत अच्छा। दवाई ले ली गई है। धन्यवाद।'
   some_left: 'धन्यवाद। बाकी दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे।'
   some_left_one: 'धन्यवाद। दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे।'
+  # A medicine heard 3 times (repeated twice) stays unconfirmed and the call moves on; soft call time limit reached.
+  repeat_limit: 'कोई बात नहीं, आगे बढ़ते हैं।'
+  time_up: 'समय पूरा हो गया। बाकी दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे। धन्यवाद।'
 
 building:
   appearance:
@@ -164,7 +167,7 @@ blocks:
 # Both Devanagari and Roman forms: speech engines return either.
 # Nukta and chandrabindu/anusvara are ignored when matching (README), so नहीं = नही.
 replies:
-  confirm: ['ले ली', 'ले लिया', 'ले ली है', 'ले लिया है', 'लेली', 'हाँ', 'हाँ जी', 'हाँ ले ली', 'खा ली', 'खा लिया', 'हो गया', 'yes', 'le li', 'le liya', 'le li hai', 'leli', 'haan', 'haa', 'han', 'haan ji', 'haan le li', 'kha li', 'kha liya', 'ho gaya']
+  confirm: ['ले ली', 'ले लिया', 'ले ली है', 'ले लिया है', 'लेली', 'हाँ', 'हां', 'हा', 'हाँ जी', 'हाँ ले ली', 'खा ली', 'खा लिया', 'हो गया', 'लिली', 'लीली', 'ली ली', 'लेलिया', 'yes', 'le li', 'le liya', 'le li hai', 'leli', 'le lee', 'lelee', 'leliya', 'lily', 'lili', 'li li', 'haan', 'haa', 'han', 'haan ji', 'haan le li', 'kha li', 'kha liya', 'ho gaya']
   # "Not taken". Also "ran out" words (ख़त्म, khatam): "dawai khatam ho gayi" must never count as taken.
   negative: ['नहीं', 'नहीं ली', 'नहीं लिया', 'नहीं खाई', 'अभी नहीं', 'ख़त्म', 'nahi', 'nahin', 'nai', 'nahi li', 'nahi liya', 'abhi nahi', 'khatam', 'khatm', 'no']
   snooze: ['बाद में', 'थोड़ी देर में', 'थोड़ी देर बाद', 'रुको', 'baad mein', 'baad me', 'thodi der mein', 'thodi der baad', 'ruko']

@@ -34,6 +34,7 @@ const stepLines = (r: NonNullable<CallScript['reminder_steps']>) => ({
   step_meals: r.meals, step_food_rel: r.food_rel, step_day_part: r.day_part, step_relations: r.relations, step_count_words: r.count_words,
   step_ack_next: r.ack_next, step_ack_not_now: r.ack_not_now, step_ack_silence: r.ack_silence, step_unclear: r.unclear,
   step_all_done: r.all_done, step_all_done_one: r.all_done_one, step_some_left: r.some_left, step_some_left_one: r.some_left_one,
+  ...(r.repeat_limit ? { step_repeat_limit: r.repeat_limit } : {}), ...(r.time_up ? { step_time_up: r.time_up } : {}),
 });
 
 export function toEngineTemplates(s: CallScript): Record<string, unknown> {

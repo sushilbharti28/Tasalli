@@ -14,6 +14,8 @@ export interface CallSession {
   repeats: number;
   steps: number;
   keypadOnly: boolean;
+  /** When the call was answered (ms since epoch). Set once, by the 'answered' status (or by the first input if that never arrived). */
+  answeredAtMs?: number;
   /** "Not taken" was answered once with not_taken_ack (take it, press 1, or 2 for a reminder). */
   notTakenAsked?: boolean;
   /** Reminder calls: one medicine at a time. Survives webhooks (Redis/memory), so a repeated webhook never advances twice. */

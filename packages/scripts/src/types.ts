@@ -117,6 +117,8 @@ export interface ReminderSteps {
   count_words: string[];
   ack_next: string; ack_not_now: string; ack_silence: string; unclear: string;
   all_done: string; all_done_one: string; some_left: string; some_left_one: string;
+  /** Optional: a medicine heard 3 times moves on; soft call time limit reached. */
+  repeat_limit?: string; time_up?: string;
 }
 
 export interface CallScript {

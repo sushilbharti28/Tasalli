@@ -131,3 +131,10 @@ Deleting a person's data on request: remove the file named in `calls.recording_u
 
 `dose.remind { doseId }` (from services/api, "send one more reminder"): one call for an upcoming (due within 30 minutes) or missed dose, no retries.
 Confirmed or mid-call doses are ignored; a duplicate job places no second call; consent, block list, billing and the 6/day cap are re-checked.
+
+## Call pacing and speech (v1.4)
+
+- **SSML pace.** Every Twilio `<Say>` is rendered as `<prosody rate="85%">` with `<break time="400ms"/>` between sentences and between the parts of a medicine line (name, amount, appearance, pack). Text is XML-escaped per part (`toSsml` in `src/providers/twilio.ts`). Source check (July 2026): Google documents `<prosody>` and `<break>` as supported for Chirp 3 HD voices on synchronous requests (not streaming); Twilio documents `<prosody>`, `<break>` and `<s>` for Google voices and says SSML support can differ per voice, so it needs one real call to confirm by ear. If the 85% rate is ignored for this voice, the breaks still apply. `TWILIO_SSML=off` sends plain text instead.
+- **Repeat limit.** A medicine can be repeated twice (heard 3 times). The next repeat request says "Koi baat nahi, aage badhte hain.", leaves the dose unconfirmed (normal 10 minute retry) and moves on.
+- **Call time limit.** Soft limit from answer: 180 s up to 5 medicines, +40 s per medicine above 5 (`src/flows/limits.ts`). When the next step would start after it, the call says the `step_time_up` line and ends; unconfirmed doses follow the normal retry/snooze rules. Twilio `TimeLimit` = soft limit + 30 s is sent on reminder calls as a hard backstop (the field is `timeLimitSeconds` on the place-call request; not in the contract yet).
+- **Recognition.** Confirm variants ("लिली", "lily", "leli", "हाँ", ...) are in `src/speech/phrases.ts` and `packages/scripts/hi.yaml`. Negatives are still checked first.

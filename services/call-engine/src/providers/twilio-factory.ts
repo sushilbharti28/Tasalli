@@ -20,5 +20,5 @@ export function twilioEnv(env: NodeJS.ProcessEnv): TwilioEnv {
 
 export function buildTwilio(env: NodeJS.ProcessEnv): { provider: TelephonyProvider; audio: AudioSource } {
   const c = twilioEnv(env);
-  return { provider: new TwilioProvider({ accountSid: c.accountSid, authToken: c.authToken, publicBaseUrl: c.publicBaseUrl, record: env.TWILIO_RECORD !== 'false' }), audio: new SayUrls() };
+  return { provider: new TwilioProvider({ accountSid: c.accountSid, authToken: c.authToken, publicBaseUrl: c.publicBaseUrl, record: env.TWILIO_RECORD !== 'false', ssml: env.TWILIO_SSML !== 'off' }), audio: new SayUrls() };
 }
