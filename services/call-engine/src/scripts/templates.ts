@@ -45,7 +45,10 @@ export interface ScriptTemplates {
     step_short_intro: string; // later calls of the day: {person_name} {meal_phrase} {count_word} {count}
     step_short_intro_one: string;
     /** The food timing is said once, in the intro, so the item lines leave it out. */
-    step_item: string;        // {ordinal} {spoken_name} {amount_text} {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}
+    step_greeting?: string;   // {person_name}: said alone first, then a 1 s pause
+    step_presence?: string;   // "can you hear me?": asked after the greeting, before any medicine or the consent question
+    step_spoken_line?: string; // {spoken_name}: "Jise aap ... kehte hain."; left out when it equals the strip name
+    step_item: string;        // {ordinal} {strip_name} {strength} {spoken_line} {spoken_name} {amount_text} {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}
     step_item_one: string;    // no ordinal
     step_item_short: string;  // {ordinal} {spoken_name} {amount_text} {disambiguator} {extra_instruction}
     step_item_short_one: string;
@@ -131,14 +134,17 @@ export const HI_TEMPLATES: ScriptTemplates = {
     unwell_ack: 'Apna khayal rakhiye. Hum {child_name} ko abhi bata rahe hain.',
     stop_ack: 'Theek hai. Ab hum aapko phone nahi karenge. Namaste.',
     no_input_goodbye: 'Hum thodi der mein phir phone karenge. Namaste.',
-    step_intro: 'Namaste {person_name}. Aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
-    step_intro_one: 'Namaste {person_name}. Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
-    step_short_intro: '{person_name}, aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
-    step_short_intro_one: '{person_name}, aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
-    step_item: '{ordinal} dawai: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
-    step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
-    step_item_short: '{ordinal} dawai: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
-    step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
+    step_greeting: 'Namaste {person_name}.',
+    step_presence: 'Kya aapko awaaz aa rahi hai? "Haan" boliye, ya 1 dabaiye.',
+    step_spoken_line: 'Jise aap {spoken_name} kehte hain.',
+    step_intro: 'Aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
+    step_intro_one: 'Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
+    step_short_intro: 'Aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
+    step_short_intro_one: 'Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
+    step_item: '{ordinal} dawai: {strip_name} {strength}. {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
+    step_item_one: 'Dawai: {strip_name} {strength}. {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
+    step_item_short: '{ordinal} dawai: {strip_name} {strength}. {spoken_line} {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
+    step_item_short_one: 'Dawai: {strip_name} {strength}. {spoken_line} {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
     step_meals: { breakfast: 'nashte', lunch: 'dopahar ke khane', dinner: 'raat ke khane' },
     step_food_rel: { before: 'se pehle', after: 'ke baad', with: 'ke saath' },
     step_day_part: { morning: 'subah ki', afternoon: 'dopahar ki', evening: 'shaam ki', night: 'raat ki' },
@@ -216,14 +222,17 @@ export const EN_TEMPLATES: ScriptTemplates = {
     unwell_ack: 'Please take care. We are letting {child_name} know now.',
     stop_ack: 'All right. We will not call you again. Goodbye.',
     no_input_goodbye: 'We will call again in a little while. Goodbye.',
-    step_intro: 'Namaste {person_name}. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
-    step_intro_one: 'Namaste {person_name}. It is time for your {meal_phrase} medicine.',
-    step_short_intro: '{person_name}, it is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
-    step_short_intro_one: '{person_name}, it is time for your {meal_phrase} medicine.',
-    step_item: '{ordinal} medicine: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
-    step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
-    step_item_short: '{ordinal} medicine: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
-    step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_greeting: 'Namaste {person_name}.',
+    step_presence: 'Can you hear me? Say "yes", or press 1.',
+    step_spoken_line: 'You call it {spoken_name}.',
+    step_intro: 'It is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
+    step_intro_one: 'It is time for your {meal_phrase} medicine.',
+    step_short_intro: 'It is time for your {count_word} {meal_phrase} medicines. We will go one by one.',
+    step_short_intro_one: 'It is time for your {meal_phrase} medicine.',
+    step_item: '{ordinal} medicine: {strip_name} {strength}. {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_item_one: 'Medicine: {strip_name} {strength}. {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_item_short: '{ordinal} medicine: {strip_name} {strength}. {spoken_line} {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
+    step_item_short_one: 'Medicine: {strip_name} {strength}. {spoken_line} {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken" or press 1.',
     step_meals: { breakfast: 'breakfast', lunch: 'lunch', dinner: 'dinner' },
     step_food_rel: { before: 'before', after: 'after', with: 'with' },
     step_day_part: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' },

@@ -108,6 +108,8 @@ export type ReplyListName =
 export type ScriptReplies = Record<ReplyListName, string[]>;
 
 export interface ReminderSteps {
+  /** Said alone first, then a 1 s pause ({person_name}); and the "you call it" sentence ({spoken_name}), left out when it equals the strip name. */
+  greeting?: string; spoken_line?: string; presence?: string;
   intro_many: string; intro_one: string; short_intro_many: string; short_intro_one: string;
   item: string; item_one: string; item_short: string; item_short_one: string;
   meals: Record<'breakfast' | 'lunch' | 'dinner', string>;

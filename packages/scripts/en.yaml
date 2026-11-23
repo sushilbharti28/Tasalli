@@ -70,14 +70,17 @@ engine_extra:
 # One medicine at a time (call engine v1.3). {ordinal} already says "medicine" (see blocks.ordinals).
 reminder_steps:
   # Same variables as hi.yaml. Food timing is said once in the intro; item lines leave it out.
-  intro_many: 'Namaste {person_name} ji. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
-  intro_one: 'Namaste {person_name} ji. It is time for your {meal_phrase} medicine.'
-  short_intro_many: '{person_name} ji, it is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
-  short_intro_one: '{person_name} ji, it is time for your {meal_phrase} medicine.'
-  item: '{ordinal}: {spoken_name}. {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
-  item_one: '{spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
-  item_short: '{ordinal}: {spoken_name}. {amount_text}[, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
-  item_short_one: '{spoken_name}: {amount_text}[, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  greeting: 'Namaste {person_name} ji.'
+  presence: 'Can you hear me? Say "yes", or press 1.'
+  spoken_line: 'You call it {spoken_name}.'
+  intro_many: 'It is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
+  intro_one: 'It is time for your {meal_phrase} medicine.'
+  short_intro_many: 'It is time for your {count_word} {meal_phrase} medicines. We will go one by one.'
+  short_intro_one: 'It is time for your {meal_phrase} medicine.'
+  item: '{ordinal}: {strip_name} {strength}. {spoken_line} {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  item_one: 'Medicine: {strip_name} {strength}. {spoken_line} {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  item_short: '{ordinal}: {strip_name} {strength}. {spoken_line} {amount_text}[, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
+  item_short_one: 'Medicine: {strip_name} {strength}. {spoken_line} {amount_text}[, {disambiguator}].[ {extra_instruction}.] When you have taken it, say "taken", or press 1.'
   meals: { breakfast: 'breakfast', lunch: 'lunch', dinner: 'dinner' }
   food_rel: { before: 'before', after: 'after', with: 'with' }
   day_part: { morning: 'morning', afternoon: 'afternoon', evening: 'evening', night: 'night' }

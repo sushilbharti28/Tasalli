@@ -46,11 +46,11 @@ async function main() {
   const now = new Date(Math.floor(Date.now() / 60_000) * 60_000);
   const localTime = DateTime.fromJSDate(now, { zone: person.timeZone }).toFormat('HH:mm');
   const meds: Array<{ m: Partial<MedicineRow> & { spokenName: string }; amount: string; food: 'before' | 'after' }> = [
-    { m: { spokenName: 'BP wali', kind: 'tablet', size: 'dal', colourPrimary: 'white', shape: 'round', marking: 'line', keptIn: 'strip', packColour: 'red' },
+    { m: { stripName: 'Telma 40', spokenName: 'BP wali tablet', kind: 'tablet', size: 'dal', colourPrimary: 'white', shape: 'round', marking: 'line', keptIn: 'strip', packColour: 'red' },
       amount: '1 goli', food: 'after' },
-    { m: { spokenName: 'sugar wali', kind: 'capsule', colourPrimary: 'yellow', colourSecondary: 'white', keptIn: 'strip', packColour: 'silver' },
+    { m: { stripName: 'Glycomet 500', spokenName: 'sugar wali', kind: 'capsule', colourPrimary: 'yellow', colourSecondary: 'white', keptIn: 'strip', packColour: 'silver' },
       amount: '1 capsule', food: split ? 'before' : 'after' },
-    { m: { spokenName: 'pet wali dawai', kind: 'syrup', keptIn: 'bottle', packColour: 'brown', capColour: 'red' },
+    { m: { stripName: 'Cremaffin', spokenName: 'pet wali dawai', kind: 'syrup', keptIn: 'bottle', packColour: 'brown', capColour: 'red' },
       amount: '1 chammach (5 ml)', food: 'after' },
   ];
   const doseIds: string[] = [];

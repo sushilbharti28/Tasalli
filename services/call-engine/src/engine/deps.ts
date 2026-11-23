@@ -16,7 +16,10 @@ export interface EngineConfig {
   callerId: string;
   /** Public base URL the provider calls back, no trailing slash. */
   publicBaseUrl: string;
+  /** Seconds to wait for a reply (Gather timeout). */
   listenSeconds: number;
+  /** The first medicine of a reminder call waits a little longer: the parent has only just picked up. */
+  firstListenSeconds: number;
   testCallsPerDay: number;
 }
 
@@ -36,7 +39,7 @@ export interface Deps {
 }
 
 export const defaultConfig = (over: Partial<EngineConfig> = {}): EngineConfig => ({
-  callerId: '+910000000000', publicBaseUrl: 'http://localhost:8080', listenSeconds: 8, testCallsPerDay: 3, ...over,
+  callerId: '+910000000000', publicBaseUrl: 'http://localhost:8080', listenSeconds: 6, firstListenSeconds: 8, testCallsPerDay: 3, ...over,
 });
 
 /** attempt = cycle * 3 + n, where n counts calls inside a cycle (0 first call, 1 and 2 retries). */

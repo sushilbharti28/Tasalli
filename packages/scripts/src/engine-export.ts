@@ -29,6 +29,7 @@ const tailAfter = (full: string, base: string): string => {
 
 /** Lines for the one-medicine-at-a-time flow; optional keys in the engine format. */
 const stepLines = (r: NonNullable<CallScript['reminder_steps']>) => ({
+  ...(r.greeting ? { step_greeting: r.greeting } : {}), ...(r.spoken_line ? { step_spoken_line: r.spoken_line } : {}), ...(r.presence ? { step_presence: r.presence } : {}),
   step_intro: r.intro_many, step_intro_one: r.intro_one, step_short_intro: r.short_intro_many, step_short_intro_one: r.short_intro_one,
   step_item: flat(r.item), step_item_one: flat(r.item_one), step_item_short: flat(r.item_short), step_item_short_one: flat(r.item_short_one),
   step_meals: r.meals, step_food_rel: r.food_rel, step_day_part: r.day_part, step_relations: r.relations, step_count_words: r.count_words,

@@ -14,6 +14,10 @@ export interface CallSession {
   repeats: number;
   steps: number;
   keypadOnly: boolean;
+  /** Reminder calls: silence on the current medicine was already answered by playing it again (once per medicine). */
+  silenceRepeated?: boolean;
+  /** Reminder and consent calls: "can you hear me?" comes first. `next` is what plays after a yes (intro and first medicine, or the consent question). */
+  presence?: { state: 'pending' | 'ok'; asks: number; text: string; next: string };
   /** When the call was answered (ms since epoch). Set once, by the 'answered' status (or by the first input if that never arrived). */
   answeredAtMs?: number;
   /** "Not taken" was answered once with not_taken_ack (take it, press 1, or 2 for a reminder). */

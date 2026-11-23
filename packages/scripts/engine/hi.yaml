@@ -23,14 +23,17 @@ reminder:
   unwell_ack: ठीक है जी। {child_name} को बता देंगे। ज़रूरत हो, तो अपने डॉक्टर से बात कीजिए। नमस्ते।
   stop_ack: ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। {child_name} को भी बता देंगे। नमस्ते।
   no_input_goodbye: जवाब नहीं मिला। नमस्ते।
-  step_intro: नमस्ते {person_name} जी। आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।
-  step_intro_one: नमस्ते {person_name} जी। आपकी {meal_phrase} वाली दवाई का समय हो गया है।
-  step_short_intro: "{person_name} जी, आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।"
-  step_short_intro_one: "{person_name} जी, आपकी {meal_phrase} वाली दवाई का समय हो गया है।"
-  step_item: '{ordinal}: {spoken_name}। {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  step_item_short: '{ordinal}: {spoken_name}। {amount_text}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  step_greeting: नमस्ते {person_name} जी।
+  step_spoken_line: जिसे आप {spoken_name} कहते हैं।
+  step_presence: क्या आपको आवाज़ आ रही है? "हाँ" बोलिए, या 1 दबाइए।
+  step_intro: आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।
+  step_intro_one: आपकी {meal_phrase} वाली दवाई का समय हो गया है।
+  step_short_intro: आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।
+  step_short_intro_one: आपकी {meal_phrase} वाली दवाई का समय हो गया है।
+  step_item: '{ordinal}: {strip_name} {strength}। {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  step_item_one: 'दवाई: {strip_name} {strength}। {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  step_item_short: '{ordinal}: {strip_name} {strength}। {spoken_line} {amount_text}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  step_item_short_one: 'दवाई: {strip_name} {strength}। {spoken_line} {amount_text}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
   step_meals:
     breakfast: नाश्ते
     lunch: दोपहर के खाने

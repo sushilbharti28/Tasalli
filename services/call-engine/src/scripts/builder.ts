@@ -1,6 +1,10 @@
 import type { CallerRelation, MedicineRow, PersonRow, ScheduleRow } from '../types.js';
 import { joinSentences, render } from './render.js';
+import { speakNumbers, scriptOf } from './spoken-numbers.js';
 import type { ScriptTemplates } from './templates.js';
+
+/** Marks the end of the short greeting inside the opening prompt: the provider says the parts as separate <Say>s with a 1 s <Pause> between. */
+export const SAY_BREAK = '\n';
 
 export interface ReminderItem {
   medicine: MedicineRow;
@@ -144,6 +148,9 @@ export function buildReminderText(input: ReminderScriptInput, mode: 'full' | 'sh
 export interface ReminderSteps {
   /** Intro, then the first medicine: one prompt (the call needs one listen step). */
   opening: string;
+  /** Said first and alone: "Namaste Ramesh ji." then a pause, then `presence` ("can you hear me?"). Only after a yes does `opening` play. */
+  greeting: string;
+  presence: string;
   /** Per medicine: `first` is said the first time (full or short mode), `full` is the repeat for key 0 / "phir se". */
   items: Array<{ first: string; full: string }>;
 }
@@ -167,6 +174,8 @@ export function mealPhrase(t: ScriptTemplates, food: ScheduleRow['food'], hour: 
  */
 export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const t = input.templates, r = t.reminder;
+  const script = scriptOf(r.step_ack_next);
+  const spoken = (x: string) => speakNumbers(x, script); // speech only: digits become words, the stored values are not touched
   const person_name = personName(t, input.person);
   const count = input.items.length;
   const count_word = r.step_count_words[count - 1] ?? String(count);
@@ -174,21 +183,28 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const seenNumbers = new Set(input.announcedTodayMedicineIds);
   const items = input.items.map((it, i) => {
     const m = it.medicine;
+    const strip = m.stripName.trim();
     const common = {
-      ordinal: t.words.ordinals[i] ?? String(i + 1), spoken_name: m.spokenName, amount_text: it.schedule.amountText,
+      ordinal: t.words.ordinals[i] ?? String(i + 1), strip_name: strip, strength: (m.strengthText ?? '').trim(),
+      // "Jise aap Sugar wali kehte hain." is left out when the family's name is the printed name.
+      spoken_line: m.spokenName.trim().toLowerCase() === strip.toLowerCase() || !r.step_spoken_line ? '' : render(r.step_spoken_line, { spoken_name: m.spokenName }),
+      spoken_name: m.spokenName, amount_text: it.schedule.amountText,
       disambiguator: disambiguator(t, m), extra_instruction: m.extraInstruction,
     };
-    const full = render(count === 1 ? r.step_item_one : r.step_item, { ...common, appearance_phrase: appearancePhrase(t, m), pack_phrase: packPhrase(t, m) });
-    const short = render(count === 1 ? r.step_item_short_one : r.step_item_short, common);
+    const full = spoken(render(count === 1 ? r.step_item_one : r.step_item, { ...common, appearance_phrase: appearancePhrase(t, m), pack_phrase: packPhrase(t, m) }));
+    const short = spoken(render(count === 1 ? r.step_item_short_one : r.step_item_short, common));
     const sunday = input.isSunday && m.numberLabel !== null && m.numberLabel !== undefined && !seenNumbers.has(m.id)
-      ? render(r.sunday_line, { number: m.numberLabel, spoken_name: m.spokenName }) : ''; // said once per medicine per day
+      ? spoken(render(r.sunday_line, { number: m.numberLabel, spoken_name: m.spokenName })) : ''; // said once per medicine per day
     if (sunday) seenNumbers.add(m.id);
     return { first: joinSentences([sunday, input.mode === 'full' ? full : short]), full };
   });
   const vars = { person_name, meal_phrase, count_word, count }; // reminder calls never name the child or the relation
-  const intro = input.mode === 'full' ? render(count === 1 ? r.step_intro_one : r.step_intro, vars)
-    : render(count === 1 ? r.step_short_intro_one : r.step_short_intro, vars);
-  return { opening: joinSentences([intro, items[0]?.first ?? '']), items };
+  const intro = spoken(input.mode === 'full' ? render(count === 1 ? r.step_intro_one : r.step_intro, vars)
+    : render(count === 1 ? r.step_short_intro_one : r.step_short_intro, vars));
+  const first = joinSentences([intro, items[0]?.first ?? '']);
+  // A short separate greeting first ("Namaste Ramesh ji."), then a pause, so a slow synthesis of the long part cannot leave the line silent.
+  const greeting = r.step_greeting ? spoken(render(r.step_greeting, { person_name })) : '';
+  return { opening: first, greeting, presence: r.step_presence ? spoken(r.step_presence) : '', items };
 }
 
 export function sundayLines(input: ReminderScriptInput): string[] {
@@ -208,3 +224,6 @@ export function sundayLines(input: ReminderScriptInput): string[] {
 export function line(template: string, vars: { person_name?: string; child_name?: string; minutes?: number; relation_phrase?: string }): string {
   return render(template, vars);
 }
+
+/** The first prompt of a call: greeting, a pause (SAY_BREAK), then the presence question. */
+export const presencePrompt = (greeting: string, question: string): string => [greeting, question].filter(Boolean).join(SAY_BREAK);

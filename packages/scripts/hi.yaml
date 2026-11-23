@@ -72,17 +72,21 @@ engine_extra:
 # One medicine at a time (call engine v1.3): the call goes through the due medicines in order and confirms each one.
 # {ordinal} already says "medicine" (see blocks.ordinals). Not in the other languages yet: the engine falls back to its built-in lines.
 reminder_steps:
-  # Variables (reminder lines never name the child; {relation_phrase} {child_name} are for the consent call): {person_name} {meal_phrase} {count_word} {count} {ordinal} {spoken_name} {amount_text}
+  # Variables (reminder lines never name the child; {relation_phrase} {child_name} are for the consent call): {person_name} {meal_phrase} {count_word} {count} {ordinal} {strip_name} {strength} {spoken_line} {spoken_name} {amount_text}
   # {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}. {ordinal} already says "medicine" (blocks.ordinals).
   # The food timing is said once in the intro ({meal_phrase}), so the item lines leave it out. A call only groups doses with the same food timing.
-  intro_many: 'नमस्ते {person_name} जी। आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
-  intro_one: 'नमस्ते {person_name} जी। आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
-  short_intro_many: '{person_name} जी, आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
-  short_intro_one: '{person_name} जी, आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
-  item: '{ordinal}: {spoken_name}। {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  item_one: '{spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  item_short: '{ordinal}: {spoken_name}। {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  item_short_one: '{spoken_name}: {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  greeting: 'नमस्ते {person_name} जी।'
+  # Presence check, asked right after the greeting and before any medicine (network lag and drops are common): any yes or key continues; it is never a dose confirmation.
+  presence: 'क्या आपको आवाज़ आ रही है? "हाँ" बोलिए, या 1 दबाइए।'
+  spoken_line: 'जिसे आप {spoken_name} कहते हैं।'
+  intro_many: 'आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
+  intro_one: 'आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
+  short_intro_many: 'आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
+  short_intro_one: 'आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
+  item: '{ordinal}: {strip_name} {strength}। {spoken_line} {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  item_one: 'दवाई: {strip_name} {strength}। {spoken_line} {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  item_short: '{ordinal}: {strip_name} {strength}। {spoken_line} {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  item_short_one: 'दवाई: {strip_name} {strength}। {spoken_line} {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
   # {meal_phrase} = meal + relation (dose hour: before 11 breakfast, 11-16 lunch, after 16 dinner); with no food rule, the day part.
   meals: { breakfast: 'नाश्ते', lunch: 'दोपहर के खाने', dinner: 'रात के खाने' }
   food_rel: { before: 'से पहले', after: 'के बाद', with: 'के साथ' }
