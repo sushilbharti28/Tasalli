@@ -132,4 +132,22 @@ describe('Twilio env', () => {
     expect([speechTimeoutFrom(undefined), speechTimeoutFrom('auto'), speechTimeoutFrom('3'), speechTimeoutFrom('99'), speechTimeoutFrom('x"')]).toEqual(['1', 'auto', '3', '1', '1']);
     expect([speechModelFrom(undefined), speechModelFrom('googlev2_telephony_short'), speechModelFrom('a" b')]).toEqual([undefined, 'googlev2_telephony_short', undefined]);
   });
+
+  it('safety (v1.6): the choices and the medicine are said outside the Gather; listening starts at the question', async () => {
+    const { LONG_PAUSE, SAY_SPLIT } = await import('../src/scripts/builder.js');
+    const p = new TwilioProvider({ accountSid: 'AC1', authToken: 't', publicBaseUrl: 'https://x.example' });
+    const text = `Theek hai.${SAY_SPLIT}Har dawai lene ke baad, haan boliye. Aapki pehli dawai, ek goli Telma ki hai.${LONG_PAUSE}Dawai lene ke baad, haan boliye, ya ek dabaiye.`;
+    const url = await new SayUrls().urlFor(text, 'hi');
+    const { body } = p.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1'], speech: true, timeoutSeconds: 6 } } }, { callId: 'c1' });
+    const gather = body.indexOf('<Gather');
+    expect(body.indexOf('Theek hai')).toBeLessThan(gather);
+    expect(body.indexOf('Har dawai lene ke baad')).toBeLessThan(gather);
+    expect(body.indexOf('Telma')).toBeLessThan(gather);
+    expect(body.indexOf('ya ek dabaiye')).toBeGreaterThan(gather);
+    expect(body.indexOf('ya ek dabaiye')).toBeLessThan(body.indexOf('</Gather>'));
+    expect(body).not.toContain('\u2016');
+    // A prompt with no mark (a plain question, e.g. the re-ask) is listened to whole.
+    const q = p.renderNextAction({ action: 'play', step: { audioUrl: await new SayUrls().urlFor('Maaf kijiye, samajh nahi aaya.', 'hi'), listen: { keys: ['1'], speech: true, timeoutSeconds: 6 } } }, { callId: 'c1' }).body;
+    expect(q.indexOf('<Gather')).toBeLessThan(q.indexOf('Maaf kijiye'));
+  });
 });

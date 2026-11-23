@@ -70,9 +70,11 @@ const HINTS = ['le li', 'le liya', 'le lee', 'leli', 'lelee', 'lily', 'लिल
 /** "Audio" for Twilio is the text itself: <Say> speaks it. Format: say:<lang>:<base64url text>. */
 export class SayUrls implements AudioSource {
   async urlFor(text: string, language: CallLanguage): Promise<string> {
-    return `say:${language}:${Buffer.from(text, 'utf8').toString('base64url')}`;
+    return encodeSay(language, text);
   }
 }
+
+export const encodeSay = (language: CallLanguage, text: string): string => `say:${language}:${Buffer.from(text, 'utf8').toString('base64url')}`;
 
 export function decodeSay(url: string): { language: CallLanguage; text: string } {
   const m = /^say:([a-z]{2}):([A-Za-z0-9_-]*)$/.exec(url);
@@ -157,9 +159,17 @@ export class TwilioProvider implements TelephonyProvider {
     const attrs = step.listen.speech
       ? `input="dtmf speech" language="${lang.language}" speechTimeout="${xmlEscape(this.cfg.speechTimeout ?? '1')}"${this.cfg.speechModel ? ` speechModel="${xmlEscape(this.cfg.speechModel)}"` : ''} hints="${HINTS}"`
       : 'input="dtmf"';
+    // Listening starts at the question (v1.6 safety fix, 24 Nov 2026): everything before the last LONG_PAUSE mark (the choices,
+    // the medicine and its description) is said OUTSIDE the Gather, so a "haan" or key said before the question is never taken
+    // as an answer to a medicine the parent has not heard yet. Prompts without the mark are questions and are listened to whole.
+    const { language, text } = decodeSay(step.audioUrl);
+    const cut = text.lastIndexOf(LONG_PAUSE_MARK);
+    const before = cut >= 0 ? text.slice(0, cut).trim() : '';
+    const question = cut >= 0 ? text.slice(cut + LONG_PAUSE_MARK.length).trim() : text;
+    const sayText = (x: string) => this.say(encodeSay(language, x));
     // No input: Gather falls through to the Redirect, which posts an empty input (a timeout) to the engine.
-    return `<Response><Gather ${attrs} numDigits="1" timeout="${step.listen.timeoutSeconds}" action="${action}" method="POST">`
-      + `${this.say(step.audioUrl)}</Gather><Redirect method="POST">${action}</Redirect></Response>`;
+    return `<Response>${before ? sayText(before) : ''}<Gather ${attrs} numDigits="1" timeout="${step.listen.timeoutSeconds}" action="${action}" method="POST">`
+      + `${sayText(question)}</Gather><Redirect method="POST">${action}</Redirect></Response>`;
   }
 
   renderNextAction(next: NextAction, ctx?: { callId: string }): { contentType: string; body: string } {
