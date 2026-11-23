@@ -46,16 +46,16 @@ async function main() {
   store.addSubscription(user.id); // local test only: the billing gate needs an entitled account
   const person = store.addPerson({ ownerUserId: user.id, phone: to, nickname: 'Papa', fullName: 'Ramesh Sharma', callerRelation: 'son', language: 'hi', consent: 'consented', canReadStrip: 'yes' });
 
-  // v1.6: BP wali and sugar wali are long-known medicines (name only; "phir se" / 0 gives the look), pet wali dawai was added today (described).
+  // v1.6: BP wali and sugar wali are long-known medicines (name only; "phir se" / 0 gives the look), pet wali dawai was added today ("aapki nayi dawai", described).
   const known = new Date(Date.now() - 30 * 86_400_000);
   const now = new Date(Math.floor(Date.now() / 60_000) * 60_000);
   const localTime = DateTime.fromJSDate(now, { zone: person.timeZone }).toFormat('HH:mm');
   const meds: Array<{ m: Partial<MedicineRow> & { spokenName: string }; amount: string; food: 'before' | 'after' }> = [
-    { m: { stripName: 'Telma 40', spokenName: 'BP wali tablet', kind: 'tablet', size: 'dal', colourPrimary: 'white', shape: 'round', marking: 'line', keptIn: 'strip', packColour: 'red', updatedAt: known },
+    { m: { stripName: 'Telma 40', spokenName: 'BP wali tablet', kind: 'tablet', size: 'dal', colourPrimary: 'white', shape: 'round', marking: 'line', keptIn: 'strip', packColour: 'red', createdAt: known, updatedAt: known },
       amount: '1 goli', food: 'after' },
-    { m: { stripName: 'Glycomet 500', spokenName: 'sugar wali', kind: 'capsule', colourPrimary: 'yellow', colourSecondary: 'white', keptIn: 'strip', packColour: 'silver', updatedAt: known },
+    { m: { stripName: 'Glycomet 500', spokenName: 'sugar wali', kind: 'capsule', colourPrimary: 'yellow', colourSecondary: 'white', keptIn: 'strip', packColour: 'silver', createdAt: known, updatedAt: known },
       amount: '1 capsule', food: split ? 'before' : 'after' },
-    { m: { stripName: 'Cremaffin', spokenName: 'pet wali dawai', kind: 'syrup', keptIn: 'bottle', packColour: 'brown', capColour: 'red', updatedAt: new Date() },
+    { m: { stripName: 'Cremaffin', spokenName: 'pet wali dawai', kind: 'syrup', keptIn: 'bottle', packColour: 'brown', capColour: 'red', createdAt: new Date(), updatedAt: new Date() },
       amount: '1 chammach (5 ml)', food: 'after' },
   ];
   const doseIds: string[] = [];

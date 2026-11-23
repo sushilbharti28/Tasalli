@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { CallStep, PlaceCallRequest } from '@tasalli/contracts';
 import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
 import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
-import { presencePrompt, buildReminderSteps, describeMedicineIds, relationPhrase, line, personName, childName } from '../scripts/builder.js';
+import { presencePrompt, buildReminderSteps, describeMedicineIds, newMedicineIds, relationPhrase, line, personName, childName } from '../scripts/builder.js';
 import { localDay } from '../scheduler/time.js';
 import type { CallSession } from '../flows/session.js';
 import type { PersonRow } from '../types.js';
@@ -98,7 +98,7 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   const mode = prior.answeredCalls === 0 ? 'full' : 'short';
   const allActive = (await d.store.listActiveSchedules(person.id)).map((x) => x.medicine);
   const describe = describeMedicineIds({ items: base.items, allActive, canReadStrip: person.canReadStrip, now, localToday: day.date });
-  const steps = buildReminderSteps({ ...base, mode, describeMedicineIds: describe });
+  const steps = buildReminderSteps({ ...base, mode, describeMedicineIds: describe, newMedicineIds: newMedicineIds(base.items, now) });
   const reminder = { items: details.map((x, i) => ({ doseId: x.dose.id, first: steps.items[i]!.first, full: steps.items[i]!.full })),
     index: 0, outcomes: {}, heard: {}, retryLeft: decodeAttempt(attemptCode).n < RULES.retryCount };
   const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode,

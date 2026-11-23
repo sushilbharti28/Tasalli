@@ -266,7 +266,7 @@ function mapMedicine(r: Row): MedicineRow {
     spokenName: r.spoken_name, colourPrimary: r.colour_primary, colourSecondary: r.colour_secondary, shape: r.shape,
     size: r.size, marking: r.marking, keptIn: r.kept_in, packColour: r.pack_colour, printColour: r.print_colour,
     capColour: r.cap_colour, numberLabel: r.number_label, sayPrintedName: r.say_printed_name,
-    extraInstruction: r.extra_instruction, active: r.active, updatedAt: r.updated_at ?? null,
+    extraInstruction: r.extra_instruction, active: r.active, updatedAt: r.updated_at ?? null, createdAt: r.created_at ?? null,
   };
 }
 

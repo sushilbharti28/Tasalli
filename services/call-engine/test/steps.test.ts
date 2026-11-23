@@ -225,6 +225,34 @@ describe('one medicine at a time', () => {
     expect(run(med('A'), { others: [yellow], canRead: 'no' })).toBe(true);                      // parent cannot read the strip
   });
 
+  it('v1.6: a medicine added in the last 7 days is "aapki nayi dawai" and described; a changed one keeps its number', async () => {
+    const w = world();
+    w.store.state.people.get(w.mom.id)!.canReadStrip = 'yes';
+    const old = new Date('2026-01-01T00:00:00Z');
+    const look = { colourPrimary: 'white', shape: 'round', size: 'small', keptIn: 'strip' };
+    w.med('BP wali', '09:00', { ...look, packColour: 'red', createdAt: old, updatedAt: old });
+    w.med('Sugar wali', '09:00', { kind: 'capsule', colourPrimary: 'yellow', size: 'small', keptIn: 'strip', packColour: 'silver', createdAt: old, updatedAt: new Date('2026-03-08T00:00:00Z') });
+    w.med('Pet wali', '09:00', { kind: 'syrup', keptIn: 'bottle', packColour: 'brown', capColour: 'red', createdAt: new Date('2026-03-09T00:00:00Z'), updatedAt: new Date('2026-03-09T00:00:00Z') });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }, { key: '1' }] });
+    await planned(w);
+    await w.advance(1);
+    const said = w.playedText(0);
+    expect(said[0]).toMatch(/Aapki Pehli dawai, ek goli BP wali ki hai\. Dawai lene ke baad/); // known: name only
+    expect(said[1]).toMatch(/Aapki Doosri dawai, ek goli Sugar wali ki hai\. Yeh ek chhota sa peele rang ka capsule hai\./); // changed: described, keeps its number
+    expect(said[2]).toMatch(/Aapki nayi dawai, ek goli Pet wali ki hai\. Iski bottle bhoore rang ki hai\. Iska dhakkan laal rang ka hai\./); // new
+    expect(said.join(' ')).not.toMatch(/Teesri/);
+
+    // A single new medicine also says "nayi"; an unknown creation date is not "new".
+    const one = world();
+    one.med('Pet wali', '09:00', { kind: 'syrup', keptIn: 'bottle', packColour: 'brown', createdAt: new Date('2026-03-09T00:00:00Z') });
+    one.med('Old', '21:00', {});
+    one.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }] });
+    await planned(one);
+    await one.advance(60 * 13);
+    expect(one.playedText(0)[0]).toMatch(/Aapki nayi dawai, ek goli Pet wali ki hai\./);
+    expect(one.playedText(1)[0]).toMatch(/Aapki dawai, ek goli Old ki hai\./);
+  });
+
   it('v1.6: the choices at the start say how to hear the description; "phir se" on a name-only medicine plays the full one', async () => {
     const w = world();
     w.store.state.people.get(w.mom.id)!.canReadStrip = 'yes';

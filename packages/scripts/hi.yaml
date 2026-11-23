@@ -96,6 +96,8 @@ reminder_steps:
   item_short: 'आपकी {ordinal}, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator}[ {extra_instruction}।]'
   item_short_one: 'आपकी दवाई, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator}[ {extra_instruction}।]'
   item_ask: 'दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए।'
+  # Said instead of {ordinal} for a medicine the family added in the last 7 days: "आपकी नई दवाई, ..." (it is always described).
+  new_ordinal: 'नई दवाई'
   # How a medicine looks, as short sentences. Sizes are three: very_small, small, large (the app's older rai/dal/matar/badam/bigger map onto them).
   look:
     sizes: { very_small: { f: 'बहुत छोटी सी', m: 'बहुत छोटा सा' }, small: { f: 'छोटी सी', m: 'छोटा सा' }, large: { f: 'बड़ी सी', m: 'बड़ा सा' } }

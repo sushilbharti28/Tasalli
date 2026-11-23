@@ -89,6 +89,8 @@ export interface ScriptTemplates {
     step_end_no_call_back?: string;
     /** Appearance and pack as whole sentences (see packages/scripts StepLook). Without it, the older appearance/pack phrases are used. */
     step_look?: StepLook;
+    /** Said instead of {ordinal} for a medicine added in the last 7 days ("नई दवाई" -> "आपकी नई दवाई, ..."). */
+    step_new_ordinal?: string;
   };
   consent: {
     prompt: string;          // {person_name} {relation_phrase} {child_name}
@@ -198,6 +200,7 @@ export const HI_TEMPLATES: ScriptTemplates = {
     step_moving_on: 'Hum agli dawai par chalte hain.',
     step_will_call_again: 'Chinta mat kijiye, is dawai ke liye hum aapko phir phone karenge.',
     step_end_no_call_back: 'Dhanyavaad, namaste.',
+    step_new_ordinal: 'nayi',
     step_look: {
       sizes: { very_small: { f: 'bahut chhoti si', m: 'bahut chhota sa' }, small: { f: 'chhoti si', m: 'chhota sa' }, large: { f: 'badi si', m: 'bada sa' } },
       colours: { white: 'safed', cream: 'cream', yellow: 'peele', orange: 'narangi', pink: 'gulabi', red: 'laal', maroon: 'gehre laal', brown: 'bhoore', green: 'hare',

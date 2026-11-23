@@ -129,6 +129,8 @@ export interface ReminderSteps {
   moving_on?: string; will_call_again?: string; end_no_call_back?: string;
   /** Optional (v1.6): how a medicine looks, as whole sentences. */
   look?: StepLook;
+  /** Optional (v1.6): instead of {ordinal} for a medicine added in the last 7 days. */
+  new_ordinal?: string;
 }
 
 /** Appearance and pack sentences for the one-medicine-at-a-time call (v1.6). Sizes are three: very_small, small, large. */

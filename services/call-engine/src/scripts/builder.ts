@@ -50,6 +50,8 @@ export interface ReminderScriptInput {
    * Missing: the older rule (full on the first call of the day, short afterwards).
    */
   describeMedicineIds?: string[];
+  /** v1.6: medicines added in the last 7 days: introduced as "aapki nayi dawai" instead of "aapki teesri dawai". */
+  newMedicineIds?: string[];
 }
 
 export function personName(t: ScriptTemplates, person: Pick<PersonRow, 'nickname' | 'fullName'>): string {
@@ -250,8 +252,9 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const items = input.items.map((it, i) => {
     const m = it.medicine;
     const strip = m.stripName.trim();
+    const isNew = !!r.step_new_ordinal && !!input.newMedicineIds?.includes(m.id);
     const common = {
-      ordinal: t.words.ordinals[i] ?? String(i + 1), strip_name: strip, strength: (m.strengthText ?? '').trim(),
+      ordinal: isNew ? r.step_new_ordinal! : (t.words.ordinals[i] ?? String(i + 1)), strip_name: strip, strength: (m.strengthText ?? '').trim(),
       // "Jise aap Sugar wali kehte hain." is left out when the family's name is the printed name.
       spoken_line: m.spokenName.trim().toLowerCase() === strip.toLowerCase() || !r.step_spoken_line ? '' : render(r.step_spoken_line, { spoken_name: m.spokenName }),
       spoken_name: m.spokenName, amount_text: it.schedule.amountText,
@@ -263,9 +266,10 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
     // Speech only: whole-sentence pieces followed by the template's own full stop would say "hai.." / "है।।"; one mark is enough.
     const tidy = (text: string) => text.replace(/([.।!?])(?:\s*[.।])+/g, '$1');
     const withAsk = (text: string) => { const x = tidy(text); return r.step_item_ask ? x + LONG_PAUSE + spoken(r.step_item_ask) : x; };
-    const full = withAsk(spoken(render(count === 1 ? r.step_item_one : r.step_item, {
+    const one = count === 1 && !isNew; // a single new medicine still says "aapki nayi dawai"
+    const full = withAsk(spoken(render(one ? r.step_item_one : r.step_item, {
       ...common, appearance_phrase: look ? look.appearance : appearancePhrase(t, m), pack_phrase: look ? look.pack : packPhrase(t, m) })));
-    const short = withAsk(spoken(render(count === 1 ? r.step_item_short_one : r.step_item_short, common)));
+    const short = withAsk(spoken(render(one ? r.step_item_short_one : r.step_item_short, common)));
     const sunday = input.isSunday && m.numberLabel !== null && m.numberLabel !== undefined && !seenNumbers.has(m.id)
       ? spoken(render(r.sunday_line, { number: m.numberLabel, spoken_name: m.spokenName })) : ''; // said once per medicine per day
     if (sunday) seenNumbers.add(m.id);
@@ -312,6 +316,12 @@ export function describeMedicineIds(o: { items: ReminderItem[]; allActive: Medic
     || m.numberLabel !== null || m.sayPrintedName
     || o.allActive.some((x) => x.active && pillsLookAlike(m, x)),
   ).map((x) => x.medicine.id);
+}
+
+/** v1.6: medicines the family added in the last 7 days ("aapki nayi dawai"). An unknown creation date is not "new". */
+export function newMedicineIds(items: ReminderItem[], now: Date): string[] {
+  const cutoff = now.getTime() - DESCRIBE_CHANGED_WITHIN_DAYS * 86_400_000;
+  return items.filter((x) => !!x.medicine.createdAt && x.medicine.createdAt.getTime() >= cutoff).map((x) => x.medicine.id);
 }
 
 export function sundayLines(input: ReminderScriptInput): string[] {
