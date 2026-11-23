@@ -3,7 +3,7 @@ import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
 import { MINUTE } from '../clock.js';
 import { fetchAudio } from '../providers/fake-speech.js';
 import { joinSentences } from '../scripts/render.js';
-import { line, childName } from '../scripts/builder.js';
+import { line, childName, splitAck } from '../scripts/builder.js';
 import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
 import { MAX_REPEATS_PER_MEDICINE, softLimitSeconds } from '../flows/limits.js';
 import { matchIntent, hasNegation, isExactConfirm } from '../speech/intent.js';
@@ -93,7 +93,7 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
       p.state = 'ok';
       s.unclearCount = 0;
       s.keypadOnly = false;
-      return ask(p.next, true);
+      return ask(s.purpose === 'reminder' ? splitAck(t.reminder.step_ack_next, p.next) : p.next, true); // "ठीक है।" plays at once
     }
     if (++p.asks === 1) return ask(p.text, true); // once more
     return bye(s.purpose === 'consent' ? t.consent.no_input_goodbye : t.reminder.no_input_goodbye, 'none'); // no medicine marked: the normal 10-minute retry follows
@@ -217,7 +217,7 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
       return finish(ack, true);
     }
     s.fullText = upcoming.full;
-    return ask(joinSentences([ack, upcoming.first]), true);
+    return ask(ack ? splitAck(ack, joinSentences([ack, upcoming.first])) : upcoming.first, true); // the ack plays at once
   };
 
   // No usable answer for this medicine: "not recorded", then (if another medicine follows) "moving on", and "we will call again" only when a retry is left.

@@ -69,7 +69,7 @@ describe('Twilio TwiML', () => {
     const url = await say.urlFor('Namaste <ji> & "dawai"', 'hi');
     const { contentType, body } = p.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1', '9'], speech: true, timeoutSeconds: 8 } } }, { callId: 'call-1' });
     expect(contentType).toBe('text/xml');
-    expect(body).toContain('<Gather input="dtmf speech" language="hi-IN" speechTimeout="auto" hints="le li,le liya,le lee,leli,lelee,lily,लिली,');
+    expect(body).toContain('<Gather input="dtmf speech" language="hi-IN" speechTimeout="1" hints="le li,le liya,le lee,leli,lelee,lily,लिली,');
     expect(body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN"><prosody rate="90%">Namaste &lt;ji&gt; &amp; &quot;dawai&quot;</prosody></Say>');
     expect(body).toMatch(/action="https:\/\/abc\.trycloudflare\.com\/webhooks\/twilio\/input\?c=call-1&amp;n=[0-9a-f]{16}"/);
     expect(body).toContain('<Redirect method="POST">');
@@ -118,5 +118,18 @@ describe('Twilio placeCall', () => {
 describe('Twilio env', () => {
   it('names every missing variable, never values', () => {
     expect(() => twilioEnv({ TWILIO_ACCOUNT_SID: 'AC1' })).toThrow('TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, PUBLIC_BASE_URL');
+  });
+
+  it('v1.6: the acknowledgement is its own <Say> with no pause; speech timeout and model come from config', async () => {
+    const { SAY_SPLIT } = await import('../src/scripts/builder.js');
+    const { speechTimeoutFrom, speechModelFrom } = await import('../src/providers/twilio-factory.js');
+    const p = new TwilioProvider({ accountSid: 'AC1', authToken: 't', publicBaseUrl: 'https://x.example', speechTimeout: '2', speechModel: 'googlev2_telephony_short' });
+    const url = await new SayUrls().urlFor(`Theek hai.${SAY_SPLIT}Aapki doosri dawai.`, 'hi');
+    const { body } = p.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1'], speech: true, timeoutSeconds: 6 } } }, { callId: 'c1' });
+    expect(body).toMatch(/Theek hai<\/prosody><\/Say><Say [^>]*><prosody rate="90%">Aapki doosri dawai<\/prosody><\/Say>/);
+    expect(body).not.toContain('<Pause');
+    expect(body).toContain('speechTimeout="2" speechModel="googlev2_telephony_short"');
+    expect([speechTimeoutFrom(undefined), speechTimeoutFrom('auto'), speechTimeoutFrom('3'), speechTimeoutFrom('99'), speechTimeoutFrom('x"')]).toEqual(['1', 'auto', '3', '1', '1']);
+    expect([speechModelFrom(undefined), speechModelFrom('googlev2_telephony_short'), speechModelFrom('a" b')]).toEqual([undefined, 'googlev2_telephony_short', undefined]);
   });
 });

@@ -1,7 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { CallEvent, CallLanguage, CallStep, NextAction, PlaceCallRequest, PlaceCallResult, TelephonyProvider } from '@tasalli/contracts';
 import type { AudioSource } from '../engine/deps.js';
-import { LONG_PAUSE_MARK, withoutPauseMarks } from '../scripts/builder.js';
+import { LONG_PAUSE_MARK, SAY_SPLIT, withoutPauseMarks } from '../scripts/builder.js';
 import { WebhookPayloadError, WebhookSignatureError } from './fake-telephony.js';
 
 export interface TwilioConfig {
@@ -16,6 +16,10 @@ export interface TwilioConfig {
   record?: boolean;
   /** Speak with SSML (slower rate, pauses). Default true; TWILIO_SSML=off turns it off (plain text). */
   ssml?: boolean;
+  /** Gather speechTimeout: seconds of silence after speech before Twilio stops listening, or "auto". Default 1 (TWILIO_SPEECH_TIMEOUT). */
+  speechTimeout?: string;
+  /** Gather speechModel, e.g. googlev2_telephony_short (TWILIO_SPEECH_MODEL). Default: Twilio's default model. */
+  speechModel?: string;
 }
 
 /** PlaceCallRequest plus the hard call limit (contract change requested: not in packages/contracts yet). */
@@ -139,8 +143,10 @@ export class TwilioProvider implements TelephonyProvider {
     const v = voiceFor(language);
     const voice = this.cfg.voices?.[language] ?? v.voice;
     // A line break splits the text into separate <Say>s with a 1 s <Pause> between: the short greeting is synthesised alone, so a slow synthesis of the long part cannot delay it.
+    // SAY_SPLIT does the same with no pause (the "ठीक है।" after an answer).
+    const one = (p: string) => `<Say voice="${xmlEscape(voice)}" language="${v.language}">${this.cfg.ssml === false ? xmlEscape(withoutPauseMarks(p)) : toSsml(p)}</Say>`;
     return text.split('\n').map((p) => p.trim()).filter(Boolean)
-      .map((p) => `<Say voice="${xmlEscape(voice)}" language="${v.language}">${this.cfg.ssml === false ? xmlEscape(withoutPauseMarks(p)) : toSsml(p)}</Say>`)
+      .map((block) => block.split(SAY_SPLIT).map((p) => p.trim()).filter(Boolean).map(one).join(''))
       .join('<Pause length="1"/>');
   }
 
@@ -149,7 +155,7 @@ export class TwilioProvider implements TelephonyProvider {
     if (!step.listen) return `<Response>${this.say(step.audioUrl)}<Hangup/></Response>`;
     const lang = voiceFor(decodeSay(step.audioUrl).language);
     const attrs = step.listen.speech
-      ? `input="dtmf speech" language="${lang.language}" speechTimeout="auto" hints="${HINTS}"`
+      ? `input="dtmf speech" language="${lang.language}" speechTimeout="${xmlEscape(this.cfg.speechTimeout ?? '1')}"${this.cfg.speechModel ? ` speechModel="${xmlEscape(this.cfg.speechModel)}"` : ''} hints="${HINTS}"`
       : 'input="dtmf"';
     // No input: Gather falls through to the Redirect, which posts an empty input (a timeout) to the engine.
     return `<Response><Gather ${attrs} numDigits="1" timeout="${step.listen.timeoutSeconds}" action="${action}" method="POST">`

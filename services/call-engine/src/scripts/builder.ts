@@ -8,8 +8,18 @@ export const SAY_BREAK = '\n';
 /** A longer pause inside one prompt (before the question after each medicine). Twilio renders it as a longer SSML <break>; elsewhere it is a plain space. */
 export const LONG_PAUSE = ' \u2016 ';
 export const LONG_PAUSE_MARK = '\u2016';
-/** Text for anything that cannot render the longer pause (plain-text speech, TTS files, logs): the mark becomes a space. */
-export const withoutPauseMarks = (text: string): string => text.split(LONG_PAUSE_MARK).map((x) => x.trim()).filter(Boolean).join(' ');
+/**
+ * Splits a prompt into separate <Say>s with no pause between: the short acknowledgement ("ठीक है।") is synthesised alone and plays
+ * at once, instead of waiting for the long next prompt to be synthesised (SSML synthesis is not streamed).
+ */
+export const SAY_SPLIT = '\u2029';
+/** Text for anything that cannot render the longer pause or the split (plain-text speech, TTS files, logs): the marks become spaces. */
+export const withoutPauseMarks = (text: string): string => text.split(/[\u2016\u2029]/).map((x) => x.trim()).filter(Boolean).join(' ');
+/** "Ack. Rest" -> "Ack.<SAY_SPLIT>Rest" when the prompt starts with the acknowledgement; otherwise unchanged. */
+export const splitAck = (ack: string, text: string): string => {
+  const a = ack.trim();
+  return a && text.startsWith(a) && text.length > a.length ? a + SAY_SPLIT + text.slice(a.length).trim() : text;
+};
 
 /** The call speaks three sizes. The app's older five map onto them (rai: very small; dal, matar: small; badam, bigger: large). */
 export const SIZE_TO_THREE: Record<string, 'very_small' | 'small' | 'large'> = {
