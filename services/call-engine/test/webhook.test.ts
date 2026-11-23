@@ -26,7 +26,8 @@ describe('idempotent signed webhooks (rule 6)', () => {
     const w = await setup({ answer: 'answered', inputs: [{ say: 'nahi li' }], duplicateWebhooks: true, concurrentDuplicates: true });
     expect(w.queue.history.filter((h) => h.name === 'reminder.snooze')).toHaveLength(0);
     await w.advance(16);
-    expect(w.provider.callsTo(PARENT)).toHaveLength(2); // original + exactly one snooze call
+    expect(w.provider.callsTo(PARENT)).toHaveLength(1); // v1.6: "nahi li" is not taken; no call back
+    expect(w.queue.alerts).toHaveLength(1); // the family is told exactly once
   });
 
   it('duplicate no_answer status does not double the retries', async () => {

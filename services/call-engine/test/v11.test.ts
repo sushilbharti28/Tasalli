@@ -32,7 +32,7 @@ describe('scripts from packages/scripts/engine', () => {
     await planned(w);
     await w.advance(5);
     expect(w.playedText(0)[0]).toBe('नमस्ते Kamla जी।\nहम तसल्ली ऐप से बोल रहे हैं। आपको सुबह की वाली दवाई की याद दिलाने के लिए फ़ोन किया है। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या एक दबाइए।');
-    expect(w.playedText(0)[1]).toMatch(/^ठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए।.*आपकी दवाई, ek goli Amlodac की है।/);
+    expect(w.playedText(0)[1]).toMatch(/^ठीक है। आपकी दवाई, ek goli Amlodac की है।/);
 
     const w2 = world(undefined, { scripts: hindi(), presence: true });
     w2.med('Amlodac', '09:00');
@@ -68,10 +68,10 @@ describe('scripts from packages/scripts/engine', () => {
     await w.advance(60 * 13);
     expect(w.provider.callsTo(PARENT)).toHaveLength(2);
     expect(w.playedText(0)[0]).toContain('आपकी दवाई, ek goli Amlodac की है।');
-    expect(w.playedText(1)[0]).toBe('नमस्ते Kamla जी।\nठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए। दवाई का रंग-रूप सुनना हो, या दोबारा सुनना हो, तो "फिर से" बोलिए, या ज़ीरो दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या दो दबाइए। आपकी दवाई, ek goli Metolar की है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या ज़ीरो दबाइए।');
+    expect(w.playedText(1)[0]).toBe('नमस्ते Kamla जी।\nठीक है। आपकी दवाई, ek goli Metolar की है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या ज़ीरो दबाइए। अभी नहीं ले सकते, तो "नहीं" बोलिए, या दो दबाइए।');
   });
 
-  it('"nahi li" never confirms: says the not-now line, then the dose is snoozed', async () => {
+  it('"nahi li" never confirms (v1.6): says the not-now line, the dose is not taken and the family is told', async () => {
     const w = world(undefined, { scripts: hindi() });
     w.med('Amlodac', '09:00');
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ say: 'nahi li' }] });
@@ -80,8 +80,9 @@ describe('scripts from packages/scripts/engine', () => {
     const said = w.playedText(0);
     expect(said[1]).toContain(hindi().get('hi').templates.reminder.step_ack_not_now);
     expect(w.store.allDoses()[0]!.status).not.toBe('confirmed');
-    expect(w.store.allCalls()[0]!.result).toBe('snoozed');
-    expect(w.queue.alerts).toHaveLength(0);
+    expect(said[1]).toContain('ठीक है, हम आपके घर वालों को बता देंगे।');
+    expect(w.store.allCalls()[0]!.result).toBe('declined');
+    expect(w.queue.alerts.map((a) => a.job.reason)).toEqual(['said_not_taken']);
   });
 
   it('test call: any key ends it', async () => {

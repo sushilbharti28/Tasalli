@@ -85,17 +85,17 @@ reminder_steps:
   presence_retry: 'माफ़ कीजिए, समझ नहीं आया। दवाइयों के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
   presence_retry_one: 'माफ़ कीजिए, समझ नहीं आया। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
   spoken_line: 'इसे आप {spoken_name} कहते हैं।'
-  # After the opening's "हाँ": all the choices are explained once, then the first medicine.
-  intro_many: 'ठीक है। हम एक-एक करके दवाई बताते हैं। हर दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दवाई का रंग-रूप सुनना हो, या दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।'
-  intro_one: 'ठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दवाई का रंग-रूप सुनना हो, या दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।'
-  short_intro_many: 'ठीक है। हम एक-एक करके दवाई बताते हैं। हर दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दवाई का रंग-रूप सुनना हो, या दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।'
-  short_intro_one: 'ठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दवाई का रंग-रूप सुनना हो, या दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।'
+  # After the opening's "हाँ" (v1.6 workflow): a short line, then the first medicine. Every medicine's question lists the three choices.
+  intro_many: 'ठीक है। हम एक-एक करके दवाई बताते हैं।'
+  intro_one: 'ठीक है।'
+  short_intro_many: 'ठीक है। हम एक-एक करके दवाई बताते हैं।'
+  short_intro_one: 'ठीक है।'
   # {appearance_phrase} {pack_phrase} {disambiguator} are whole sentences here (see `look`). The engine adds a longer pause, then item_ask.
   item: 'आपकी {ordinal}, {amount_text} {strip_name} {strength} की है। {spoken_line} {appearance_phrase} {pack_phrase} {disambiguator}[ {extra_instruction}।]'
   item_one: 'आपकी दवाई, {amount_text} {strip_name} {strength} की है। {spoken_line} {appearance_phrase} {pack_phrase} {disambiguator}[ {extra_instruction}।]'
   item_short: 'आपकी {ordinal}, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator}[ {extra_instruction}।]'
   item_short_one: 'आपकी दवाई, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator}[ {extra_instruction}।]'
-  item_ask: 'दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।'
+  item_ask: 'दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं ले सकते, तो "नहीं" बोलिए, या 2 दबाइए।'
   # Said instead of {ordinal} for a medicine the family added in the last 7 days: "आपकी नई दवाई, ..." (it is always described).
   new_ordinal: 'नई दवाई'
   # How a medicine looks, as short sentences. Sizes are three: very_small, small, large (the app's older rai/dal/matar/badam/bigger map onto them).
@@ -124,11 +124,11 @@ reminder_steps:
   relations: { son: 'आपके बेटे', daughter: 'आपकी बेटी', grandson: 'आपके पोते', granddaughter: 'आपकी पोती', daughter_in_law: 'आपकी बहू', son_in_law: 'आपके दामाद' }
   count_words: ['एक', 'दो', 'तीन', 'चार', 'पाँच', 'छह', 'सात', 'आठ', 'नौ', 'दस']
   ack_next: 'ठीक है।'
-  ack_not_now: 'कोई बात नहीं, थोड़ी देर में फिर याद दिलाएँगे।'
+  ack_not_now: 'ठीक है, हम आपके घर वालों को बता देंगे।'
   ack_silence: 'कोई बात नहीं।'
   silence_repeat: 'हम फिर से बताते हैं।'
-  # Nothing heard after a medicine's question (v1.6): a short re-ask, not a replay (the recogniser misses a short "हाँ" now and then; short re-asks were caught).
-  no_answer: 'माफ़ कीजिए, आवाज़ नहीं आई। दवाई ले ली हो, तो "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।'
+  # No answer or unclear after a medicine's question, first time (v1.6 workflow): said before the same summary and question again.
+  no_answer: 'माफ़ कीजिए, आपका जवाब सुनाई नहीं दिया। हम फिर से बताते हैं।'
   # Unclear speech or a key that means nothing: asked once more, by voice or key. Unclear speech never confirms.
   unclear: 'माफ़ कीजिए, समझ नहीं आया। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दवाई का रंग-रूप सुनना हो, या दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।'
   all_done: 'बहुत अच्छा, आपने सारी दवाइयाँ ले ली हैं। धन्यवाद, नमस्ते।'
@@ -137,10 +137,11 @@ reminder_steps:
   some_left: 'चिंता मत कीजिए, बाकी दवाई के लिए हम थोड़ी देर में फिर फ़ोन करेंगे। धन्यवाद, नमस्ते।'
   some_left_one: 'चिंता मत कीजिए, इस दवाई के लिए हम थोड़ी देर में फिर फ़ोन करेंगे। धन्यवाद, नमस्ते।'
   end_no_call_back: 'धन्यवाद, नमस्ते।'
-  # A medicine with no usable answer (heard 3 times, or unclear twice): not recorded, move on, and (only when a call follows) we will call again.
-  repeat_limit: 'माफ़ कीजिए, किसी वजह से इस दवाई का जवाब दर्ज नहीं हो पाया।'
-  moving_on: 'हम अगली दवाई पर चलते हैं।'
-  will_call_again: 'चिंता मत कीजिए, इस दवाई के लिए हम आपको फिर फ़ोन करेंगे।'
+  # No usable answer after the replay (or "phir se" used up): left open for the normal retry call. "will_call_again" only when a retry is left.
+  # "nahi" / 2 / "baad mein": not taken; the family is alerted (ack_not_now). There is no snooze call (founder decision, 24 Nov 2026).
+  repeat_limit: 'कोई बात नहीं।'
+  moving_on: ''
+  will_call_again: 'इस दवाई के लिए हम थोड़ी देर में फिर फ़ोन करेंगे।'
   time_up: 'समय पूरा हो गया।'
 
 building:

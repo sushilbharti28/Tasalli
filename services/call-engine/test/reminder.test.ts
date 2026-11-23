@@ -30,17 +30,17 @@ describe('reminder flow', () => {
     expect(doses(w)[0]!.confirmedVia).toBe('speech');
   });
 
-  it('"nahi li" never confirms: snoozes once, second "nahi li" is missed with an alert', async () => {
+  it('"nahi li" never confirms (v1.6): not taken at once, the family is alerted, no call back', async () => {
     const w = world();
     w.med('Amlodac', '09:00');
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ say: 'nahi li' }] }, { answer: 'answered', inputs: [{ say: 'nahi li' }] });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ say: 'nahi li' }] }, { answer: 'answered', inputs: [{ key: '1' }] });
     await planned(w);
-    await w.advance(16);
-    expect(doses(w)[0]!.status).not.toBe('confirmed');
-    expect(w.provider.callsTo(PARENT)).toHaveLength(2); // original + snooze call 15 min later
+    await w.advance(60);
+    expect(w.provider.callsTo(PARENT)).toHaveLength(1); // no snooze or retry call
     expect(doses(w)[0]!.status).toBe('missed');
     expect(w.queue.alerts.map((a) => a.job.kind)).toEqual(['dose_missed']);
     expect(w.queue.alerts[0]!.job.reason).toBe('said_not_taken');
+    expect(w.playedText(0)[1]).toMatch(/^Theek hai, hum aapke ghar walon ko bata denge\./);
   });
 
   it.each(['nahi', 'abhi nahi li', 'nahi li haan thodi der mein', 'haan nahi'])('negative beats positive: "%s"', async (say) => {
@@ -52,16 +52,17 @@ describe('reminder flow', () => {
     expect(doses(w)[0]!.status).not.toBe('confirmed');
   });
 
-  it('key 2 snoozes once; the second snooze request says take it now', async () => {
-    const w = world();
-    w.med('Amlodac', '09:00');
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '2' }] }, { answer: 'answered', inputs: [{ key: '2' }] });
-    await planned(w);
-    await w.advance(16);
-    expect(w.provider.callsTo(PARENT)).toHaveLength(2);
-    expect(w.playedText(0)[1]).toMatch(/Koi baat nahi, thodi der mein phir yaad dilayenge/);
-    expect(doses(w)[0]!.status).toBe('missed'); // second "not now": no second snooze
-    expect(w.queue.alerts.map((a) => a.job.reason)).toEqual(['said_not_taken']);
+  it('key 2 and "baad mein" are "not taken" too (v1.6: no snooze)', async () => {
+    for (const input of [{ key: '2' }, { say: 'baad mein' }]) {
+      const w = world();
+      w.med('Amlodac', '09:00');
+      w.provider.script(PARENT, { answer: 'answered', inputs: [input] }, { answer: 'answered', inputs: [{ key: '1' }] });
+      await planned(w);
+      await w.advance(60);
+      expect(w.provider.callsTo(PARENT)).toHaveLength(1);
+      expect(doses(w)[0]!.status).toBe('missed');
+      expect(w.queue.alerts.map((a) => a.job.reason)).toEqual(['said_not_taken']);
+    }
   });
 
   it('key 0 repeats the full description', async () => {
@@ -196,7 +197,7 @@ describe('reminder flow', () => {
     expect(w.playedText(1)[0]).toMatch(/Iska patta laal rang ka hai\./);
     // Vitcap is unlike the others and not new: name only, then the description when asked.
     const v = w.playedText(2);
-    expect(v[0]).toMatch(/Aapki dawai, ek goli Vitcap ki hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\.$/);
+    expect(v[0]).toMatch(/Aapki dawai, ek goli Vitcap ki hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\. Abhi nahi le sakte, to "nahi" boliye, ya do dabaiye\.$/);
     expect(v[1]).toMatch(/^Aapki dawai, ek goli Vitcap ki hai\. Yeh ek peele rang ka capsule hai\. Iska patta hare rang ka hai\./);
   });
 

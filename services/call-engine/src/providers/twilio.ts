@@ -172,7 +172,8 @@ export class TwilioProvider implements TelephonyProvider {
     const question = cut >= 0 ? text.slice(cut + LONG_PAUSE_MARK.length).trim() : text;
     const sayText = (x: string) => this.say(encodeSay(language, x));
     // No input: Gather falls through to the Redirect, which posts an empty input (a timeout) to the engine.
-    return `<Response>${before ? sayText(before) : ''}<Gather ${attrs} numDigits="1" timeout="${step.listen.timeoutSeconds}" action="${action}" method="POST">`
+    // bargeIn="false": the question always plays in full (a stray sound cut it short on a real call); listening starts after it.
+    return `<Response>${before ? sayText(before) : ''}<Gather ${attrs} bargeIn="false" numDigits="1" timeout="${step.listen.timeoutSeconds}" action="${action}" method="POST">`
       + `${sayText(question)}</Gather><Redirect method="POST">${action}</Redirect></Response>`;
   }
 

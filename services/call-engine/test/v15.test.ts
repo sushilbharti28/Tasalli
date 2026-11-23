@@ -101,41 +101,42 @@ describe('v1.5 greeting, silence and listen time', () => {
     expect(timeouts).toEqual([6]); // the second medicine
   });
 
-  it('silence after a medicine (v1.6): a short re-ask of the question, not a replay; never confirms; then the unclear path', async () => {
+  it('no answer after a medicine (v1.6 workflow): the same summary and question once more; then left open, never confirmed', async () => {
     const w = world();
     w.med('BP wali', '09:00');
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { silence: true }, { silence: true }] });
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[1]).toBe('Maaf kijiye, awaaz nahi aayi. Dawai le li ho, to "haan" boliye, ya ek dabaiye. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye.');
-    expect(said[1]).not.toMatch(/BP wali/); // no replay
-    expect(said[2]).toMatch(/^Maaf kijiye, samajh nahi aaya\. Dawai lene ke baad, "haan" boliye/); // second silence: asked once more, speech or key
-    expect(doses(w)).toEqual(['calling']); // never confirmed
+    expect(said[1]).toMatch(/^Maaf kijiye, aapka jawab sunai nahi diya\. Hum phir se batate hain\. Aapki dawai, ek goli BP wali ki hai\..*Abhi nahi le sakte, to "nahi" boliye, ya do dabaiye\.$/);
+    expect(said[2]).toBe('Koi baat nahi. Chinta mat kijiye, is dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.');
+    expect(said).toHaveLength(3); // one replay only
+    expect(doses(w)).toEqual(['calling']); // never confirmed; the normal retry follows
     expect(w.store.allCalls()[0]!.result).toBe('none');
   });
 
-  it('the short re-ask after silence does not use up a repeat: "phir se" twice still works', async () => {
+  it('the no-answer replay does not use up "phir se": two repeats still work, then the medicine is left open', async () => {
     const w = world();
     w.med('BP wali', '09:00');
     w.med('Sugar wali', '09:05');
-    // silence (short re-ask), key 0 (repeat 1), key 0 (repeat 2), key 0 (limit: moves on), key 1 confirms the second medicine
+    // silence (replay), key 0 (repeat 1), key 0 (repeat 2), key 0 (limit: left open), key 1 confirms the second medicine
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { key: '0' }, { key: '0' }, { key: '0' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said.filter((x) => /Aapki Pehli dawai, ek goli BP wali/.test(x))).toHaveLength(3); // the first time and two repeats
-    expect(said[4]).toMatch(/^Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya\. Hum agli dawai par chalte hain\. Chinta mat kijiye/);
+    expect(said.filter((x) => /Aapki Pehli dawai, ek goli BP wali/.test(x))).toHaveLength(4); // first time, the replay, two repeats
+    expect(said[4]).toMatch(/^Koi baat nahi\. Is dawai ke liye hum thodi der mein phir phone karenge\. Aapki Doosri dawai/);
     expect(doses(w)).toEqual(['calling', 'confirmed']);
   });
 
-  it('the short re-ask after silence is used once per medicine', async () => {
+  it('unclear then silence also counts as the one replay (no second replay)', async () => {
     const w = world();
     w.med('BP wali', '09:00');
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { silence: true }, { silence: true }, { silence: true }] });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ say: 'baad' }, { silence: true }] });
     await planned(w);
     await w.advance(1);
-    expect(w.playedText(0).filter((t) => /awaaz nahi aayi/.test(t))).toHaveLength(1);
+    expect(w.playedText(0).filter((t) => /jawab sunai nahi diya/.test(t))).toHaveLength(1);
+    expect(doses(w)).toEqual(['calling']);
   });
 });
 
@@ -156,7 +157,7 @@ describe('v1.5 presence check ("can you hear me?")', () => {
     const said = w.playedText(0);
     expect(said[0]).toBe('Namaste Kamla ji.\nHum Tasalli app se bol rahe hain. Aapko subah ki wali do dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya ek dabaiye.');
     expect(said[0]).not.toMatch(/BP wali/);
-    expect(said[1]).toMatch(/^Theek hai\. Hum ek-ek karke dawai batate hain\. .*Abhi nahi leni ho.*Aapki Pehli dawai, ek goli BP wali/);
+    expect(said[1]).toMatch(/^Theek hai\. Hum ek-ek karke dawai batate hain\. Aapki Pehli dawai, ek goli BP wali/);
     expect(doses(w)).toEqual(['calling', 'calling']); // key 1 on "can you hear me" confirmed nothing
   });
 
@@ -195,7 +196,7 @@ describe('v1.5 presence check ("can you hear me?")', () => {
       const w = two({ ...ok, inputs: [{ key: '1' }, { say, confidence }, { say, confidence }] }, { ...ok, inputs: [] }, { ...ok, inputs: [] });
       await planned(w);
       await w.advance(1);
-      expect(w.playedText(0)[2]).toMatch(/^Maaf kijiye, samajh nahi aaya/);
+      expect(w.playedText(0)[2]).toMatch(/^Maaf kijiye, aapka jawab sunai nahi diya/);
       expect(doses(w)[0]).not.toBe('confirmed');
     }
   });

@@ -25,7 +25,7 @@ describe('one medicine at a time', () => {
     expect(w.provider.callsTo(PARENT)).toHaveLength(1);
     const said = w.playedText(0);
     expect(said).toHaveLength(4); // intro + BP, Sugar, Pet, then the closing line
-    expect(said[0]).toMatch(/Theek hai\. Hum ek-ek karke dawai batate hain\. Har dawai lene ke baad, "haan" boliye, ya ek dabaiye\..*Aapki Pehli dawai, ek goli BP wali ki hai\./);
+    expect(said[0]).toMatch(/Theek hai\. Hum ek-ek karke dawai batate hain\. Aapki Pehli dawai, ek goli BP wali ki hai\./);
     expect(said[0]).not.toMatch(/Sugar wali|Pet wali/);
     expect(said[1]).toMatch(/^Theek hai\. Aapki Doosri dawai, ek goli Sugar wali ki hai\./);
     expect(said[2]).toMatch(/^Theek hai\. Aapki Teesri dawai, ek goli Pet wali ki hai\./);
@@ -37,40 +37,37 @@ describe('one medicine at a time', () => {
     expect(w.provider.callsTo(PARENT)).toHaveLength(1); // nothing left to retry or snooze
   });
 
-  it('middle one "nahi li": the others are confirmed, only that dose is snoozed once', async () => {
+  it('middle one "nahi li" (v1.6): that dose is not taken and the family is alerted; the others are confirmed; no call back', async () => {
     const w = three();
     w.provider.script(PARENT,
       { answer: 'answered', inputs: [{ key: '1' }, { say: 'nahi li' }, { key: '1' }] },
       { answer: 'answered', inputs: [{ key: '1' }] });
     await planned(w);
     await w.advance(1);
-    expect(status(w)).toEqual({ 'BP wali': 'confirmed', 'Sugar wali': 'calling', 'Pet wali': 'confirmed' });
+    expect(status(w)).toEqual({ 'BP wali': 'confirmed', 'Sugar wali': 'missed', 'Pet wali': 'confirmed' });
     const said = w.playedText(0);
-    expect(said[2]).toMatch(/^Koi baat nahi, thodi der mein phir yaad dilayenge\. Aapki Teesri dawai, ek goli Pet wali/);
-    expect(said[3]).toBe('Theek hai. Chinta mat kijiye, baaki dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.');
-    expect(w.store.allCalls()[0]!.result).toBe('snoozed');
+    expect(said[2]).toMatch(/^Theek hai, hum aapke ghar walon ko bata denge\. Aapki Teesri dawai, ek goli Pet wali/);
+    expect(said[3]).toBe('Theek hai. Dhanyavaad, namaste.'); // nothing promises a call back
+    expect(w.store.allCalls()[0]!.result).toBe('declined');
+    expect(w.queue.alerts.map((a) => [a.job.kind, a.job.reason])).toEqual([['dose_missed', 'said_not_taken']]);
+    await w.advance(60);
     expect(w.provider.callsTo(PARENT)).toHaveLength(1);
-    await w.advance(16);
-    expect(w.provider.callsTo(PARENT)).toHaveLength(2);
-    const snooze = w.playedText(1);
-    expect(snooze.join(' ')).toMatch(/Sugar wali/);
-    expect(snooze.join(' ')).not.toMatch(/BP wali|Pet wali/);
-    expect(snooze[0]).not.toMatch(/Pehli|Doosri/); // a single medicine left
-    expect(Object.values(status(w))).toEqual(['confirmed', 'confirmed', 'confirmed']);
   });
 
-  it('"nahi li" again on the snooze call: that dose is missed, the family is told once, no third call', async () => {
+  it('"nahi" on one medicine and no answer on another: only the unanswered one is called back', async () => {
     const w = three();
     w.provider.script(PARENT,
-      { answer: 'answered', inputs: [{ key: '1' }, { say: 'nahi li' }, { key: '1' }] },
-      { answer: 'answered', inputs: [{ say: 'nahi li' }] });
+      { answer: 'answered', inputs: [{ key: '2' }, { silence: true }, { silence: true }, { key: '1' }] },
+      { answer: 'answered', inputs: [{ key: '1' }] });
     await planned(w);
-    await w.advance(60);
+    await w.advance(1);
+    expect(status(w)).toEqual({ 'BP wali': 'missed', 'Sugar wali': 'calling', 'Pet wali': 'confirmed' });
+    expect(w.playedText(0).at(-1)).toMatch(/Chinta mat kijiye, baaki dawai ke liye hum thodi der mein phir phone karenge/);
+    await w.advance(11);
     expect(w.provider.callsTo(PARENT)).toHaveLength(2);
-    expect(status(w)['Sugar wali']).toBe('missed');
-    expect(status(w)['BP wali']).toBe('confirmed');
-    expect(w.queue.alerts.map((a) => a.job.kind)).toEqual(['dose_missed']);
-    expect(w.queue.alerts[0]!.job.reason).toBe('said_not_taken');
+    expect(w.playedText(1).join(' ')).toMatch(/Sugar wali/);
+    expect(w.playedText(1).join(' ')).not.toMatch(/BP wali|Pet wali/);
+    expect(status(w)['Sugar wali']).toBe('confirmed');
   });
 
   it('negative beats positive on a medicine: "haan nahi" is not a confirmation', async () => {
@@ -94,23 +91,23 @@ describe('one medicine at a time', () => {
     expect(Object.values(status(w))).toEqual(['confirmed', 'confirmed', 'confirmed']);
   });
 
-  it('unclear speech: asked once more with the same choices, by voice or key; a clear "haan" then confirms (rule 4)', async () => {
+  it('unclear speech (v1.6): the same medicine and question again, by voice or key; a clear "haan" then confirms (rule 4)', async () => {
     const w = three();
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ say: 'hmm achha' }, { say: 'haan' }, { key: '1' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[1]).toBe('Maaf kijiye, samajh nahi aaya. Dawai lene ke baad, "haan" boliye, ya ek dabaiye. Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye.');
+    expect(said[1]).toMatch(/^Maaf kijiye, aapka jawab sunai nahi diya\. Hum phir se batate hain\. Aapki Pehli dawai, ek goli BP wali ki hai\..*Abhi nahi le sakte, to "nahi" boliye, ya do dabaiye\.$/);
     expect(status(w)).toEqual({ 'BP wali': 'confirmed', 'Sugar wali': 'confirmed', 'Pet wali': 'confirmed' });
   });
 
-  it('unclear twice: never a confirmation; "not recorded", moving on, and "we will call again" while a retry is left', async () => {
+  it('unclear twice: never a confirmation; left open, "we will call again" while a retry is left', async () => {
     const w = three();
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ say: 'hmm achha' }, { say: 'lady' }, { key: '1' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[2]).toMatch(/^Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya\. Hum agli dawai par chalte hain\. Chinta mat kijiye, is dawai ke liye hum aapko phir phone karenge\. Aapki Doosri dawai/);
+    expect(said[2]).toMatch(/^Koi baat nahi\. Is dawai ke liye hum thodi der mein phir phone karenge\. Aapki Doosri dawai/);
     expect(status(w)).toEqual({ 'BP wali': 'calling', 'Sugar wali': 'confirmed', 'Pet wali': 'confirmed' });
     expect(said.at(-1)).toMatch(/Chinta mat kijiye, baaki dawai ke liye hum thodi der mein phir phone karenge/);
     expect(w.store.allCalls()[0]!.result).toBe('none'); // BP wali gets the normal retry
@@ -130,7 +127,7 @@ describe('one medicine at a time', () => {
     await planned(w);
     await w.advance(1);
     expect(Object.values(status(w))).toEqual(['calling', 'calling', 'calling']);
-    expect(w.playedText(0).at(-1)).toBe('Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya. Chinta mat kijiye, baaki dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.');
+    expect(w.playedText(0).at(-1)).toBe('Koi baat nahi. Chinta mat kijiye, baaki dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.');
     await w.advance(30);
     expect(w.provider.callsTo(PARENT)).toHaveLength(3);
     // The last retry: no call follows, so nothing promises one.
@@ -161,7 +158,8 @@ describe('one medicine at a time', () => {
     expect(said).toHaveLength(4); // the provider only follows each reply once
     expect(said[1]).toMatch(/Doosri dawai, ek goli Sugar wali/);
     expect(said[2]).toMatch(/Teesri dawai, ek goli Pet wali/);
-    expect(status(w)).toEqual({ 'BP wali': 'confirmed', 'Sugar wali': 'calling', 'Pet wali': 'confirmed' });
+    expect(status(w)).toEqual({ 'BP wali': 'confirmed', 'Sugar wali': 'missed', 'Pet wali': 'confirmed' });
+    expect(w.queue.alerts).toHaveLength(1); // the "not taken" alert is sent once
     expect(w.provider.callsTo(PARENT)).toHaveLength(1);
     // every duplicate got the same reply as the original
     const r = w.provider.callsTo(PARENT)[0]!.responses.filter(Boolean).map((x) => x!.body);
@@ -195,7 +193,7 @@ describe('one medicine at a time', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[0]).toMatch(/Theek hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\..*Aapki dawai, ek goli BP wali ki hai\./);
+    expect(said[0]).toMatch(/Theek hai\. Aapki dawai, ek goli BP wali ki hai\./);
     expect(said[0]).not.toMatch(/ek-ek karke|Pehli/);
     expect(said[1]).toBe('Theek hai. Bahut achha, aapne dawai le li hai. Dhanyavaad, namaste.');
   });
@@ -253,7 +251,7 @@ describe('one medicine at a time', () => {
     expect(one.playedText(1)[0]).toMatch(/Aapki dawai, ek goli Old ki hai\./);
   });
 
-  it('v1.6: the choices at the start say how to hear the description; "phir se" on a name-only medicine plays the full one', async () => {
+  it('v1.6: every question offers "phir se"; on a name-only medicine it plays the full description', async () => {
     const w = world();
     w.store.state.people.get(w.mom.id)!.canReadStrip = 'yes';
     w.med('BP wali', '09:00', { colourPrimary: 'white', shape: 'round', size: 'small', keptIn: 'strip', packColour: 'blue', updatedAt: new Date('2026-01-01T00:00:00Z') });
@@ -261,7 +259,7 @@ describe('one medicine at a time', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[0]).toMatch(/Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye\./);
+    expect(said[0]).toMatch(/Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\./);
     expect(said[0]).not.toMatch(/Iska patta/);
     expect(said[1]).toMatch(/^Aapki dawai, ek goli BP wali ki hai\. Yeh ek chhoti si safed rang ki gol aakar ki goli hai\. Iska patta neele rang ka hai\./);
   });
@@ -281,7 +279,7 @@ describe('test-reminder medicines and wording placeholders', () => {
     expect(said[1]).toMatch(/Aapki Doosri dawai, ek goli sugar wali ki hai\. Yeh capsule dekhne mein aadha peela aur aadha safed hai\. Iska patta chaandi ke rang ka hai\./);
     expect(said[2]).toMatch(/Aapki Teesri dawai, ek goli pet wali dawai ki hai\. Iski bottle bhoore rang ki hai\. Iska dhakkan laal rang ka hai\./);
     // Then the question ("le li" is no longer asked for). The longer pause before it is only in Twilio's SSML (twilio.test.ts).
-    expect(said[2]).toMatch(/laal rang ka hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\.$/);
+    expect(said[2]).toMatch(/laal rang ka hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\. Abhi nahi le sakte, to "nahi" boliye, ya do dabaiye\.$/);
     for (const x of said) expect(x).not.toMatch(/"le li"/);
     for (const x of said.slice(0, 3)) expect(x).not.toMatch(/Khane|khane/); // food timing is in the opening only
   });

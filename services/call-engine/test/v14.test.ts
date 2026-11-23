@@ -51,17 +51,17 @@ describe('v1.4 prompt wording', () => {
     await w.settle();
     await w.advance(1);
     const said = w.playedText(0);
-    const prompt = 'Dawai lene ke baad, "haan" boliye, ya ek dabaiye. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye.';
+    const prompt = 'Dawai lene ke baad, "haan" boliye, ya ek dabaiye. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye. Abhi nahi le sakte, to "nahi" boliye, ya do dabaiye.';
     expect(said[0]!.endsWith(prompt)).toBe(true);
     expect(said[1]!.endsWith(prompt)).toBe(true);
   });
   it('the Hindi script has the Devanagari question, and no prompt asks for "le li"', () => {
     const t = new ScriptLibrary(DEFAULT_SCRIPTS_DIR).get('hi').templates.reminder;
-    expect(t.step_item_ask).toBe('दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।');
+    expect(t.step_item_ask).toBe('दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं ले सकते, तो "नहीं" बोलिए, या 2 दबाइए।');
     for (const k of ['step_item', 'step_item_one', 'step_item_short', 'step_item_short_one', 'step_intro', 'step_intro_one', 'step_unclear'] as const) {
       expect(t[k]).not.toMatch(/"ले ली"/);
     }
-    expect(t.step_intro).toMatch(/"फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।$/);
+    expect(t.step_intro).toBe('ठीक है। हम एक-एक करके दवाई बताते हैं।'); // v1.6: the choices are in every question instead
   });
 });
 
@@ -126,7 +126,7 @@ describe('v1.4 repeat limit: heard 3 times at most', () => {
     expect(said).toHaveLength(5); // opening, repeat 1, repeat 2, "aage badhte hain" + medicine 2, closing line
     expect(said[1]).toMatch(/^Aapki Pehli dawai, ek goli BP wali ki hai\./);
     expect(said[2]).toBe(said[1]);
-    expect(said[3]).toMatch(/^Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya\. Hum agli dawai par chalte hain\. Chinta mat kijiye, is dawai ke liye hum aapko phir phone karenge\. Aapki Doosri dawai, ek goli Sugar wali ki hai\./);
+    expect(said[3]).toMatch(/^Koi baat nahi\. Is dawai ke liye hum thodi der mein phir phone karenge\. Aapki Doosri dawai, ek goli Sugar wali ki hai\./);
     expect(said[3]).not.toBe(said[1]);
     expect(said.filter((x) => x.includes('Pehli dawai, ek goli BP wali')).length).toBe(3); // heard 3 times in all
     expect(status(w)).toEqual(['calling', 'confirmed']);
@@ -158,17 +158,17 @@ describe('v1.4 repeat limit: heard 3 times at most', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[said.length - 1]).toBe('Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya. Chinta mat kijiye, is dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.');
+    expect(said[said.length - 1]).toBe('Koi baat nahi. Chinta mat kijiye, is dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.');
     expect(status(w)).toEqual(['calling']);
   });
-  it('the repeat words are explained once at the start and again in the unclear re-ask; each medicine ends with the short question', async () => {
+  it('v1.6: every medicine, every repeat and every replay ends with the same three choices', async () => {
     const w = two({ answer: 'answered', inputs: [{ key: '0' }, { say: 'hmm' }, { key: '1' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[0]).toMatch(/Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye\./);
-    expect(said[1]!.endsWith('Dawai lene ke baad, "haan" boliye, ya ek dabaiye. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye.')).toBe(true);
-    expect(said[2]).toMatch(/Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye\.$/);
+    const Q = 'Dawai lene ke baad, "haan" boliye, ya ek dabaiye. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye. Abhi nahi le sakte, to "nahi" boliye, ya do dabaiye.';
+    for (const x of said.slice(0, 4)) expect(x.endsWith(Q)).toBe(true);
+    expect(said[2]).toMatch(/^Maaf kijiye, aapka jawab sunai nahi diya\. Hum phir se batate hain\. Aapki Pehli dawai/);
   });
 });
 
@@ -228,13 +228,13 @@ describe('v1.4 call time limit (fake clock)', () => {
     expect(status(w)).toEqual(['calling', 'calling']);
     expect(w.store.allCalls()[0]!.result).toBe('none');
   });
-  it('a "not taken" answer is recorded before the call ends; snooze rules still apply', async () => {
+  it('a "not taken" answer is recorded before the call ends (v1.6: not taken, family told); the unasked dose is retried', async () => {
     const w = meds(2, { answer: 'answered', secondsPerStep: 200, inputs: [{ say: 'nahi li' }] });
     await planned(w);
     await w.advance(1);
-    expect(w.playedText(0)[1]).toBe(`Koi baat nahi, thodi der mein phir yaad dilayenge. ${TIME_UP}`);
-    expect(w.store.allCalls()[0]!.result).toBe('snoozed');
-    expect(status(w)).toEqual(['calling', 'calling']);
+    expect(w.playedText(0)[1]).toBe(`Theek hai, hum aapke ghar walon ko bata denge. ${TIME_UP}`);
+    expect(w.store.allCalls()[0]!.result).toBe('none'); // the second medicine was never asked: normal retry
+    expect(status(w)).toEqual(['missed', 'calling']);
   });
   it('TimeLimit (soft + 30 s) is sent on a reminder call and not on a consent call', async () => {
     const w = meds(3, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }, { key: '1' }] });

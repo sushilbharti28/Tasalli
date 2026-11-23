@@ -149,6 +149,7 @@ describe('Twilio env', () => {
     expect(body.indexOf('ya ek dabaiye')).toBeGreaterThan(gather);
     expect(body.indexOf('ya ek dabaiye')).toBeLessThan(body.indexOf('</Gather>'));
     expect(body).not.toContain('\u2016');
+    expect(body).toContain('bargeIn="false"'); // the question always plays in full
     // A prompt with no mark (a plain question, e.g. the re-ask) is listened to whole.
     const q = p.renderNextAction({ action: 'play', step: { audioUrl: await new SayUrls().urlFor('Maaf kijiye, samajh nahi aaya.', 'hi'), listen: { keys: ['1'], speech: true, timeoutSeconds: 6 } } }, { callId: 'c1' }).body;
     expect(q.indexOf('<Gather')).toBeLessThan(q.indexOf('Maaf kijiye'));

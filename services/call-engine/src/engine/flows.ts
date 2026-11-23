@@ -1,6 +1,5 @@
 import type { CallEvent, NextAction, ReplyIntent } from '@tasalli/contracts';
-import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
-import { MINUTE } from '../clock.js';
+import { CONSENT_KEYS, REMINDER_KEYS } from '../contracts-values.js';
 import { fetchAudio } from '../providers/fake-speech.js';
 import { joinSentences } from '../scripts/render.js';
 import { line, childName, splitAck } from '../scripts/builder.js';
@@ -182,20 +181,15 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
     const silent = ids.filter((id) => r.outcomes[id] === 'none');
     let result: CallResultRow = 'confirmed';
     if (declined.length > 0) {
-      const used = (await d.store.listCallsForGroup(gid)).some((c) => c.result === 'snoozed');
-      if (!used) {
-        // Snooze once: the call that comes back covers whatever is still unconfirmed in the group (confirmed doses are not called again).
-        await d.queue.add('reminder.snooze', { callGroupId: gid }, { delayMs: RULES.snoozeMinutes * MINUTE, jobId: `snooze_${gid}` });
-        result = 'snoozed';
-      } else {
-        if ((await d.store.closeDoses(declined, 'missed')) > 0) await alertFor(d, person, 'dose_missed', gid, declined, `missed_${gid}`, 'said_not_taken');
-        result = silent.length > 0 ? 'none' : 'declined';
-      }
+      // v1.6 (founder decision, 24 Nov 2026): "nahi" / 2 means not taken. No snooze call: the dose is closed as missed and the
+      // family is alerted now, so they can follow up (e.g. the strip ran out). Unanswered doses still get the normal retries.
+      if ((await d.store.closeDoses(declined, 'missed')) > 0) await alertFor(d, person, 'dose_missed', gid, declined, `missed_${gid}`, 'said_not_taken');
+      result = silent.length > 0 ? 'none' : 'declined';
     } else if (silent.length > 0) {
       result = 'none'; // the normal 10-minute retry covers the doses nobody answered for
     }
-    // "We will call again" only when a call really follows: the 15 minute reminder, or a 10-minute retry that is still left.
-    const callsBack = result === 'snoozed' || (result === 'none' && r.retryLeft !== false);
+    // "We will call again" only when a call really follows: a 10-minute retry that is still left (only for unanswered doses).
+    const callsBack = result === 'none' && r.retryLeft !== false;
     const someLeft = n === 1 ? t.step_some_left_one : t.step_some_left;
     const end = t.step_end_no_call_back !== undefined // v1.6 wording: time_up no longer carries the promise itself
       ? joinSentences([timeUp ? (t.step_time_up ?? '') : '', result === 'confirmed' && !timeUp ? (n === 1 ? t.step_all_done_one : t.step_all_done) : callsBack ? someLeft : t.step_end_no_call_back])
@@ -241,7 +235,7 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
     case 'confirm':
       await d.store.confirmDoses([cur.doseId], via, d.clock.now());
       return advance('confirmed', t.step_ack_next);
-    case 'snooze':
+    case 'snooze': // "baad mein": v1.6 has no snooze; like "nahi" it is not taken now and the family is told
     case 'decline':
       return advance('declined', t.step_ack_not_now);
     case 'repeat':
@@ -249,27 +243,15 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
       if (s.repeats >= MAX_REPEATS_PER_MEDICINE) return advance('none', notRecorded()); // heard 3 times: leave it, move on
       s.repeats++;
       return ask(cur.full, !s.keypadOnly);
-    default: { // unclear or silence: ask once more (speech or key), then leave this medicine unconfirmed
-      // Silence (nothing heard, no key), once per medicine. v1.6: a short re-ask of the question (the recogniser misses a short
-      // "haan" now and then, and short re-asks were caught on real calls); languages without step_no_answer replay the medicine.
-      // Never a confirmation; the short re-ask does not count toward the repeat limit.
-      if (via === 'speech' && raw.trim() === '' && !s.keypadOnly && !s.silenceRepeated && !overLimit()) {
-        if (t.step_no_answer) {
-          s.silenceRepeated = true;
-          return ask(t.step_no_answer, true);
-        }
-        if (s.repeats < MAX_REPEATS_PER_MEDICINE) {
-          s.silenceRepeated = true;
-          s.repeats++;
-          return ask(joinSentences([t.step_silence_repeat ?? '', cur.first]), true); // the same version as before (name only stays name only)
-        }
+    default: { // no answer or unclear (v1.6 workflow, founder decision 24 Nov 2026)
+      // First time for this medicine: "we did not hear you, here it is again", the same summary (name only stays name only) and
+      // the question with all three choices. Second time: leave it open and move on; the normal retry call covers it.
+      // Rule 4: unclear speech or silence never confirms. The replay does not count toward the "phir se" limit.
+      if (!s.silenceRepeated && !overLimit()) {
+        s.silenceRepeated = true;
+        return ask(joinSentences([t.step_no_answer ?? t.step_silence_repeat ?? '', cur.first]), true);
       }
-      s.unclearCount++;
-      if (s.unclearCount === 1) {
-        if (overLimit()) return advance('none', '', true);
-        // Rule 4: unclear speech never confirms. The re-ask listens for speech and keys again; only a clear yes or key 1 confirms.
-        return ask(t.step_unclear, true);
-      }
+      if (overLimit()) return advance('none', '', true);
       return advance('none', notRecorded());
     }
   }
