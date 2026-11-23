@@ -254,7 +254,7 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
       if (via === 'speech' && raw.trim() === '' && !s.keypadOnly && !s.silenceRepeated && s.repeats < MAX_REPEATS_PER_MEDICINE && !overLimit()) {
         s.silenceRepeated = true;
         s.repeats++;
-        return ask(joinSentences([t.step_silence_repeat ?? '', cur.full]), true);
+        return ask(joinSentences([t.step_silence_repeat ?? '', cur.first]), true); // the same version as before (name only stays name only); "phir se" gives the full one
       }
       s.unclearCount++;
       if (s.unclearCount === 1) {

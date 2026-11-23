@@ -22,12 +22,15 @@ import type { MedicineRow } from './types.js';
  * Needs the tunnel to be up (same setup as test-call).
  */
 async function main() {
-  process.env.TWILIO_RECORD = 'false'; // test: not recorded
+  // Test calls are not recorded, unless --record (to listen to what the recogniser missed): the recording then stays at Twilio
+  // (Console > Monitor > Call recordings); this throwaway script never copies or deletes it.
+  const record = process.argv.includes('--record');
+  process.env.TWILIO_RECORD = record ? 'true' : 'false';
   loadRootEnv();
-  process.env.TWILIO_RECORD = 'false';
+  process.env.TWILIO_RECORD = record ? 'true' : 'false';
   const split = process.argv.includes('--split');
   const to = process.argv.slice(2).find((a) => !a.startsWith('--'));
-  if (!to || !/^\+[1-9]\d{6,14}$/.test(to)) throw new Error('Usage: test-reminder <E.164 number> [--split], e.g. +919876543210');
+  if (!to || !/^\+[1-9]\d{6,14}$/.test(to)) throw new Error('Usage: test-reminder <E.164 number> [--split] [--record], e.g. +919876543210');
   const env = twilioEnv(process.env);
   const log = createLogger();
   const { provider, audio } = buildTwilio(process.env);
@@ -99,6 +102,7 @@ async function main() {
     const heard = session?.reminder?.heard[id] ?? [];
     console.log(`- ${names.get(id)}: ${label}; heard: ${heard.length ? heard.map((h) => `"${h}"`).join(', ') : 'nothing'}`);
   }
+  if (record) console.log('Recorded: listen in the Twilio Console > Monitor > Call recordings (kept at Twilio; delete it there when done).');
   server.close();
   process.exit(0);
 }

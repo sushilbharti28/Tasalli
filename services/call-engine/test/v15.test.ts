@@ -110,6 +110,15 @@ describe('v1.5 greeting, silence and listen time', () => {
     const said = w.playedText(0);
     expect(said[1]).toMatch(/^Hum phir se batate hain\. Aapki dawai, ek goli BP wali ki hai\./); // same medicine again, in full
     expect(said[1]).toBe(w.provider.callsTo(PARENT)[0]!.played.map((u) => w.text(u))[1]);
+    // v1.6: a name-only medicine is replayed name-only after silence (the full look only on "phir se" / 0).
+    const k = world();
+    k.store.state.people.get(k.mom.id)!.canReadStrip = 'yes';
+    k.med('Sugar wali', '09:00', { kind: 'capsule', colourPrimary: 'yellow', size: 'small', keptIn: 'strip', packColour: 'silver', updatedAt: new Date('2026-01-01T00:00:00Z') });
+    k.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { key: '1' }] });
+    await planned(k);
+    await k.advance(1);
+    expect(k.playedText(0)[1]).toMatch(/^Hum phir se batate hain\. Aapki dawai, ek goli Sugar wali ki hai\. Dawai lene ke baad/);
+    expect(k.playedText(0)[1]).not.toMatch(/Iska patta|capsule hai/);
     expect(said[2]).toMatch(/^Maaf kijiye, samajh nahi aaya\. Dawai lene ke baad, "haan" boliye/); // second silence: asked once more, speech or key
     expect(doses(w)).toEqual(['calling']); // never confirmed
     expect(w.store.allCalls()[0]!.result).toBe('none');
