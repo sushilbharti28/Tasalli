@@ -4,14 +4,18 @@ import { MINUTE } from '../clock.js';
 import { fetchAudio } from '../providers/fake-speech.js';
 import { joinSentences } from '../scripts/render.js';
 import { line, childName } from '../scripts/builder.js';
+import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
 import { MAX_REPEATS_PER_MEDICINE, softLimitSeconds } from '../flows/limits.js';
-import { matchIntent } from '../speech/intent.js';
+import { MIN_CONFIDENCE, matchIntent, hasNegation } from '../speech/intent.js';
 import type { CallSession } from '../flows/session.js';
 import type { CallResultRow, CallRow, PersonRow } from '../types.js';
 import { alertFor, listenStep } from './calls.js';
 import type { Deps } from './deps.js';
 
 type InputEvent = Extract<CallEvent, { type: 'input' }>;
+
+/** Extra yes-phrases for "can you hear me?" (a negation word anywhere already rules a reply out): ji, aa rahi hai, sun raha/rahi hoon. */
+const PRESENCE_YES = /(^|\s)(ji|जी|haan|han|हाँ|हां|aa rahi hai|आ रही है|आ रहा है|aa raha hai|sun raha hoon|sun rahi hoon|sun raha hun|sun rahi hun|सुन रहा हूँ|सुन रही हूँ|सुन रहा हूं|सुन रही हूं)(\s|$)/u;
 
 /** Turn a webhook input into an intent. Silence, unknown keys, low confidence and speech on a keypad-only step are 'unclear'. */
 async function interpret(d: Deps, s: CallSession, ev: InputEvent): Promise<{ intent: ReplyIntent; kind: 'key' | 'speech'; raw: string }> {
@@ -45,7 +49,7 @@ async function interpret(d: Deps, s: CallSession, ev: InputEvent): Promise<{ int
 /** Handle one input event for a live call. Returns what the call does next. Everything it changes is idempotent. */
 export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: InputEvent): Promise<NextAction> {
   const t = d.scripts.get(s.language).templates;
-  const say = async (text: string) => d.audio.urlFor(text, s.language);
+  const say = async (text: string) => d.audio.urlFor(speakNumbers(text, scriptOf(t.reminder.step_ack_next)), s.language); // no digit is ever spoken as a digit
   const bye = async (text: string, result: CallResultRow): Promise<NextAction> => {
     await d.store.updateCall(call.id, { result });
     return { action: 'hangup', finalAudioUrl: await say(text) };
@@ -64,7 +68,28 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
 
   const { intent, kind, raw } = await interpret(d, s, ev);
   await d.store.updateCall(call.id, { inputKind: kind, inputValue: kind === 'key' ? raw : raw.slice(0, 80) });
-  const ask = async (text: string, speech: boolean): Promise<NextAction> => ({ action: 'play', step: listenStep(d, await say(text), s.purpose, speech) });
+  // The first medicine waits 8 s for a reply, the others 6 s.
+  const ask = async (text: string, speech: boolean): Promise<NextAction> => ({ action: 'play', step: listenStep(d, await say(text), s.purpose, speech, s.purpose === 'reminder' && (s.reminder?.index ?? 1) === 0) });
+
+  // Presence check first ("can you hear me?"): never a dose or consent confirmation; 9 / a stop phrase still opts out.
+  if (s.presence?.state === 'pending') {
+    const p = s.presence;
+    const heardYou = kind === 'key' ? intent !== 'stop' // any key but 9
+      : intent === 'confirm' || (intent === 'unclear' && raw.trim() !== '' && ((ev as { confidence?: number }).confidence ?? 1) >= MIN_CONFIDENCE
+        && !hasNegation(raw, d.scripts.get(s.language).phrases) && PRESENCE_YES.test(raw.normalize('NFC').toLowerCase()));
+    if (intent === 'stop') {
+      await stopNumber(d, s.to, kind === 'key' ? 'key_9' : 'stop_phrase', kind, call);
+      return bye(s.purpose === 'consent' ? t.consent.stop_ack : t.reminder.stop_ack, 'stop');
+    }
+    if (heardYou) {
+      p.state = 'ok';
+      s.unclearCount = 0;
+      s.keypadOnly = false;
+      return ask(p.next, true);
+    }
+    if (++p.asks === 1) return ask(p.text, true); // once more
+    return bye(s.purpose === 'consent' ? t.consent.no_input_goodbye : t.reminder.no_input_goodbye, 'none'); // no medicine marked: the normal 10-minute retry follows
+  }
 
   // Reminder calls go through the medicines one at a time: every intent is about the medicine being asked now.
   if (s.purpose === 'reminder' && s.reminder && person && call.callGroupId) {
@@ -169,6 +194,7 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
     r.index++;
     s.unclearCount = 0;
     s.repeats = 0;
+    s.silenceRepeated = false;
     s.keypadOnly = false;
     const upcoming = r.items[r.index];
     if (!upcoming) return finish(forceTimeUp ? '' : ack, forceTimeUp);
@@ -203,6 +229,12 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
       s.repeats++;
       return ask(cur.full, !s.keypadOnly);
     default: { // unclear or silence: ask once (keypad only), then leave this medicine unconfirmed
+      // Silence (nothing heard, no key) first plays the same medicine again, once. It counts toward the repeat limit and never confirms.
+      if (via === 'speech' && raw.trim() === '' && !s.keypadOnly && !s.silenceRepeated && s.repeats < MAX_REPEATS_PER_MEDICINE && !overLimit()) {
+        s.silenceRepeated = true;
+        s.repeats++;
+        return ask(cur.full, true);
+      }
       s.unclearCount++;
       if (s.unclearCount === 1) {
         if (overLimit()) return advance('none', '', true);

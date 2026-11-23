@@ -13,7 +13,10 @@ import { silentLogger, type Logger } from '../src/log.js';
 export const PARENT = '+919876543210';
 
 /** 2026-03-10 is a Tuesday. 09:00 IST = 03:30Z; default start is one minute before. */
-export function world(start = '2026-03-10T03:29:00Z', opts: { scripts?: ScriptLibrary; log?: Logger } = {}) {
+export function world(start = '2026-03-10T03:29:00Z', opts: { scripts?: ScriptLibrary; log?: Logger; presence?: boolean } = {}) {
+  const scripts = opts.scripts ?? new ScriptLibrary(null);
+  // Most tests are about the medicine flow itself, so the "can you hear me?" step is off unless a test asks for it (presence: true).
+  if (!opts.presence) for (const l of ['hi', 'en'] as const) scripts.get(l).templates.reminder.step_presence = undefined;
   const clock = new FakeClock(start);
   const store = new MemoryStore();
   const queue = new MemoryQueue(clock);
@@ -21,7 +24,7 @@ export function world(start = '2026-03-10T03:29:00Z', opts: { scripts?: ScriptLi
   const speech = new FakeSpeech();
   const audio = new AudioCache(speech, new MemoryAudioStorage());
   const engine = new Engine({
-    store, queue, provider, audio, speech, scripts: opts.scripts ?? new ScriptLibrary(null), sessions: new MemorySessionStore(), clock,
+    store, queue, provider, audio, speech, scripts, sessions: new MemorySessionStore(), clock,
     log: opts.log ?? silentLogger, config: defaultConfig(),
   });
   queue.setHandler((n, data) => engine.handleJob(n, data));

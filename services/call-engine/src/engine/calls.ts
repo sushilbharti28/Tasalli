@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import type { CallStep, PlaceCallRequest } from '@tasalli/contracts';
 import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
-import { buildReminderSteps, relationPhrase, line, personName, childName } from '../scripts/builder.js';
+import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
+import { presencePrompt, buildReminderSteps, relationPhrase, line, personName, childName } from '../scripts/builder.js';
 import { localDay } from '../scheduler/time.js';
 import type { CallSession } from '../flows/session.js';
 import type { PersonRow } from '../types.js';
@@ -11,9 +12,9 @@ import { callLanguage } from './language.js';
 import { MINUTE } from '../clock.js';
 import { hardLimitSeconds } from '../flows/limits.js';
 
-export function listenStep(d: Deps, audioUrl: string, purpose: 'consent' | 'reminder' | 'test', speech = true): CallStep {
+export function listenStep(d: Deps, audioUrl: string, purpose: 'consent' | 'reminder' | 'test', speech = true, first = false): CallStep {
   const keys = purpose === 'reminder' ? Object.keys(REMINDER_KEYS) : purpose === 'consent' ? Object.keys(CONSENT_KEYS) : [...'0123456789*#']; // test call: any key
-  return { audioUrl, listen: { keys, speech, timeoutSeconds: d.config.listenSeconds } };
+  return { audioUrl, listen: { keys, speech, timeoutSeconds: first ? d.config.firstListenSeconds : d.config.listenSeconds } };
 }
 
 export async function alertFor(d: Deps, person: PersonRow, kind: Parameters<Deps['queue']['alert']>[0]['kind'],
@@ -42,7 +43,7 @@ async function place(d: Deps, o: { person: PersonRow | null; to: string; zone: s
   const callId = gate.row.id;
   await d.sessions.set({ callId, purpose: o.purpose, language: o.language, to: o.to, ...o.session });
   try {
-    const first = listenStep(d, await d.audio.urlFor(o.session.mainText, o.language), o.purpose);
+    const first = listenStep(d, await d.audio.urlFor(speakNumbers(o.session.mainText, scriptOf(d.scripts.get(o.language).templates.reminder.step_ack_next)), o.language), o.purpose, true, true);
     const req: PlaceCallRequest & { timeLimitSeconds?: number } = { callId, to: o.to, callerId: d.config.callerId, language: o.language, purpose: o.purpose,
       firstStep: first, statusWebhookUrl: `${d.config.publicBaseUrl}/webhooks/${d.provider.name}/status`,
       inputWebhookUrl: `${d.config.publicBaseUrl}/webhooks/${d.provider.name}/input` };
@@ -98,7 +99,9 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   const reminder = { items: details.map((x, i) => ({ doseId: x.dose.id, first: steps.items[i]!.first, full: steps.items[i]!.full })),
     index: 0, outcomes: {}, heard: {} };
   const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode,
-    language: lang, session: { ...blank, mainText: steps.opening, fullText: steps.items[0]!.full, reminder } });
+    language: lang, session: steps.presence
+      ? { ...blank, mainText: presencePrompt(steps.greeting, steps.presence), fullText: steps.items[0]!.full, reminder, presence: { state: 'pending' as const, asks: 0, text: steps.presence, next: steps.opening } }
+      : { ...blank, mainText: presencePrompt(steps.greeting, steps.opening), fullText: steps.items[0]!.full, reminder } });
   if (out === 'capped') return void await stop('missed', 'daily_cap');
   if (out === 'blocked') return void await stop('skipped_paused');
   if (out === 'failed') await afterNoConfirmation(d, groupId, attemptCode);
@@ -128,8 +131,15 @@ export async function placeConsent(d: Deps, personId: string, attempt: number): 
   const lang = callLanguage(d, person.language, person.id);
   const t = d.scripts.get(lang).templates;
   const text = line(t.consent.prompt, { person_name: personName(t, person), child_name: childName(t, user?.name ?? null), relation_phrase: relationPhrase(t, person.callerRelation) });
-  const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'consent', groupId: null, attempt,
-    language: lang, session: { ...blank, mainText: text, fullText: text } });
+  // Same presence check as reminder calls: greeting, "can you hear me?", and only after a yes the consent question (without its own greeting).
+  const rs = t.reminder;
+  const spoken = (x: string) => speakNumbers(x, scriptOf(rs.step_ack_next));
+  const greeting = rs.step_greeting ? spoken(line(rs.step_greeting, { person_name: personName(t, person) })) : '';
+  const question = rs.step_presence ? spoken(rs.step_presence) : '';
+  const next = greeting && text.startsWith(greeting) ? text.slice(greeting.length).trim() : text;
+  const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'consent', groupId: null, attempt, language: lang,
+    session: question && greeting ? { ...blank, mainText: presencePrompt(greeting, question), fullText: text, presence: { state: 'pending', asks: 0, text: question, next } }
+      : { ...blank, mainText: text, fullText: text } });
   if (out === 'capped') return void await alertFor(d, person, 'consent_no_answer', null, [], `consent_noanswer_${person.id}`, 'daily_cap');
   if (out === 'failed') await consentUnanswered(d, personId, attempt);
 }

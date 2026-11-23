@@ -46,6 +46,9 @@ describe('consent call through the Twilio adapter', () => {
     const callId = await start_(r);
     expect(r.placed[0]!.get('Twiml')).toContain('language="hi-IN"');
     expect((await r.hit('status', `c=${callId}`, status('in-progress'))).status).toBe(200);
+    const presence = await r.hit('input', `c=${callId}&n=n0`, gatherDigits('1')); // "Can you hear me?" first: not a consent
+    expect(presence.body).toContain('<Gather');
+    expect(r.mom.consent).toBe('pending');
     const a = await r.hit('input', `c=${callId}&n=n1`, gatherDigits('1'));
     const b = await r.hit('input', `c=${callId}&n=n1`, gatherDigits('1')); // Twilio retry of the same request
     expect(a.body).toContain('<Hangup/>');
@@ -61,6 +64,7 @@ describe('consent call through the Twilio adapter', () => {
     const r = rig();
     const callId = await start_(r);
     await r.hit('status', `c=${callId}`, status('in-progress'));
+    await r.hit('input', `c=${callId}&n=n0`, gatherDigits('1'));
     await r.hit('input', `c=${callId}&n=n1`, gatherSpeech('haan nahi'));
     expect(r.mom.consent).not.toBe('consented');
   });
@@ -82,6 +86,7 @@ describe('consent call through the Twilio adapter', () => {
   it('silent call: unclear, then keypad-only TwiML, never consent', async () => {
     const r = rig();
     const callId = await start_(r);
+    await r.hit('input', `c=${callId}&n=n0`, gatherDigits('1')); // can you hear me: yes
     const first = await r.hit('input', `c=${callId}&n=n1`, status('in-progress'));
     expect(first.body).toContain('input="dtmf speech"');
     const second = await r.hit('input', `c=${callId}&n=n2`, status('in-progress'));

@@ -23,14 +23,17 @@ reminder:
   unwell_ack: Okay. We will tell {child_name}. If you need, please talk to your doctor. Namaste.
   stop_ack: Okay. We will never call you again. We will tell {child_name} too. Namaste.
   no_input_goodbye: We did not get an answer. Namaste.
-  step_intro: Namaste {person_name} ji. It is time for your {count_word} {meal_phrase} medicines. We will go one by one.
-  step_intro_one: Namaste {person_name} ji. It is time for your {meal_phrase} medicine.
-  step_short_intro: "{person_name} ji, it is time for your {count_word} {meal_phrase} medicines. We will go one by one."
-  step_short_intro_one: "{person_name} ji, it is time for your {meal_phrase} medicine."
-  step_item: '{ordinal}: {spoken_name}. {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
-  step_item_one: '{spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
-  step_item_short: '{ordinal}: {spoken_name}. {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
-  step_item_short_one: '{spoken_name}: {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_greeting: Namaste {person_name} ji.
+  step_spoken_line: You call it {spoken_name}.
+  step_presence: Can you hear me? Say "yes", or press 1.
+  step_intro: It is time for your {count_word} {meal_phrase} medicines. We will go one by one.
+  step_intro_one: It is time for your {meal_phrase} medicine.
+  step_short_intro: It is time for your {count_word} {meal_phrase} medicines. We will go one by one.
+  step_short_intro_one: It is time for your {meal_phrase} medicine.
+  step_item: '{ordinal}: {strip_name} {strength}. {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_item_one: 'Medicine: {strip_name} {strength}. {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_item_short: '{ordinal}: {strip_name} {strength}. {spoken_line} {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
+  step_item_short_one: 'Medicine: {strip_name} {strength}. {spoken_line} {amount_text}, {disambiguator}. {extra_instruction}. When you have taken it, say "taken", or press 1.'
   step_meals:
     breakfast: breakfast
     lunch: lunch

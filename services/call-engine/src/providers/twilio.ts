@@ -129,7 +129,10 @@ export class TwilioProvider implements TelephonyProvider {
     const { language, text } = decodeSay(audioUrl);
     const v = voiceFor(language);
     const voice = this.cfg.voices?.[language] ?? v.voice;
-    return `<Say voice="${xmlEscape(voice)}" language="${v.language}">${this.cfg.ssml === false ? xmlEscape(text) : toSsml(text)}</Say>`;
+    // A line break splits the text into separate <Say>s with a 1 s <Pause> between: the short greeting is synthesised alone, so a slow synthesis of the long part cannot delay it.
+    return text.split('\n').map((p) => p.trim()).filter(Boolean)
+      .map((p) => `<Say voice="${xmlEscape(voice)}" language="${v.language}">${this.cfg.ssml === false ? xmlEscape(p) : toSsml(p)}</Say>`)
+      .join('<Pause length="1"/>');
   }
 
   private twiml(step: CallStep, callId: string): string {

@@ -51,7 +51,7 @@ describe('v1.4 prompt wording', () => {
     await w.settle();
     await w.advance(1);
     const said = w.playedText(0);
-    const prompt = 'Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.';
+    const prompt = 'Le li ho to "le li" ya "haan" boliye, ya ek dabaiye. Dobara sunne ke liye "phir se" boliye, ya zero dabaiye.';
     expect(said[0]!.endsWith(prompt)).toBe(true);
     expect(said[1]!.endsWith(prompt)).toBe(true);
   });
@@ -102,7 +102,7 @@ describe('v1.4 limits (pure)', () => {
 
 const planned = async (w: World) => { await w.queue.add('schedule.replan', { personId: w.mom.id }); await w.settle(); };
 const status = (w: World) => w.store.allDoses().filter((d) => d.dueAt.toISOString() < '2026-03-10T12:00:00Z').map((d) => d.status);
-const MORE = 'Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.';
+const MORE = 'Dobara sunne ke liye "phir se" boliye, ya zero dabaiye.';
 
 describe('v1.4 repeat limit: heard 3 times at most', () => {
   function two(scenario: Parameters<World['provider']['script']>[1]) {
@@ -178,13 +178,13 @@ describe('v1.4 call time limit (fake clock)', () => {
     const said = w.playedText(0);
     expect(said).toHaveLength(3); // opening, medicine 2, the time-up line (no medicine 3)
     expect(said[2]).toBe(`Theek hai. ${TIME_UP}`);
-    expect(said.join(' ')).not.toContain('Dawai 3');
+    expect(said.join(' ')).not.toContain('Dawai teen');
     expect(status(w)).toEqual(['confirmed', 'confirmed', 'calling']);
     expect(w.store.allCalls()[0]!.result).toBe('none');
     await w.advance(14); // (the helper's clock restarts at the minute: the call took 200 s, the retry is 10 minutes after it ended)
     expect(w.provider.callsTo(PARENT)).toHaveLength(2);
-    expect(w.playedText(1).join(' ')).toContain('Dawai 3');
-    expect(w.playedText(1).join(' ')).not.toContain('Dawai 2');
+    expect(w.playedText(1).join(' ')).toContain('Dawai teen');
+    expect(w.playedText(1).join(' ')).not.toContain('Dawai do');
     expect(status(w)).toEqual(['confirmed', 'confirmed', 'confirmed']);
   });
   it('under the limit nothing is cut: 3 medicines at 50 s per step all confirm', async () => {

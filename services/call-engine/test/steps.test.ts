@@ -100,7 +100,7 @@ describe('one medicine at a time', () => {
     await w.advance(1);
     const call = w.provider.callsTo(PARENT)[0]!;
     const said = w.playedText(0);
-    expect(said[1]).toBe('Maaf kijiye, samajh nahi aaya. Le li ho to 1 dabaiye.');
+    expect(said[1]).toBe('Maaf kijiye, samajh nahi aaya. Le li ho to ek dabaiye.');
     expect(call.request.firstStep.listen?.speech).toBe(true);
     expect(said[2]).toMatch(/^Koi baat nahi\. Doosri dawai: Sugar wali/);
     expect(status(w)).toEqual({ 'BP wali': 'calling', 'Sugar wali': 'confirmed', 'Pet wali': 'confirmed' });
@@ -183,7 +183,7 @@ describe('one medicine at a time', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[0]).toMatch(/Aapki subah ki wali dawai ka samay ho gaya hai\. BP wali: /);
+    expect(said[0]).toMatch(/Aapki subah ki wali dawai ka samay ho gaya hai\. Dawai: BP wali\. /);
     expect(said[0]).not.toMatch(/Ek-ek karke|Pehli/);
     expect(said[1]).toBe('Theek hai. Bahut achha. Dawai le li gayi hai. Dhanyavaad.');
   });
@@ -218,7 +218,7 @@ describe('test-reminder medicines and wording placeholders', () => {
     expect(said[0]).toMatch(/Pehli dawai: BP wali\. ek goli/);
     expect(said[1]).toMatch(/Doosri dawai: sugar wali\./);
     expect(said[2]).toMatch(/Teesri dawai: pet wali dawai\./);
-    expect(said[2]).toMatch(/Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye\. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye\.$/);
+    expect(said[2]).toMatch(/Le li ho to "le li" ya "haan" boliye, ya ek dabaiye\. Dobara sunne ke liye "phir se" boliye, ya zero dabaiye\.$/);
     for (const x of said.slice(0, 3)) expect(x).not.toMatch(/Khane|khane/); // food timing is in the opening only
   });
 
@@ -233,13 +233,13 @@ describe('test-reminder medicines and wording placeholders', () => {
       buildReminderSteps({ templates, person: { nickname: 'Papa', fullName }, childName: 'Rahul', 
         items: meds.slice(0, n).map((m, i) => ({ medicine: m, schedule: { ...scheds[i]!, food } })),
         mode: 'full', isSunday: false, announcedTodayMedicineIds: [], localHour: hour }).opening;
-    expect(open(3, 'after', 13)).toMatch(/^Namaste Ramesh ji\. Aapki dopahar ke khane ke baad wali teen dawaiyon ka samay ho gaya hai\. Ek-ek karke batate hain\./i);
-    expect(open(1, 'before', 8)).toMatch(/Aapki nashte se pehle wali dawai ka samay ho gaya hai\. BP wali:/);
+    expect(open(3, 'after', 13)).toMatch(/^Aapki dopahar ke khane ke baad wali teen dawaiyon ka samay ho gaya hai\. Ek-ek karke batate hain\./i);
+    expect(open(1, 'before', 8)).toMatch(/Aapki nashte se pehle wali dawai ka samay ho gaya hai\. Dawai: BP wali\./);
     expect(open(2, 'with', 20)).toMatch(/Aapki raat ke khane ke saath wali do dawaiyon/);
     expect(open(2, 'any', 17)).toMatch(/Aapki shaam ki wali do dawaiyon/);
     expect(open(2, 'any', 11)).toMatch(/Aapki dopahar ki wali/);
     expect(open(3, 'after', 13)).not.toMatch(/Rahul|bete|taraf se/); // reminder calls never name the child or the relation
-    expect(open(1, 'after', 15, null)).toMatch(/^Namaste Papa ji\. Aapki dopahar ke khane ke baad wali dawai/); // no full name: nickname
+    expect(open(1, 'after', 15, null)).toMatch(/^Aapki dopahar ke khane ke baad wali dawai/); // no full name: nickname
   });
 });
 

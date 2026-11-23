@@ -110,3 +110,9 @@ export function mergePhraseBooks(base: PhraseBook, extra: Partial<PhraseBook> | 
 function union(a: string[] | undefined, b: string[] | undefined): string[] {
   return [...new Set([...(a ?? []), ...(b ?? [])])];
 }
+
+/** A negation word anywhere in the reply (used by the presence check, which accepts a few extra yes-phrases). */
+export function hasNegation(transcript: string, book: PhraseBook): boolean {
+  const tokens = normalise(transcript);
+  return book.negationWords.some((w) => findPhrase(tokens, w));
+}
