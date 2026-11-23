@@ -185,12 +185,19 @@ describe('v1.5 presence check ("can you hear me?")', () => {
     }
   });
 
-  it('on a medicine, "हां!" with confidence 0.0 is still unclear (rule 4 threshold unchanged there)', async () => {
-    const w = two({ ...ok, inputs: [{ key: '1' }, { say: 'हां!', confidence: 0 }, { key: '1' }, { key: '1' }] });
-    await planned(w);
-    await w.advance(1);
-    expect(w.playedText(0)[2]).toMatch(/^Maaf kijiye, samajh nahi aaya/);
-    expect(doses(w)).toEqual(['confirmed', 'confirmed']); // the re-ask's key 1, then the second medicine
+  it('on a medicine, confidence 0.0 counts only for an exact yes phrase; partial, negative or truly low-score speech never confirms', async () => {
+    const exact = two({ ...ok, inputs: [{ key: '1' }, { say: 'हां!', confidence: 0 }, { say: 'Haan ji.', confidence: 0 }] });
+    await planned(exact);
+    await exact.advance(1);
+    expect(doses(exact)).toEqual(['confirmed', 'confirmed']);
+
+    for (const [say, confidence] of [['haan nahi', 0], ['हां ठीक है शायद', 0], ['lady', 0], ['हां!', 0.3]] as const) {
+      const w = two({ ...ok, inputs: [{ key: '1' }, { say, confidence }, { say, confidence }] }, { ...ok, inputs: [] }, { ...ok, inputs: [] });
+      await planned(w);
+      await w.advance(1);
+      expect(w.playedText(0)[2]).toMatch(/^Maaf kijiye, samajh nahi aaya/);
+      expect(doses(w)[0]).not.toBe('confirmed');
+    }
   });
 
   it('any key except 9 continues', async () => {

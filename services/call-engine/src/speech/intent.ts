@@ -36,6 +36,16 @@ function findPhrase(tokens: string[], phrase: string): boolean {
   return false;
 }
 
+/**
+ * The whole reply is exactly one confirm phrase ("हां!", "haan ji", "le li"), nothing more or less (punctuation and case ignored).
+ * Used only for Twilio's confidence 0.0, which it reports for some clear answers (founder decision, 24 Nov 2026).
+ */
+export function isExactConfirm(transcript: string | undefined, book: PhraseBook, context: ReplyContext): boolean {
+  if (!transcript) return false;
+  const said = normalise(transcript).join(' ');
+  return said !== '' && (book[context].confirm ?? []).some((p) => normalise(p).join(' ') === said);
+}
+
 export interface IntentResult {
   intent: ReplyIntent;
   matched?: string;

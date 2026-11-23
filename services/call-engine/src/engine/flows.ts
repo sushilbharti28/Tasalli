@@ -6,7 +6,7 @@ import { joinSentences } from '../scripts/render.js';
 import { line, childName } from '../scripts/builder.js';
 import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
 import { MAX_REPEATS_PER_MEDICINE, softLimitSeconds } from '../flows/limits.js';
-import { matchIntent, hasNegation } from '../speech/intent.js';
+import { matchIntent, hasNegation, isExactConfirm } from '../speech/intent.js';
 import type { CallSession } from '../flows/session.js';
 import type { CallResultRow, CallRow, PersonRow } from '../types.js';
 import { alertFor, listenStep } from './calls.js';
@@ -36,6 +36,10 @@ async function interpret(d: Deps, s: CallSession, ev: InputEvent): Promise<{ int
       d.log.warn('transcribe failed', { callId: s.callId, err: (err as Error).message });
     }
   }
+  // Twilio reports confidence 0.0 for some clear answers ("हां!"). On a medicine, 0.0 counts as "no score given" only when the
+  // whole reply is exactly a confirm phrase; anything partial or unknown stays unclear, and real low scores (e.g. 0.3) never confirm.
+  // Consent answers stay strict (founder decision, 24 Nov 2026).
+  if (ctx === 'reminder' && confidence === 0 && isExactConfirm(transcript, d.scripts.get(s.language).phrases, ctx)) confidence = 1;
   let intent = matchIntent(transcript, d.scripts.get(s.language).phrases, ctx, confidence).intent;
   // Opting out must work in any language the parent might say it in.
   if (intent !== 'stop') {
