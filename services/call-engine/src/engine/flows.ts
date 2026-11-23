@@ -6,7 +6,7 @@ import { joinSentences } from '../scripts/render.js';
 import { line, childName } from '../scripts/builder.js';
 import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
 import { MAX_REPEATS_PER_MEDICINE, softLimitSeconds } from '../flows/limits.js';
-import { MIN_CONFIDENCE, matchIntent, hasNegation } from '../speech/intent.js';
+import { matchIntent, hasNegation } from '../speech/intent.js';
 import type { CallSession } from '../flows/session.js';
 import type { CallResultRow, CallRow, PersonRow } from '../types.js';
 import { alertFor, listenStep } from './calls.js';
@@ -74,9 +74,13 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
   // Presence check first ("can you hear me?"): never a dose or consent confirmation; 9 / a stop phrase still opts out.
   if (s.presence?.state === 'pending') {
     const p = s.presence;
+    // Speech confidence is not used here: this step is never a dose or consent confirmation, and Twilio reports 0.0 for some
+    // clear answers (a real "हां!" on 24 Nov 2026 came with confidence 0.0). The words still have to be a yes, with no negation.
+    const presencePhrases = d.scripts.get(s.language).phrases;
+    const yesWords = kind === 'speech' && raw.trim() !== '' && matchIntent(raw, presencePhrases, s.purpose === 'reminder' ? 'reminder' : 'consent', 1).intent === 'confirm';
     const heardYou = kind === 'key' ? intent !== 'stop' // any key but 9
-      : intent === 'confirm' || (intent === 'unclear' && raw.trim() !== '' && ((ev as { confidence?: number }).confidence ?? 1) >= MIN_CONFIDENCE
-        && !hasNegation(raw, d.scripts.get(s.language).phrases) && PRESENCE_YES.test(raw.normalize('NFC').toLowerCase()));
+      : raw.trim() !== '' && !hasNegation(raw, presencePhrases) && (yesWords || PRESENCE_YES.test(raw.normalize('NFC').toLowerCase()));
+    (p.heard ??= []).push(kind === 'key' ? `key ${raw}` : raw.slice(0, 80));
     if (intent === 'stop') {
       await stopNumber(d, s.to, kind === 'key' ? 'key_9' : 'stop_phrase', kind, call);
       return bye(s.purpose === 'consent' ? t.consent.stop_ack : t.reminder.stop_ack, 'stop');

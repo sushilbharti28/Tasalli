@@ -168,6 +168,31 @@ describe('v1.5 presence check ("can you hear me?")', () => {
     expect(doses(w)).toEqual(['confirmed', 'confirmed']);
   });
 
+  it('a clear "हां!" that Twilio reports with confidence 0.0 continues (24 Nov 2026 call); it still never confirms a dose', async () => {
+    const w = two({ ...ok, inputs: [{ say: 'हां!', confidence: 0 }, { key: '1' }, { key: '1' }] });
+    await planned(w);
+    await w.advance(1);
+    expect(w.playedText(0)[1]).toMatch(/Pehli dawai, ek goli BP wali/);
+    expect(doses(w)).toEqual(['confirmed', 'confirmed']); // by the two keys, not by the presence answer
+  });
+
+  it('low confidence is ignored only at the presence step: a "nahi" or unknown words still do not continue', async () => {
+    for (const say of ['nahi', 'haan nahi', 'hmm']) {
+      const w = two({ ...ok, inputs: [{ say, confidence: 0 }, { say, confidence: 0 }] }, { ...ok, inputs: [] }, { ...ok, inputs: [] });
+      await planned(w);
+      await w.advance(1);
+      expect(w.playedText(0).join(' ')).not.toMatch(/BP wali/);
+    }
+  });
+
+  it('on a medicine, "हां!" with confidence 0.0 is still unclear (rule 4 threshold unchanged there)', async () => {
+    const w = two({ ...ok, inputs: [{ key: '1' }, { say: 'हां!', confidence: 0 }, { key: '1' }, { key: '1' }] });
+    await planned(w);
+    await w.advance(1);
+    expect(w.playedText(0)[2]).toMatch(/^Maaf kijiye, samajh nahi aaya/);
+    expect(doses(w)).toEqual(['confirmed', 'confirmed']); // the re-ask's key 1, then the second medicine
+  });
+
   it('any key except 9 continues', async () => {
     const w = two({ ...ok, inputs: [{ key: '5' }, { key: '1' }, { key: '1' }] });
     await planned(w);

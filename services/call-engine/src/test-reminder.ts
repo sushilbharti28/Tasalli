@@ -66,7 +66,7 @@ async function main() {
   const server = createWebhookServer(engine, provider, env.publicBaseUrl, log).listen(port);
   for (const id of doseIds) await queue.add('dose.due', { doseId: id }); // like the scheduler: same time and food timing share one call
   await queue.runDue();
-  console.log(`Calling ${maskPhone(to)} about ${split ? 'the first call of ' : ''}3 medicines. Answer; for each one say "le li"/"haan" or press 1, "nahi li" or 2 for not now, "phir se" or 0 to hear it again (at most twice). Waiting up to 5 minutes...`);
+  console.log(`Calling ${maskPhone(to)} about ${split ? 'the first call of ' : ''}3 medicines. Answer "haan" or 1 to the opening; for each medicine say "haan" or press 1, "nahi li" or 2 for not now, "phir se" or 0 to hear it again (at most twice). Waiting up to 5 minutes...`);
   const deadline = Date.now() + 300_000;
   let call = store.allCalls()[0];
   while (Date.now() < deadline) {
@@ -81,6 +81,10 @@ async function main() {
   const from = session?.answeredAtMs ?? call?.startedAt?.getTime();
   const to2 = call?.endedAt?.getTime();
   console.log(from !== undefined && to2 !== undefined ? `Elapsed call seconds: ${Math.round((to2 - from) / 1000)} (soft limit ${softLimitSeconds(doseIds.length)} s)` : 'Elapsed call seconds: unknown (the call did not connect or finish)');
+  if (session?.presence) {
+    const h = session.presence.heard ?? [];
+    console.log(`- opening question ("haan" or 1 to hear the medicines): ${session.presence.state === 'ok' ? 'answered' : 'not answered'}; heard: ${h.length ? h.map((x) => `"${x}"`).join(', ') : 'nothing'}`);
+  }
   for (const id of doseIds) {
     const outcome = session?.reminder?.outcomes[id];
     const dose = await store.getDose(id);
