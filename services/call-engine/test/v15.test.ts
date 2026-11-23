@@ -154,7 +154,7 @@ describe('v1.5 presence check ("can you hear me?")', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[0]).toBe('Namaste Kamla ji.\nHum Tasalli se bol rahe hain. Aapko subah ki wali do dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya ek dabaiye.');
+    expect(said[0]).toBe('Namaste Kamla ji.\nHum Tasalli app se bol rahe hain. Aapko subah ki wali do dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya ek dabaiye.');
     expect(said[0]).not.toMatch(/BP wali/);
     expect(said[1]).toMatch(/^Theek hai\. Hum ek-ek karke dawai batate hain\. .*Abhi nahi leni ho.*Aapki Pehli dawai, ek goli BP wali/);
     expect(doses(w)).toEqual(['calling', 'calling']); // key 1 on "can you hear me" confirmed nothing

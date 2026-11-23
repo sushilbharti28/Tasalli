@@ -7,7 +7,7 @@ Scripts are templates in `packages/scripts/<language>.yaml`. Variables in `{curl
 Hindi only for now. The call speaks Devanagari from `packages/scripts/hi.yaml` (`reminder_steps`); this is the same text in Roman Hindi for review. `[pause]` is the longer pause before the question.
 
 1. Opening (its "haan" / 1 is also the check that the parent can hear the call):
-   > Namaste {person_name} ji. Hum Tasalli se bol rahe hain. Aapko {meal_phrase} wali {count_word} dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.
+   > Namaste {person_name} ji. Hum Tasalli app se bol rahe hain. Aapko {meal_phrase} wali {count_word} dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.
 2. After "haan": the choices, once.
    > Theek hai. Hum ek-ek karke dawai batate hain. Har dawai lene ke baad, "haan" boliye, ya 1 dabaiye. Dobara sunna ho, to "phir se" boliye, ya 0 dabaiye. Abhi nahi leni ho, to "nahi" boliye, ya 2 dabaiye.
 3. Each medicine (look and pack only on the first call of the day):

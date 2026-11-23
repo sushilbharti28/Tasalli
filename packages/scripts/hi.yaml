@@ -80,8 +80,8 @@ reminder_steps:
   # Consent call: presence check after the greeting, before the consent question. Any yes or key continues.
   presence: 'क्या आपको आवाज़ आ रही है? "हाँ" बोलिए, या 1 दबाइए।'
   # Reminder call opening, said after the greeting. Its "हाँ" / 1 is also the presence check; it is never a dose confirmation.
-  reminder_presence: 'हम तसल्ली से बोल रहे हैं। आपको {meal_phrase} वाली {count_word} दवाइयों की याद दिलाने के लिए फ़ोन किया है। दवाइयों के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
-  reminder_presence_one: 'हम तसल्ली से बोल रहे हैं। आपको {meal_phrase} वाली दवाई की याद दिलाने के लिए फ़ोन किया है। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
+  reminder_presence: 'हम तसल्ली ऐप से बोल रहे हैं। आपको {meal_phrase} वाली {count_word} दवाइयों की याद दिलाने के लिए फ़ोन किया है। दवाइयों के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
+  reminder_presence_one: 'हम तसल्ली ऐप से बोल रहे हैं। आपको {meal_phrase} वाली दवाई की याद दिलाने के लिए फ़ोन किया है। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
   presence_retry: 'माफ़ कीजिए, समझ नहीं आया। दवाइयों के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
   presence_retry_one: 'माफ़ कीजिए, समझ नहीं आया। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
   spoken_line: 'इसे आप {spoken_name} कहते हैं।'

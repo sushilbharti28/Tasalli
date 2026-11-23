@@ -247,7 +247,7 @@ describe('test-reminder medicines and wording placeholders', () => {
         items: meds.slice(0, n).map((m, i) => ({ medicine: m, schedule: { ...scheds[i]!, food } })),
         mode: 'full', isSunday: false, announcedTodayMedicineIds: [], localHour: hour });
     // The opening after the greeting says who is calling and why; its "haan" / 1 is the presence check.
-    expect(open(3, 'after', 13).presence).toBe('Hum Tasalli se bol rahe hain. Aapko dopahar ke khane ke baad wali teen dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya ek dabaiye.');
+    expect(open(3, 'after', 13).presence).toBe('Hum Tasalli app se bol rahe hain. Aapko dopahar ke khane ke baad wali teen dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya ek dabaiye.');
     expect(open(1, 'before', 8).presence).toMatch(/Aapko nashte se pehle wali dawai ki yaad dilane ke liye phone kiya hai\. Dawai ke baare mein sunne/);
     expect(open(1, 'before', 8).presenceRetry).toBe('Maaf kijiye, samajh nahi aaya. Dawai ke baare mein sunne ke liye, "haan" boliye, ya ek dabaiye.');
     expect(open(2, 'with', 20).presence).toMatch(/Aapko raat ke khane ke saath wali do dawaiyon/);

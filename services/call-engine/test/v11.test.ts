@@ -31,7 +31,7 @@ describe('scripts from packages/scripts/engine', () => {
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }] });
     await planned(w);
     await w.advance(5);
-    expect(w.playedText(0)[0]).toBe('नमस्ते Kamla जी।\nहम तसल्ली से बोल रहे हैं। आपको सुबह की वाली दवाई की याद दिलाने के लिए फ़ोन किया है। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या एक दबाइए।');
+    expect(w.playedText(0)[0]).toBe('नमस्ते Kamla जी।\nहम तसल्ली ऐप से बोल रहे हैं। आपको सुबह की वाली दवाई की याद दिलाने के लिए फ़ोन किया है। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या एक दबाइए।');
     expect(w.playedText(0)[1]).toMatch(/^ठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए।.*आपकी दवाई, ek goli Amlodac की है।/);
 
     const w2 = world(undefined, { scripts: hindi(), presence: true });
