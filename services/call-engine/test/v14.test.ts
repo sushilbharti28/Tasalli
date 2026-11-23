@@ -51,13 +51,13 @@ describe('v1.4 prompt wording', () => {
     await w.settle();
     await w.advance(1);
     const said = w.playedText(0);
-    const prompt = 'Dawai lene ke baad, "haan" boliye, ya ek dabaiye.';
+    const prompt = 'Dawai lene ke baad, "haan" boliye, ya ek dabaiye. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye.';
     expect(said[0]!.endsWith(prompt)).toBe(true);
     expect(said[1]!.endsWith(prompt)).toBe(true);
   });
   it('the Hindi script has the Devanagari question, and no prompt asks for "le li"', () => {
     const t = new ScriptLibrary(DEFAULT_SCRIPTS_DIR).get('hi').templates.reminder;
-    expect(t.step_item_ask).toBe('दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए।');
+    expect(t.step_item_ask).toBe('दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।');
     for (const k of ['step_item', 'step_item_one', 'step_item_short', 'step_item_short_one', 'step_intro', 'step_intro_one', 'step_unclear'] as const) {
       expect(t[k]).not.toMatch(/"ले ली"/);
     }
@@ -167,7 +167,7 @@ describe('v1.4 repeat limit: heard 3 times at most', () => {
     await w.advance(1);
     const said = w.playedText(0);
     expect(said[0]).toMatch(/Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye\./);
-    expect(said[1]!.endsWith('Dawai lene ke baad, "haan" boliye, ya ek dabaiye.')).toBe(true);
+    expect(said[1]!.endsWith('Dawai lene ke baad, "haan" boliye, ya ek dabaiye. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye.')).toBe(true);
     expect(said[2]).toMatch(/Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye\.$/);
   });
 });

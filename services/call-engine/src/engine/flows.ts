@@ -250,11 +250,19 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
       s.repeats++;
       return ask(cur.full, !s.keypadOnly);
     default: { // unclear or silence: ask once more (speech or key), then leave this medicine unconfirmed
-      // Silence (nothing heard, no key) first plays the same medicine again, once. It counts toward the repeat limit and never confirms.
-      if (via === 'speech' && raw.trim() === '' && !s.keypadOnly && !s.silenceRepeated && s.repeats < MAX_REPEATS_PER_MEDICINE && !overLimit()) {
-        s.silenceRepeated = true;
-        s.repeats++;
-        return ask(joinSentences([t.step_silence_repeat ?? '', cur.first]), true); // the same version as before (name only stays name only); "phir se" gives the full one
+      // Silence (nothing heard, no key), once per medicine. v1.6: a short re-ask of the question (the recogniser misses a short
+      // "haan" now and then, and short re-asks were caught on real calls); languages without step_no_answer replay the medicine.
+      // Never a confirmation; the short re-ask does not count toward the repeat limit.
+      if (via === 'speech' && raw.trim() === '' && !s.keypadOnly && !s.silenceRepeated && !overLimit()) {
+        if (t.step_no_answer) {
+          s.silenceRepeated = true;
+          return ask(t.step_no_answer, true);
+        }
+        if (s.repeats < MAX_REPEATS_PER_MEDICINE) {
+          s.silenceRepeated = true;
+          s.repeats++;
+          return ask(joinSentences([t.step_silence_repeat ?? '', cur.first]), true); // the same version as before (name only stays name only)
+        }
       }
       s.unclearCount++;
       if (s.unclearCount === 1) {

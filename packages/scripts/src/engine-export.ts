@@ -39,7 +39,7 @@ const stepLines = (r: NonNullable<CallScript['reminder_steps']>): Record<string,
   ...optional(r as unknown as Record<string, unknown>, {
     reminder_presence: 'step_reminder_presence', reminder_presence_one: 'step_reminder_presence_one', presence_retry: 'step_presence_retry',
     presence_retry_one: 'step_presence_retry_one', item_ask: 'step_item_ask', silence_repeat: 'step_silence_repeat', moving_on: 'step_moving_on',
-    will_call_again: 'step_will_call_again', end_no_call_back: 'step_end_no_call_back', look: 'step_look', new_ordinal: 'step_new_ordinal',
+    will_call_again: 'step_will_call_again', end_no_call_back: 'step_end_no_call_back', look: 'step_look', new_ordinal: 'step_new_ordinal', no_answer: 'step_no_answer',
   }),
 });
 const optional = (r: Record<string, unknown>, keys: Record<string, string>) =>

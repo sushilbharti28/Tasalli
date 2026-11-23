@@ -131,6 +131,8 @@ export interface ReminderSteps {
   look?: StepLook;
   /** Optional (v1.6): instead of {ordinal} for a medicine added in the last 7 days. */
   new_ordinal?: string;
+  /** Optional (v1.6): short re-ask when nothing was heard after a medicine's question (instead of replaying the medicine). */
+  no_answer?: string;
 }
 
 /** Appearance and pack sentences for the one-medicine-at-a-time call (v1.6). Sizes are three: very_small, small, large. */

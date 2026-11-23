@@ -91,6 +91,8 @@ export interface ScriptTemplates {
     step_look?: StepLook;
     /** Said instead of {ordinal} for a medicine added in the last 7 days ("नई दवाई" -> "आपकी नई दवाई, ..."). */
     step_new_ordinal?: string;
+    /** Short re-ask when nothing was heard after a medicine's question (v1.6). Without it, the medicine is replayed. */
+    step_no_answer?: string;
   };
   consent: {
     prompt: string;          // {person_name} {relation_phrase} {child_name}
@@ -195,12 +197,13 @@ export const HI_TEMPLATES: ScriptTemplates = {
     step_reminder_presence_one: 'Hum Tasalli app se bol rahe hain. Aapko {meal_phrase} wali dawai ki yaad dilane ke liye phone kiya hai. Dawai ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.',
     step_presence_retry: 'Maaf kijiye, samajh nahi aaya. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.',
     step_presence_retry_one: 'Maaf kijiye, samajh nahi aaya. Dawai ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.',
-    step_item_ask: 'Dawai lene ke baad, "haan" boliye, ya 1 dabaiye.',
+    step_item_ask: 'Dawai lene ke baad, "haan" boliye, ya 1 dabaiye. Dobara sunna ho, to "phir se" boliye, ya 0 dabaiye.',
     step_silence_repeat: 'Hum phir se batate hain.',
     step_moving_on: 'Hum agli dawai par chalte hain.',
     step_will_call_again: 'Chinta mat kijiye, is dawai ke liye hum aapko phir phone karenge.',
     step_end_no_call_back: 'Dhanyavaad, namaste.',
     step_new_ordinal: 'nayi',
+    step_no_answer: 'Maaf kijiye, awaaz nahi aayi. Dawai le li ho, to "haan" boliye, ya 1 dabaiye. Dobara sunna ho, to "phir se" boliye, ya 0 dabaiye.',
     step_look: {
       sizes: { very_small: { f: 'bahut chhoti si', m: 'bahut chhota sa' }, small: { f: 'chhoti si', m: 'chhota sa' }, large: { f: 'badi si', m: 'bada sa' } },
       colours: { white: 'safed', cream: 'cream', yellow: 'peele', orange: 'narangi', pink: 'gulabi', red: 'laal', maroon: 'gehre laal', brown: 'bhoore', green: 'hare',

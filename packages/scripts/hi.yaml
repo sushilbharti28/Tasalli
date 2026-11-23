@@ -95,7 +95,7 @@ reminder_steps:
   item_one: 'आपकी दवाई, {amount_text} {strip_name} {strength} की है। {spoken_line} {appearance_phrase} {pack_phrase} {disambiguator}[ {extra_instruction}।]'
   item_short: 'आपकी {ordinal}, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator}[ {extra_instruction}।]'
   item_short_one: 'आपकी दवाई, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator}[ {extra_instruction}।]'
-  item_ask: 'दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए।'
+  item_ask: 'दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।'
   # Said instead of {ordinal} for a medicine the family added in the last 7 days: "आपकी नई दवाई, ..." (it is always described).
   new_ordinal: 'नई दवाई'
   # How a medicine looks, as short sentences. Sizes are three: very_small, small, large (the app's older rai/dal/matar/badam/bigger map onto them).
@@ -127,6 +127,8 @@ reminder_steps:
   ack_not_now: 'कोई बात नहीं, थोड़ी देर में फिर याद दिलाएँगे।'
   ack_silence: 'कोई बात नहीं।'
   silence_repeat: 'हम फिर से बताते हैं।'
+  # Nothing heard after a medicine's question (v1.6): a short re-ask, not a replay (the recogniser misses a short "हाँ" now and then; short re-asks were caught).
+  no_answer: 'माफ़ कीजिए, आवाज़ नहीं आई। दवाई ले ली हो, तो "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।'
   # Unclear speech or a key that means nothing: asked once more, by voice or key. Unclear speech never confirms.
   unclear: 'माफ़ कीजिए, समझ नहीं आया। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दवाई का रंग-रूप सुनना हो, या दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।'
   all_done: 'बहुत अच्छा, आपने सारी दवाइयाँ ले ली हैं। धन्यवाद, नमस्ते।'

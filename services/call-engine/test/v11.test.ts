@@ -68,7 +68,7 @@ describe('scripts from packages/scripts/engine', () => {
     await w.advance(60 * 13);
     expect(w.provider.callsTo(PARENT)).toHaveLength(2);
     expect(w.playedText(0)[0]).toContain('आपकी दवाई, ek goli Amlodac की है।');
-    expect(w.playedText(1)[0]).toBe('नमस्ते Kamla जी।\nठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए। दवाई का रंग-रूप सुनना हो, या दोबारा सुनना हो, तो "फिर से" बोलिए, या ज़ीरो दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या दो दबाइए। आपकी दवाई, ek goli Metolar की है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए।');
+    expect(w.playedText(1)[0]).toBe('नमस्ते Kamla जी।\nठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए। दवाई का रंग-रूप सुनना हो, या दोबारा सुनना हो, तो "फिर से" बोलिए, या ज़ीरो दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या दो दबाइए। आपकी दवाई, ek goli Metolar की है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या ज़ीरो दबाइए।');
   });
 
   it('"nahi li" never confirms: says the not-now line, then the dose is snoozed', async () => {

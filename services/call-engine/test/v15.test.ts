@@ -101,50 +101,41 @@ describe('v1.5 greeting, silence and listen time', () => {
     expect(timeouts).toEqual([6]); // the second medicine
   });
 
-  it('silence on a medicine plays it once more, never confirms; then the normal unclear path', async () => {
+  it('silence after a medicine (v1.6): a short re-ask of the question, not a replay; never confirms; then the unclear path', async () => {
     const w = world();
     w.med('BP wali', '09:00');
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { silence: true }, { silence: true }] });
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[1]).toMatch(/^Hum phir se batate hain\. Aapki dawai, ek goli BP wali ki hai\./); // same medicine again, in full
-    expect(said[1]).toBe(w.provider.callsTo(PARENT)[0]!.played.map((u) => w.text(u))[1]);
-    // v1.6: a name-only medicine is replayed name-only after silence (the full look only on "phir se" / 0).
-    const k = world();
-    k.store.state.people.get(k.mom.id)!.canReadStrip = 'yes';
-    k.med('Sugar wali', '09:00', { kind: 'capsule', colourPrimary: 'yellow', size: 'small', keptIn: 'strip', packColour: 'silver', updatedAt: new Date('2026-01-01T00:00:00Z') });
-    k.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { key: '1' }] });
-    await planned(k);
-    await k.advance(1);
-    expect(k.playedText(0)[1]).toMatch(/^Hum phir se batate hain\. Aapki dawai, ek goli Sugar wali ki hai\. Dawai lene ke baad/);
-    expect(k.playedText(0)[1]).not.toMatch(/Iska patta|capsule hai/);
+    expect(said[1]).toBe('Maaf kijiye, awaaz nahi aayi. Dawai le li ho, to "haan" boliye, ya ek dabaiye. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye.');
+    expect(said[1]).not.toMatch(/BP wali/); // no replay
     expect(said[2]).toMatch(/^Maaf kijiye, samajh nahi aaya\. Dawai lene ke baad, "haan" boliye/); // second silence: asked once more, speech or key
     expect(doses(w)).toEqual(['calling']); // never confirmed
     expect(w.store.allCalls()[0]!.result).toBe('none');
   });
 
-  it('the silence repeat counts toward the repeat limit of 2', async () => {
+  it('the short re-ask after silence does not use up a repeat: "phir se" twice still works', async () => {
     const w = world();
     w.med('BP wali', '09:00');
     w.med('Sugar wali', '09:05');
-    // silence (repeat 1), key 0 (repeat 2), key 0 (limit: moves on), key 1 confirms the second medicine
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { key: '0' }, { key: '0' }, { key: '1' }] });
+    // silence (short re-ask), key 0 (repeat 1), key 0 (repeat 2), key 0 (limit: moves on), key 1 confirms the second medicine
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { key: '0' }, { key: '0' }, { key: '0' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[3]).toMatch(/^Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya\. Hum agli dawai par chalte hain\. Chinta mat kijiye/);
-    expect(said[3]).toMatch(/Doosri dawai, ek goli Sugar wali/);
+    expect(said.filter((x) => /Aapki Pehli dawai, ek goli BP wali/.test(x))).toHaveLength(3); // the first time and two repeats
+    expect(said[4]).toMatch(/^Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya\. Hum agli dawai par chalte hain\. Chinta mat kijiye/);
     expect(doses(w)).toEqual(['calling', 'confirmed']);
   });
 
-  it('silence after a spoken answer is not repeated twice for the same medicine', async () => {
+  it('the short re-ask after silence is used once per medicine', async () => {
     const w = world();
     w.med('BP wali', '09:00');
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { silence: true }, { silence: true }, { silence: true }] });
     await planned(w);
     await w.advance(1);
-    expect(w.playedText(0).filter((t) => /Aapki dawai, ek goli BP wali/.test(t))).toHaveLength(2); // opening + exactly one replay
+    expect(w.playedText(0).filter((t) => /awaaz nahi aayi/.test(t))).toHaveLength(1);
   });
 });
 

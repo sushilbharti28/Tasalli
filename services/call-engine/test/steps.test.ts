@@ -281,7 +281,7 @@ describe('test-reminder medicines and wording placeholders', () => {
     expect(said[1]).toMatch(/Aapki Doosri dawai, ek goli sugar wali ki hai\. Yeh capsule dekhne mein aadha peela aur aadha safed hai\. Iska patta chaandi ke rang ka hai\./);
     expect(said[2]).toMatch(/Aapki Teesri dawai, ek goli pet wali dawai ki hai\. Iski bottle bhoore rang ki hai\. Iska dhakkan laal rang ka hai\./);
     // Then the question ("le li" is no longer asked for). The longer pause before it is only in Twilio's SSML (twilio.test.ts).
-    expect(said[2]).toMatch(/laal rang ka hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\.$/);
+    expect(said[2]).toMatch(/laal rang ka hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\.$/);
     for (const x of said) expect(x).not.toMatch(/"le li"/);
     for (const x of said.slice(0, 3)) expect(x).not.toMatch(/Khane|khane/); // food timing is in the opening only
   });

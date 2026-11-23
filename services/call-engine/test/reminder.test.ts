@@ -196,7 +196,7 @@ describe('reminder flow', () => {
     expect(w.playedText(1)[0]).toMatch(/Iska patta laal rang ka hai\./);
     // Vitcap is unlike the others and not new: name only, then the description when asked.
     const v = w.playedText(2);
-    expect(v[0]).toMatch(/Aapki dawai, ek goli Vitcap ki hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\.$/);
+    expect(v[0]).toMatch(/Aapki dawai, ek goli Vitcap ki hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\.$/);
     expect(v[1]).toMatch(/^Aapki dawai, ek goli Vitcap ki hai\. Yeh ek peele rang ka capsule hai\. Iska patta hare rang ka hai\./);
   });
 
