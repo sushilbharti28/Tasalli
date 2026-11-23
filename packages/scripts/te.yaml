@@ -107,12 +107,10 @@ blocks:
     oval: 'కోడిగుడ్డు ఆకారంలో ఉన్న'
     long: 'పొడవాటి'
     square: 'చదరపు'
-  sizes:
-    rai: 'ఆవగింజ అంత చిన్నది'
-    dal: 'పప్పు గింజ అంత'
-    matar: 'బఠాణీ అంత'
-    badam: 'బాదం అంత'
-    bigger: 'బాదం కంటే పెద్దది'
+  sizes:   # v1.6: three sizes; needs native-speaker review
+    very_small: 'చాలా చిన్నది'
+    small: 'చిన్నది'
+    large: 'పెద్దది'
   markings:
     plain: ''
     line: 'మధ్యలో గీత'

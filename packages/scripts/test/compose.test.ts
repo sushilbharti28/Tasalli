@@ -11,12 +11,12 @@ const people = { personName: 'Kamla Devi', childName: 'Ravi' };
 const meds: MedicineForCall[] = [
   {
     kind: 'tablet', spokenName: 'BP वाली', stripName: 'Amlodac', amountText: '1 गोली',
-    food: 'after', colourPrimary: 'white', shape: 'round', size: 'matar', marking: 'line',
+    food: 'after', colourPrimary: 'white', shape: 'round', size: 'small', marking: 'line',
     keptIn: 'strip', packColour: 'red', numberLabel: 1, extraInstruction: 'Paani ke saath lena',
   },
   {
     kind: 'capsule', spokenName: 'sugar wali', stripName: 'Glycomet', amountText: '1 capsule',
-    food: 'before', colourPrimary: 'red', colourSecondary: 'yellow', size: 'badam',
+    food: 'before', colourPrimary: 'red', colourSecondary: 'yellow', size: 'large',
     keptIn: 'strip', packColour: 'silver', printColour: 'green', sayPrintedName: true,
   },
   {
@@ -104,7 +104,7 @@ describe('Hindi matches the docs/call-scripts.md example', () => {
   const hi = loadScript('hi');
   it('builds the first medicine line', () => {
     expect(medicineItem(hi, meds[0]!, 0)).toBe(
-      'पहली दवाई, BP वाली: 1 गोली, सफ़ेद गोल गोली, मटर के दाने जितनी, बीच में लाइन, लाल पत्ते वाली, 1 नंबर वाली। खाने के बाद। Paani ke saath lena',
+      'पहली दवाई, BP वाली: 1 गोली, सफ़ेद गोल गोली, छोटी, बीच में लाइन, लाल पत्ते वाली, 1 नंबर वाली। खाने के बाद। Paani ke saath lena',
     );
   });
   it('agrees colour with the noun', () => {

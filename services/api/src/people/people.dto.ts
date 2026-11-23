@@ -10,7 +10,8 @@ export const CAN_READ = ['yes', 'no', 'not_sure'] as const;
 export class PersonCreateDto {
   @IsBoolean() isSelf: boolean;
   @IsString() @IsNotBlank() @MaxLength(40) nickname: string;
-  @IsOptional() @IsString() @MaxLength(80) fullName?: string;
+  /** Required (v1.6): calls greet the parent by its first word, never by the nickname. */
+  @IsString() @IsNotBlank() @MaxLength(80) fullName: string;
   /** Required unless isSelf (then the OTP-verified account number is used and this is ignored). */
   @ValidateIf((o: PersonCreateDto) => o.isSelf !== true)
   @IsString()
@@ -23,6 +24,7 @@ export class PersonCreateDto {
 
 export class PersonUpdateDto {
   @IsOptional() @IsString() @IsNotBlank() @MaxLength(40) nickname?: string;
+  @IsOptional() @IsString() @IsNotBlank() @MaxLength(80) fullName?: string;
   @IsOptional() @IsIn(CALL_LANGUAGES) language?: CallLanguage;
   @IsOptional() @IsString() @IsIanaTimeZone() timeZone?: string;
   @IsOptional() @IsBoolean() paused?: boolean;

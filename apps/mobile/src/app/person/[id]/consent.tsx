@@ -69,7 +69,7 @@ export default function ConsentStatus() {
         body: {
           isSelf: false,
           nickname: person!.nickname ?? '',
-          fullName: person!.fullName,
+          fullName: person!.fullName ?? '', // required since v1.6; people added before it may have none (the API then says what is missing)
           phone,
           language: person!.language ?? 'hi',
           timeZone: person!.timeZone ?? DEFAULT_TIME_ZONE,

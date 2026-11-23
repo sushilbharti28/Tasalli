@@ -1,6 +1,6 @@
 import { auth, createApp, Harness } from './harness';
 
-const P = (n: number, extra = {}) => ({ isSelf: false, nickname: `P${n}`, phone: `+9198765432${String(10 + n)}`, language: 'hi', ...extra });
+const P = (n: number, extra = {}) => ({ isSelf: false, nickname: `P${n}`, fullName: 'Ramesh Sharma', phone: `+9198765432${String(10 + n)}`, language: 'hi', ...extra });
 
 describe('auth, people, consent', () => {
   let h: Harness;
@@ -70,17 +70,30 @@ describe('auth, people, consent', () => {
 
   it('self person is consented immediately with no consent call', async () => {
     const a = await h.login('+919999900001');
-    const p = (await h.http().post('/people').set(auth(a)).send({ isSelf: true, nickname: 'Me', language: 'hi' }).expect(201)).body;
+    const p = (await h.http().post('/people').set(auth(a)).send({ isSelf: true, nickname: 'Me', fullName: 'Ramesh Sharma', language: 'hi' }).expect(201)).body;
     expect(p.consent).toBe('consented');
     expect(h.publisher.named('consent.call')).toHaveLength(0);
   });
 
   it('validates input', async () => {
     const a = await h.login('+919999900001');
-    await h.http().post('/people').set(auth(a)).send({ isSelf: false, nickname: 'x', language: 'hi' }).expect(400);
+    await h.http().post('/people').set(auth(a)).send({ isSelf: false, nickname: 'x', fullName: 'Ramesh Sharma', language: 'hi' }).expect(400);
     await h.http().post('/people').set(auth(a)).send(P(1, { timeZone: 'Mars/Base' })).expect(400);
     await h.http().post('/people').set(auth(a)).send(P(1, { language: 'fr' })).expect(400);
     await h.http().post('/people').set(auth(a)).send(P(1, { extra: 1 })).expect(400);
+  });
+
+  it('full name is required (v1.6): calls greet by name, never by the nickname; it can be edited', async () => {
+    const a = await h.login('+919999900001');
+    const { fullName: _omit, ...noName } = P(1) as Record<string, unknown>;
+    await h.http().post('/people').set(auth(a)).send(noName).expect(400);
+    await h.http().post('/people').set(auth(a)).send(P(1, { fullName: '   ' })).expect(400);
+    await h.http().post('/people').set(auth(a)).send(P(1, { fullName: 'x'.repeat(81) })).expect(400);
+    const p = (await h.http().post('/people').set(auth(a)).send(P(1, { fullName: '  Kamla Devi ' })).expect(201)).body;
+    expect(p.fullName).toBe('Kamla Devi');
+    const q = (await h.http().patch(`/people/${p.id}`).set(auth(a)).send({ fullName: 'Kamla Sharma' }).expect(200)).body;
+    expect(q.fullName).toBe('Kamla Sharma');
+    await h.http().patch(`/people/${p.id}`).set(auth(a)).send({ fullName: '' }).expect(400);
   });
 
   it('delete removes health data but keeps the number blocked', async () => {

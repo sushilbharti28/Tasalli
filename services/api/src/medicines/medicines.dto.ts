@@ -12,7 +12,7 @@ export class AppearanceDto {
   @IsOptional() @IsString() @MaxLength(30) colourPrimary?: string;
   @IsOptional() @IsString() @MaxLength(30) colourSecondary?: string;
   @IsOptional() @IsIn(['round', 'oval', 'long', 'square']) shape?: string;
-  @IsOptional() @IsIn(['rai', 'dal', 'matar', 'badam', 'bigger']) size?: string;
+  @IsOptional() @IsIn(['very_small', 'small', 'large']) size?: string;
   @IsOptional() @IsIn(['plain', 'line', 'letters', 'unknown']) marking?: string;
   @IsOptional() @IsIn(['strip', 'loose', 'bottle']) keptIn?: string;
   @IsOptional() @IsString() @MaxLength(30) packColour?: string;

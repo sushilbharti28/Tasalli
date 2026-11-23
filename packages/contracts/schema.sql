@@ -70,7 +70,7 @@ create table medicines (
   colour_primary     text,
   colour_secondary   text,                          -- capsules only
   shape              text check (shape in ('round','oval','long','square')),
-  size               text check (size in ('rai','dal','matar','badam','bigger')),
+  size               text check (size in ('very_small','small','large')),
   marking            text check (marking in ('plain','line','letters','unknown')),
   -- packaging
   kept_in            text check (kept_in in ('strip','loose','bottle')),

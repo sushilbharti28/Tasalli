@@ -51,7 +51,7 @@ async function main() {
   const now = new Date(Math.floor(Date.now() / 60_000) * 60_000);
   const localTime = DateTime.fromJSDate(now, { zone: person.timeZone }).toFormat('HH:mm');
   const meds: Array<{ m: Partial<MedicineRow> & { spokenName: string }; amount: string; food: 'before' | 'after' }> = [
-    { m: { stripName: 'Telma 40', spokenName: 'BP wali tablet', kind: 'tablet', size: 'dal', colourPrimary: 'white', shape: 'round', marking: 'line', keptIn: 'strip', packColour: 'red', createdAt: known, updatedAt: known },
+    { m: { stripName: 'Telma 40', spokenName: 'BP wali tablet', kind: 'tablet', size: 'small', colourPrimary: 'white', shape: 'round', marking: 'line', keptIn: 'strip', packColour: 'red', createdAt: known, updatedAt: known },
       amount: '1 goli', food: 'after' },
     { m: { stripName: 'Glycomet 500', spokenName: 'sugar wali', kind: 'capsule', colourPrimary: 'yellow', colourSecondary: 'white', keptIn: 'strip', packColour: 'silver', createdAt: known, updatedAt: known },
       amount: '1 capsule', food: split ? 'before' : 'after' },

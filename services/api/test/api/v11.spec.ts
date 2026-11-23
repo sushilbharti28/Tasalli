@@ -4,7 +4,7 @@ import { auth, createApp, Harness, WEBHOOK_SECRET } from './harness';
 
 const tablet = () => ({
   kind: 'tablet', stripName: 'Amlodac', spokenName: 'BP wali',
-  appearance: { colourPrimary: 'white', shape: 'round', size: 'dal', marking: 'plain', keptIn: 'strip', packColour: 'green' },
+  appearance: { colourPrimary: 'white', shape: 'round', size: 'small', marking: 'plain', keptIn: 'strip', packColour: 'green' },
   schedules: [{ localTime: '09:00', amountText: '1 tablet', food: 'after' }],
 });
 
@@ -100,7 +100,7 @@ describe('v1.1: billing, remind, devices, languages', () => {
   describe('POST /doses/:id/remind', () => {
     const setup = async (phone: string, p = '+919876543211') => {
       const token = await h.login(phone);
-      const person = (await h.http().post('/people').set(auth(token)).send({ isSelf: false, nickname: 'Papa', phone: p, language: 'hi' }).expect(201)).body.id as string;
+      const person = (await h.http().post('/people').set(auth(token)).send({ isSelf: false, nickname: 'Papa', fullName: 'Ramesh Sharma', phone: p, language: 'hi' }).expect(201)).body.id as string;
       await h.http().post(`/people/${person}/medicines`).set(auth(token)).send(tablet()).expect(201);
       return { token, person };
     };
@@ -160,7 +160,7 @@ describe('v1.1: billing, remind, devices, languages', () => {
       const id = await firstDose();
       // 6 calls today to the same number, placed for another account's person
       const other = await h.login('+919999900002');
-      const op = (await h.http().post('/people').set(auth(other)).send({ isSelf: false, nickname: 'Dad', phone: '+919876543211', language: 'hi' }).expect(201)).body.id;
+      const op = (await h.http().post('/people').set(auth(other)).send({ isSelf: false, nickname: 'Dad', fullName: 'Ramesh Sharma', phone: '+919876543211', language: 'hi' }).expect(201)).body.id;
       for (let i = 0; i < 6; i++) await h.db.query(`insert into calls (person_id, purpose, provider, status, created_at) values ($1, 'reminder', 'fake', 'completed', $2)`, [op, h.clock.now()]);
       expect((await h.http().post(`/doses/${id}/remind`).set(auth(token)).expect(429)).body.code).toBe('daily_cap');
       expect(h.publisher.named('dose.remind')).toHaveLength(0);
@@ -196,7 +196,7 @@ describe('v1.1: billing, remind, devices, languages', () => {
   describe('languages', () => {
     it('accepts hi, rejects other languages for new people with a clear error, still rejects unknown values', async () => {
       const t = await h.login('+919999900001');
-      const body = (language: string, n: number) => ({ isSelf: false, nickname: 'P', phone: `+91987654321${n}`, language });
+      const body = (language: string, n: number) => ({ isSelf: false, nickname: 'P', fullName: 'Ramesh Sharma', phone: `+91987654321${n}`, language });
       await h.http().post('/people').set(auth(t)).send(body('hi', 1)).expect(201);
       for (const l of ['en', 'bn', 'mr', 'ta', 'te']) {
         const r = await h.http().post('/people').set(auth(t)).send(body(l, 2)).expect(400);
@@ -209,7 +209,7 @@ describe('v1.1: billing, remind, devices, languages', () => {
 
     it('existing people keep their language (even non-hi); changing to another non-hi language is refused', async () => {
       const t = await h.login('+919999900001');
-      const id = (await h.http().post('/people').set(auth(t)).send({ isSelf: false, nickname: 'P', phone: '+919876543211', language: 'hi' }).expect(201)).body.id;
+      const id = (await h.http().post('/people').set(auth(t)).send({ isSelf: false, nickname: 'P', fullName: 'Ramesh Sharma', phone: '+919876543211', language: 'hi' }).expect(201)).body.id;
       await h.db.query(`update people set language = 'en' where id = $1`, [id]); // legacy row
       await h.http().patch(`/people/${id}`).set(auth(t)).send({ nickname: 'Q', language: 'en' }).expect(200);
       expect((await h.http().patch(`/people/${id}`).set(auth(t)).send({ language: 'ta' }).expect(400)).body.code).toBe('language_not_supported');

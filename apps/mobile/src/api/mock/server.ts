@@ -111,7 +111,7 @@ function seed(phone: string) {
       stripName: 'Amlodac',
       strengthText: '5 mg',
       spokenName: 'BP wali goli',
-      appearance: { colourPrimary: 'white', shape: 'round', size: 'dal', marking: 'line', keptIn: 'strip', packColour: 'silver' },
+      appearance: { colourPrimary: 'white', shape: 'round', size: 'small', marking: 'line', keptIn: 'strip', packColour: 'silver' },
       numberLabel: null,
       sayPrintedName: false,
       schedules: [{ localTime: '08:00', amountText: '1 goli', food: 'after', startDate }],
@@ -121,7 +121,7 @@ function seed(phone: string) {
       stripName: 'Glycomet',
       strengthText: '500 mg',
       spokenName: 'sugar wali goli',
-      appearance: { colourPrimary: 'white', shape: 'round', size: 'dal', marking: 'plain', keptIn: 'strip', packColour: 'red' },
+      appearance: { colourPrimary: 'white', shape: 'round', size: 'small', marking: 'plain', keptIn: 'strip', packColour: 'red' },
       numberLabel: null,
       sayPrintedName: false,
       schedules: [

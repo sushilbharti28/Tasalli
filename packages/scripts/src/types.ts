@@ -79,7 +79,7 @@ export const COLOUR_KEYS = [
 export type ColourKey = (typeof COLOUR_KEYS)[number];
 
 export const SHAPE_KEYS = ['round', 'oval', 'long', 'square'] as const;
-export const SIZE_KEYS = ['rai', 'dal', 'matar', 'badam', 'bigger'] as const;
+export const SIZE_KEYS = ['very_small', 'small', 'large'] as const; // v1.6: three sizes
 export const MARKING_KEYS = ['plain', 'line', 'letters', 'unknown'] as const;
 export const FOOD_KEYS = ['before', 'after', 'with', 'any'] as const;
 export const KIND_KEYS = ['tablet', 'capsule', 'syrup', 'other'] as const;

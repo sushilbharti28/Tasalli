@@ -3,7 +3,7 @@ import { auth, createApp, Harness } from './harness';
 
 const tablet = (over: any = {}, app: any = {}) => ({
   kind: 'tablet', stripName: 'Amlodac', spokenName: 'BP wali',
-  appearance: { colourPrimary: 'white', shape: 'round', size: 'dal', marking: 'plain', keptIn: 'strip', packColour: 'green', ...app },
+  appearance: { colourPrimary: 'white', shape: 'round', size: 'small', marking: 'plain', keptIn: 'strip', packColour: 'green', ...app },
   schedules: [{ localTime: '09:00', amountText: '1 tablet', food: 'after' }],
   ...over,
 });
@@ -13,7 +13,7 @@ describe('medicines, look-alike, doses, consent gating', () => {
   let token: string;
   let personId: string;
   const makePerson = async (tz = 'Asia/Kolkata', canRead = 'no') => {
-    const r = await h.http().post('/people').set(auth(token)).send({ isSelf: false, nickname: 'Papa', phone: '+919876543211', language: 'hi', timeZone: tz, canReadStrip: canRead }).expect(201);
+    const r = await h.http().post('/people').set(auth(token)).send({ isSelf: false, nickname: 'Papa', fullName: 'Ramesh Sharma', phone: '+919876543211', language: 'hi', timeZone: tz, canReadStrip: canRead }).expect(201);
     return r.body.id as string;
   };
   /** What call-engine does after the consent call, followed by its consent-recorded event. */

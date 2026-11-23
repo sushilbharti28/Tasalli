@@ -126,11 +126,9 @@ words:
     golden: golden
     transparent: clear glass
   sizes:
-    rai: tiny, like a mustard seed
-    dal: small, like a dal grain
-    matar: the size of a pea
-    badam: the size of an almond
-    bigger: bigger than an almond
+    very_small: very small
+    small: small
+    large: large
   shapes:
     round: round
     oval: oval

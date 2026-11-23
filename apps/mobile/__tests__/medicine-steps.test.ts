@@ -41,7 +41,7 @@ describe('medicine steps branch by kind', () => {
 describe('look-alike (appearance only)', () => {
   const tab = (packColour: string, extra = {}) => ({
     kind: 'tablet' as const,
-    appearance: { colourPrimary: 'white', shape: 'round' as const, size: 'matar' as const, keptIn: 'strip' as const, packColour, ...extra },
+    appearance: { colourPrimary: 'white', shape: 'round' as const, size: 'small' as const, keptIn: 'strip' as const, packColour, ...extra },
   });
   it('resolves automatically when strip colour differs', () => {
     const [c] = findLookAlikes(tab('red'), [{ id: 'x', ...tab('blue') }], 'no');

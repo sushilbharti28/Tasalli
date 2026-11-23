@@ -12,7 +12,7 @@ export type StepId = 'kind' | 'name' | 'looks' | 'kept' | 'amount' | 'check';
 export type Slot = 'morning' | 'afternoon' | 'evening' | 'night';
 export type Food = ScheduleInput['food'];
 export type Shape = 'round' | 'oval' | 'long' | 'square';
-export type Size = 'rai' | 'dal' | 'matar' | 'badam' | 'bigger';
+export type Size = 'very_small' | 'small' | 'large';
 export type Marking = 'plain' | 'line' | 'letters' | 'unknown';
 export type KeptIn = 'strip' | 'loose' | 'bottle';
 export type MeasuredWith = 'spoon' | 'cap' | 'cup' | 'syringe';
@@ -24,7 +24,7 @@ export const HIDDEN_KINDS = ['drops', 'inhaler', 'injection', 'cream'] as const;
 
 export const COLOURS = ['white', 'yellow', 'orange', 'pink', 'red', 'brown', 'green', 'blue', 'purple', 'black', 'silver', 'gold', 'clear'] as const;
 export const SHAPES: Shape[] = ['round', 'oval', 'long', 'square'];
-export const SIZES: Size[] = ['rai', 'dal', 'matar', 'badam', 'bigger'];
+export const SIZES: Size[] = ['very_small', 'small', 'large'];
 export const MARKINGS: Marking[] = ['plain', 'line', 'letters', 'unknown'];
 export const SLOTS: Slot[] = ['morning', 'afternoon', 'evening', 'night'];
 export const FOODS: Food[] = ['before', 'after', 'with', 'any'];

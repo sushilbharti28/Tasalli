@@ -109,12 +109,10 @@ blocks:
     oval: 'முட்டை வடிவ'
     long: 'நீளமான'
     square: 'சதுரமான'
-  sizes:
-    rai: 'கடுகு அளவு சின்னது'
-    dal: 'பருப்பு அளவு'
-    matar: 'பட்டாணி அளவு'
-    badam: 'பாதாம் அளவு'
-    bigger: 'பாதாமை விடப் பெரியது'
+  sizes:   # v1.6: three sizes; needs native-speaker review
+    very_small: 'மிகச் சிறியது'
+    small: 'சிறியது'
+    large: 'பெரியது'
   markings:
     plain: ''
     line: 'நடுவுல கோடு'

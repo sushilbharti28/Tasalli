@@ -76,11 +76,9 @@ words:
     golden: బంగారు రంగు
     transparent: గాజు లాంటి
   sizes:
-    rai: ఆవగింజ అంత చిన్నది
-    dal: పప్పు గింజ అంత
-    matar: బఠాణీ అంత
-    badam: బాదం అంత
-    bigger: బాదం కంటే పెద్దది
+    very_small: చాలా చిన్నది
+    small: చిన్నది
+    large: పెద్దది
   shapes:
     round: గుండ్రని
     oval: కోడిగుడ్డు ఆకారంలో ఉన్న

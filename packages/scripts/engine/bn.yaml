@@ -76,11 +76,9 @@ words:
     golden: সোনালি
     transparent: কাচের মতো
   sizes:
-    rai: সর্ষে দানার মতো ছোট
-    dal: ডালের দানার মতো
-    matar: মটরের দানার মতো
-    badam: বাদামের মতো
-    bigger: বাদামের চেয়ে বড়
+    very_small: খুব ছোট
+    small: ছোট
+    large: বড়
   shapes:
     round: গোল
     oval: ডিমের মতো
