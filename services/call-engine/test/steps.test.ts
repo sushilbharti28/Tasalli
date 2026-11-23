@@ -1,3 +1,4 @@
+import type { MedicineRow } from '../src/types.js';
 import { describe, expect, it } from 'vitest';
 import { PARENT, world, type World } from './helpers.js';
 
@@ -99,7 +100,7 @@ describe('one medicine at a time', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[1]).toBe('Maaf kijiye, samajh nahi aaya. Dawai lene ke baad, "haan" boliye, ya ek dabaiye. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye.');
+    expect(said[1]).toBe('Maaf kijiye, samajh nahi aaya. Dawai lene ke baad, "haan" boliye, ya ek dabaiye. Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye.');
     expect(status(w)).toEqual({ 'BP wali': 'confirmed', 'Sugar wali': 'confirmed', 'Pet wali': 'confirmed' });
   });
 
@@ -199,20 +200,42 @@ describe('one medicine at a time', () => {
     expect(said[1]).toBe('Theek hai. Bahut achha, aapne dawai le li hai. Dhanyavaad, namaste.');
   });
 
-  it('later calls of the day are short', async () => {
-    const w = world(undefined, { presence: true });
-    w.med('BP wali', '09:00', { colourPrimary: 'white', shape: 'round', size: 'dal', keptIn: 'strip', packColour: 'blue' });
-    w.med('Sugar wali', '13:00', { colourPrimary: 'white', shape: 'round', size: 'dal', keptIn: 'strip', packColour: 'blue' });
-    w.med('Pet wali', '13:05', { colourPrimary: 'white', shape: 'round', size: 'dal', keptIn: 'strip', packColour: 'blue' });
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }, { key: '1' }] });
+  it('v1.6 which medicines are described without asking: new or changed, look-alike, labelled, parent cannot read, date unknown', async () => {
+    const { describeMedicineIds } = await import('../src/scripts/builder.js');
+    const now = new Date('2026-03-10T04:00:00Z');
+    const old = new Date('2026-01-01T00:00:00Z');
+    const sched = (medicineId: string, startDate = '2026-01-01') =>
+      ({ id: `s${medicineId}`, medicineId, localTime: '09:00', amountText: 'ek goli', food: 'after' as const, daysOfWeek: [1, 2, 3, 4, 5, 6, 7], startDate, endDate: null });
+    const med = (id: string, over: Record<string, unknown> = {}) => ({ id, personId: 'p', kind: 'tablet' as const, stripName: id, strengthText: null, spokenName: id,
+      colourPrimary: 'white', colourSecondary: null, shape: 'round' as const, size: 'small' as const, marking: 'plain' as const, keptIn: 'strip' as const,
+      packColour: 'red', printColour: null, capColour: null, numberLabel: null, sayPrintedName: false, extraInstruction: null, active: true, updatedAt: old, ...over }) as unknown as MedicineRow; // three sizes arrive with the contracts change
+    const run = (m: MedicineRow, o: { others?: MedicineRow[]; canRead?: 'yes' | 'no' | 'not_sure'; start?: string } = {}) =>
+      describeMedicineIds({ items: [{ medicine: m, schedule: sched(m.id, o.start) }], allActive: [m, ...(o.others ?? [])], canReadStrip: o.canRead ?? 'yes', now, localToday: '2026-03-10' }).length === 1;
+    const yellow = med('Y', { colourPrimary: 'yellow' });
+    expect(run(med('A'), { others: [yellow] })).toBe(false);                                   // known, unlike the others: name only
+    expect(run(med('A', { updatedAt: new Date('2026-03-05T00:00:00Z') }), { others: [yellow] })).toBe(true); // changed 5 days ago
+    expect(run(med('A'), { others: [yellow], start: '2026-03-08' })).toBe(true);              // new schedule
+    expect(run(med('A', { updatedAt: null }), { others: [yellow] })).toBe(true);              // change date unknown
+    expect(run(med('A'), { others: [med('B', { packColour: 'blue' })] })).toBe(true);          // same pill, only the strip differs
+    expect(run(med('A', { size: 'small' }), { others: [med('B', { size: 'dal' })] })).toBe(true); // old size key maps to the same size
+    expect(run(med('A'), { others: [med('B', { shape: null })] })).toBe(true);                  // unknown counts as same
+    expect(run(med('A'), { others: [med('B', { kind: 'capsule' })] })).toBe(false);            // a capsule is not a tablet
+    expect(run(med('A'), { others: [med('B', { active: false })] })).toBe(false);              // stopped medicines do not count
+    expect(run(med('A', { numberLabel: 2 }), { others: [yellow] })).toBe(true);                // family set a number
+    expect(run(med('A'), { others: [yellow], canRead: 'no' })).toBe(true);                      // parent cannot read the strip
+  });
+
+  it('v1.6: the choices at the start say how to hear the description; "phir se" on a name-only medicine plays the full one', async () => {
+    const w = world();
+    w.store.state.people.get(w.mom.id)!.canReadStrip = 'yes';
+    w.med('BP wali', '09:00', { colourPrimary: 'white', shape: 'round', size: 'small', keptIn: 'strip', packColour: 'blue', updatedAt: new Date('2026-01-01T00:00:00Z') });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '0' }, { key: '1' }] });
     await planned(w);
-    await w.advance(60 * 6);
-    const full = w.playedText(0)[1]!;
-    const short = w.playedText(1)[1]!;
-    expect(full).toMatch(/blue|neel/i);
-    expect(w.playedText(1)[0]).toMatch(/dopahar ki wali do dawaiyon ki yaad dilane/);
-    expect(short).not.toMatch(/patte|patta|round/i);
-    expect(short.length).toBeLessThan(full.length + 60);
+    await w.advance(1);
+    const said = w.playedText(0);
+    expect(said[0]).toMatch(/Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye\./);
+    expect(said[0]).not.toMatch(/Iska patta/);
+    expect(said[1]).toMatch(/^Aapki dawai, ek goli BP wali ki hai\. Yeh ek chhoti si safed rang ki gol aakar ki goli hai\. Iska patta neele rang ka hai\./);
   });
 });
 

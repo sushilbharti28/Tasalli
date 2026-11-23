@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { CallStep, PlaceCallRequest } from '@tasalli/contracts';
 import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
 import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
-import { presencePrompt, buildReminderSteps, relationPhrase, line, personName, childName } from '../scripts/builder.js';
+import { presencePrompt, buildReminderSteps, describeMedicineIds, relationPhrase, line, personName, childName } from '../scripts/builder.js';
 import { localDay } from '../scheduler/time.js';
 import type { CallSession } from '../flows/session.js';
 import type { PersonRow } from '../types.js';
@@ -93,9 +93,12 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
     localHour: localDay(details[0]!.dose.dueAt, person.timeZone).hour, // the dose time (not the retry time) picks the meal name
     announcedTodayMedicineIds: prior.medicineIds, items: details.map((x) => ({ medicine: x.medicine, schedule: x.schedule })),
   };
-  // One medicine at a time: full description on the first answered call of the day, short afterwards.
+  // One medicine at a time. v1.6: look and pack are said only for medicines where they matter (describeMedicineIds); the rest get
+  // name and family name, and "phir se" / 0 plays the full description. `mode` still picks the intro wording.
   const mode = prior.answeredCalls === 0 ? 'full' : 'short';
-  const steps = buildReminderSteps({ ...base, mode });
+  const allActive = (await d.store.listActiveSchedules(person.id)).map((x) => x.medicine);
+  const describe = describeMedicineIds({ items: base.items, allActive, canReadStrip: person.canReadStrip, now, localToday: day.date });
+  const steps = buildReminderSteps({ ...base, mode, describeMedicineIds: describe });
   const reminder = { items: details.map((x, i) => ({ doseId: x.dose.id, first: steps.items[i]!.first, full: steps.items[i]!.full })),
     index: 0, outcomes: {}, heard: {}, retryLeft: decodeAttempt(attemptCode).n < RULES.retryCount };
   const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode,

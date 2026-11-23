@@ -59,6 +59,8 @@ export interface MedicineRow {
   sayPrintedName: boolean;
   extraInstruction: string | null;
   active: boolean;
+  /** Last change (medicines.updated_at). Missing or null = unknown, and the call then describes the medicine (v1.6). */
+  updatedAt?: Date | null;
 }
 
 export interface ScheduleRow {

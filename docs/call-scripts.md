@@ -9,8 +9,8 @@ Hindi only for now. The call speaks Devanagari from `packages/scripts/hi.yaml` (
 1. Opening (its "haan" / 1 is also the check that the parent can hear the call):
    > Namaste {person_name} ji. Hum Tasalli app se bol rahe hain. Aapko {meal_phrase} wali {count_word} dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.
 2. After "haan": the choices, once.
-   > Theek hai. Hum ek-ek karke dawai batate hain. Har dawai lene ke baad, "haan" boliye, ya 1 dabaiye. Dobara sunna ho, to "phir se" boliye, ya 0 dabaiye. Abhi nahi leni ho, to "nahi" boliye, ya 2 dabaiye.
-3. Each medicine (look and pack only on the first call of the day):
+   > Theek hai. Hum ek-ek karke dawai batate hain. Har dawai lene ke baad, "haan" boliye, ya 1 dabaiye. Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya 0 dabaiye. Abhi nahi leni ho, to "nahi" boliye, ya 2 dabaiye.
+3. Each medicine. A medicine the parent knows gets the name only: "Aapki pehli dawai, 1 goli Telma 40 mg ki hai. Ise aap BP wali kehte hain. [pause] Dawai lene ke baad, "haan" boliye, ya 1 dabaiye." The look and pack below are added when they matter (new or changed in the last 7 days, looks like another of the parent's medicines, number/printed-name label, or the parent cannot read the strip) and whenever the parent says "phir se" / 0:
    > Aapki pehli dawai, 1 goli Telma 40 mg ki hai. Ise aap BP wali kehte hain. Yeh ek chhoti si safed rang ki gol aakar ki goli hai. Iske beech mein ek line hai. Iska patta laal rang ka hai. [pause] Dawai lene ke baad, "haan" boliye, ya 1 dabaiye.
    >
    > Aapki doosri dawai, 1 capsule Glycomet 500 ki hai. Ise aap sugar wali kehte hain. Yeh capsule dekhne mein aadha peela aur aadha safed hai. Iska patta chaandi ke rang ka hai. [pause] Dawai lene ke baad, "haan" boliye, ya 1 dabaiye.

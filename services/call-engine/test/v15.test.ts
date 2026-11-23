@@ -14,7 +14,7 @@ describe('v1.5 medicine line: printed name and strength, then what the family ca
   const build = (over: Record<string, unknown>, o: { mode?: 'full' | 'short'; count?: number } = {}) => {
     const s = new MemoryStore();
     const mk = (i: number) => {
-      const m = s.addMedicine({ personId: 'p', spokenName: 'sugar wali', stripName: 'Glycomet', strengthText: '500 mg', kind: 'capsule', ...over });
+      const m = s.addMedicine({ personId: 'p', spokenName: 'sugar wali', stripName: 'Glycomet', strengthText: '500 mg', kind: 'capsule', colourPrimary: 'yellow', ...over });
       const sc = s.addSchedule({ medicineId: m.id, localTime: '09:00', amountText: '1 capsule', food: 'after' });
       return { medicine: { ...m, id: `${m.id}${i}` }, schedule: sc };
     };

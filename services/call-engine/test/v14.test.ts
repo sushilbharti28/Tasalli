@@ -166,9 +166,9 @@ describe('v1.4 repeat limit: heard 3 times at most', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[0]).toMatch(/Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\./);
+    expect(said[0]).toMatch(/Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye\./);
     expect(said[1]!.endsWith('Dawai lene ke baad, "haan" boliye, ya ek dabaiye.')).toBe(true);
-    expect(said[2]).toMatch(/Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\.$/);
+    expect(said[2]).toMatch(/Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya zero dabaiye\.$/);
   });
 });
 

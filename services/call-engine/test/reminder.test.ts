@@ -179,17 +179,25 @@ describe('reminder flow', () => {
     expect(doses(w).filter((x) => x.dueAt.toISOString() < '2026-03-10T18:30:00Z').every((x) => x.status === 'confirmed')).toBe(true);
   });
 
-  it('full description on the first call of the day, short afterwards', async () => {
+  it('v1.6: a known medicine is said by name only; "phir se" / 0 then gives its look and pack; a look-alike is described', async () => {
     const w = world();
-    w.med('Amlodac', '09:00', { colourPrimary: 'white', shape: 'round', size: 'dal', keptIn: 'strip', packColour: 'blue' });
-    w.med('Ecosprin', '13:00', { colourPrimary: 'white', shape: 'round', size: 'dal', keptIn: 'strip', packColour: 'blue' });
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }] });
+    w.store.state.people.get(w.mom.id)!.canReadStrip = 'yes';
+    const old = new Date('2026-01-01T00:00:00Z');
+    w.med('Amlodac', '09:00', { colourPrimary: 'white', shape: 'round', size: 'small', keptIn: 'strip', packColour: 'blue', updatedAt: old });
+    w.med('Ecosprin', '13:00', { colourPrimary: 'white', shape: 'round', size: 'small', keptIn: 'strip', packColour: 'red', updatedAt: old });
+    w.med('Vitcap', '21:00', { kind: 'capsule', colourPrimary: 'yellow', keptIn: 'strip', packColour: 'green', updatedAt: old });
+    w.provider.script(PARENT,
+      { answer: 'answered', inputs: [{ key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }] },
+      { answer: 'answered', inputs: [{ say: 'phir se' }, { key: '1' }] });
     await planned(w);
-    await w.advance(60 * 6);
-    const [a, b] = [w.playedText(0)[0]!, w.playedText(1)[0]!];
-    expect(a).toMatch(/safed/);
-    expect(a.length).toBeGreaterThan(b.length);
-    expect(b).not.toMatch(/safed/);
+    await w.advance(60 * 13);
+    // Amlodac and Ecosprin are both small white round tablets: each is described, so the parent can tell them apart by the strip.
+    expect(w.playedText(0)[0]).toMatch(/Yeh ek chhoti si safed rang ki gol aakar ki goli hai\. Iska patta neele rang ka hai\./);
+    expect(w.playedText(1)[0]).toMatch(/Iska patta laal rang ka hai\./);
+    // Vitcap is unlike the others and not new: name only, then the description when asked.
+    const v = w.playedText(2);
+    expect(v[0]).toMatch(/Aapki dawai, ek goli Vitcap ki hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\.$/);
+    expect(v[1]).toMatch(/^Aapki dawai, ek goli Vitcap ki hai\. Yeh ek peele rang ka capsule hai\. Iska patta hare rang ka hai\./);
   });
 
   it('uses the number or printed name to tell look-alike medicines apart', async () => {

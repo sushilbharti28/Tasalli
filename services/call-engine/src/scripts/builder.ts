@@ -44,6 +44,12 @@ export interface ReminderScriptInput {
   announcedTodayMedicineIds: string[];
   /** Parent's local hour (0-23) of the dose time: picks the meal name and the day part. */
   localHour: number;
+  /**
+   * v1.6: medicines whose look and pack are said the first time (new or changed, look-alike, or a parent who cannot read the strip;
+   * see describeMedicineIds). The others get name and family name only; "phir se" / 0 plays the full description.
+   * Missing: the older rule (full on the first call of the day, short afterwards).
+   */
+  describeMedicineIds?: string[];
 }
 
 export function personName(t: ScriptTemplates, person: Pick<PersonRow, 'nickname' | 'fullName'>): string {
@@ -127,11 +133,12 @@ export function lookSentences(t: ScriptTemplates, L: StepLook, m: MedicineRow): 
     return typeof v === 'string' ? v : (v?.[f] ?? '');
   };
   const sentences: string[] = [];
-  if (m.kind === 'tablet') {
+  const anyLook = !!(m.size || m.colourPrimary || m.shape); // no look fields: no "Yeh ek goli hai." sentence
+  if (m.kind === 'tablet' && anyLook) {
     sentences.push(render(L.tablet, { size: sizeWord('f'), colour: g('f', m.colourPrimary), shape: m.shape ? (L.shapes[m.shape] ?? m.shape) : '' }));
     const mark = m.marking ? L.markings[m.marking] : '';
     if (mark) sentences.push(mark);
-  } else if (m.kind === 'capsule') {
+  } else if (m.kind === 'capsule' && (anyLook || m.colourSecondary)) {
     sentences.push(m.colourSecondary
       ? render(L.capsule_two_colour, { colour: word(t, 'colours', m.colourPrimary, 'm'), colour2: word(t, 'colours', m.colourSecondary, 'm') })
       : render(L.capsule, { size: sizeWord('m'), colour: g('m', m.colourPrimary) }));
@@ -262,7 +269,8 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
     const sunday = input.isSunday && m.numberLabel !== null && m.numberLabel !== undefined && !seenNumbers.has(m.id)
       ? spoken(render(r.sunday_line, { number: m.numberLabel, spoken_name: m.spokenName })) : ''; // said once per medicine per day
     if (sunday) seenNumbers.add(m.id);
-    return { first: joinSentences([sunday, input.mode === 'full' ? full : short]), full };
+    const describe = input.describeMedicineIds ? input.describeMedicineIds.includes(m.id) : input.mode === 'full';
+    return { first: joinSentences([sunday, describe ? full : short]), full };
   });
   const vars = { person_name, meal_phrase, count_word, count }; // reminder calls never name the child or the relation
   const intro = spoken(input.mode === 'full' ? render(count === 1 ? r.step_intro_one : r.step_intro, vars)
@@ -275,6 +283,35 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const presence = presenceLine ? spoken(render(presenceLine, vars)) : '';
   const retryLine = (count === 1 ? r.step_presence_retry_one : undefined) ?? r.step_presence_retry;
   return { opening: first, greeting, presence, presenceRetry: retryLine ? spoken(render(retryLine, vars)) : presence, items };
+}
+
+/** How recent a change has to be for the call to describe a medicine on its own (v1.6). */
+export const DESCRIBE_CHANGED_WITHIN_DAYS = 7;
+
+/** Two tablets or two capsules whose pills could be mistaken for each other: every appearance field equal or unknown (rule 2: appearance only). */
+export function pillsLookAlike(a: MedicineRow, b: MedicineRow): boolean {
+  if (a.id === b.id || a.kind !== b.kind || (a.kind !== 'tablet' && a.kind !== 'capsule')) return false;
+  const same = (x: string | null | undefined, y: string | null | undefined) => !x || !y || x === y;
+  const size = (x: string | null) => (x ? SIZE_TO_THREE[x] ?? x : null);
+  return same(a.colourPrimary, b.colourPrimary) && same(a.colourSecondary, b.colourSecondary) && same(a.shape, b.shape)
+    && same(size(a.size), size(b.size)) && same(a.marking, b.marking);
+}
+
+/**
+ * v1.6: which of the call's medicines are described (look and pack) without being asked:
+ * changed in the last 7 days (or change date unknown), a new schedule, a pill that looks like another active medicine of the parent,
+ * a number or printed-name label set by the family, or a parent marked as unable to read the strip.
+ */
+export function describeMedicineIds(o: { items: ReminderItem[]; allActive: MedicineRow[]; canReadStrip: PersonRow['canReadStrip']; now: Date; localToday: string }): string[] {
+  const cutoff = o.now.getTime() - DESCRIBE_CHANGED_WITHIN_DAYS * 86_400_000;
+  const startCutoff = new Date(Date.parse(`${o.localToday}T00:00:00Z`) - DESCRIBE_CHANGED_WITHIN_DAYS * 86_400_000).toISOString().slice(0, 10);
+  return o.items.filter(({ medicine: m, schedule: s }) =>
+    o.canReadStrip === 'no'
+    || !m.updatedAt || m.updatedAt.getTime() >= cutoff
+    || s.startDate > startCutoff
+    || m.numberLabel !== null || m.sayPrintedName
+    || o.allActive.some((x) => x.active && pillsLookAlike(m, x)),
+  ).map((x) => x.medicine.id);
 }
 
 export function sundayLines(input: ReminderScriptInput): string[] {
