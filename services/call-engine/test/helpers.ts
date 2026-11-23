@@ -16,7 +16,7 @@ export const PARENT = '+919876543210';
 export function world(start = '2026-03-10T03:29:00Z', opts: { scripts?: ScriptLibrary; log?: Logger; presence?: boolean } = {}) {
   const scripts = opts.scripts ?? new ScriptLibrary(null);
   // Most tests are about the medicine flow itself, so the "can you hear me?" step is off unless a test asks for it (presence: true).
-  if (!opts.presence) for (const l of ['hi', 'en'] as const) scripts.get(l).templates.reminder.step_presence = undefined;
+  if (!opts.presence) for (const l of ['hi', 'en'] as const) { const r = scripts.get(l).templates.reminder; r.step_presence = r.step_reminder_presence = r.step_reminder_presence_one = undefined; }
   const clock = new FakeClock(start);
   const store = new MemoryStore();
   const queue = new MemoryQueue(clock);
@@ -32,7 +32,7 @@ export function world(start = '2026-03-10T03:29:00Z', opts: { scripts?: ScriptLi
 
   const user = store.addUser({ phone: '+919000000001', name: 'Rohit' });
   store.addSubscription(user.id); // active: the billing gate lets reminders through
-  const mom = store.addPerson({ ownerUserId: user.id, phone: PARENT, nickname: 'Mummy', consent: 'consented' });
+  const mom = store.addPerson({ ownerUserId: user.id, phone: PARENT, nickname: 'Mummy', fullName: 'Kamla Devi', consent: 'consented' });
   function med(name: string, time: string, over = {}, person = mom) {
     const m = store.addMedicine({ personId: person.id, spokenName: name, ...over });
     const s = store.addSchedule({ medicineId: m.id, localTime: time, amountText: 'ek goli' });

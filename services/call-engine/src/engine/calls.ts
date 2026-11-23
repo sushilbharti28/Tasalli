@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import type { CallStep, PlaceCallRequest } from '@tasalli/contracts';
 import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
 import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
-import { presencePrompt, buildReminderSteps, relationPhrase, line, personName, childName } from '../scripts/builder.js';
+import { presencePrompt, buildReminderSteps, describeMedicineIds, newMedicineIds, relationPhrase, line, personName, childName } from '../scripts/builder.js';
 import { localDay } from '../scheduler/time.js';
 import type { CallSession } from '../flows/session.js';
 import type { PersonRow } from '../types.js';
@@ -93,14 +93,17 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
     localHour: localDay(details[0]!.dose.dueAt, person.timeZone).hour, // the dose time (not the retry time) picks the meal name
     announcedTodayMedicineIds: prior.medicineIds, items: details.map((x) => ({ medicine: x.medicine, schedule: x.schedule })),
   };
-  // One medicine at a time: full description on the first answered call of the day, short afterwards.
+  // One medicine at a time. v1.6: look and pack are said only for medicines where they matter (describeMedicineIds); the rest get
+  // name and family name, and "phir se" / 0 plays the full description. `mode` still picks the intro wording.
   const mode = prior.answeredCalls === 0 ? 'full' : 'short';
-  const steps = buildReminderSteps({ ...base, mode });
+  const allActive = (await d.store.listActiveSchedules(person.id)).map((x) => x.medicine);
+  const describe = describeMedicineIds({ items: base.items, allActive, canReadStrip: person.canReadStrip, now, localToday: day.date });
+  const steps = buildReminderSteps({ ...base, mode, describeMedicineIds: describe, newMedicineIds: newMedicineIds(base.items, now) });
   const reminder = { items: details.map((x, i) => ({ doseId: x.dose.id, first: steps.items[i]!.first, full: steps.items[i]!.full })),
-    index: 0, outcomes: {}, heard: {} };
+    index: 0, outcomes: {}, heard: {}, retryLeft: decodeAttempt(attemptCode).n < RULES.retryCount };
   const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode,
     language: lang, session: steps.presence
-      ? { ...blank, mainText: presencePrompt(steps.greeting, steps.presence), fullText: steps.items[0]!.full, reminder, presence: { state: 'pending' as const, asks: 0, text: steps.presence, next: steps.opening } }
+      ? { ...blank, mainText: presencePrompt(steps.greeting, steps.presence), fullText: steps.items[0]!.full, reminder, presence: { state: 'pending' as const, asks: 0, text: steps.presenceRetry, next: steps.opening } }
       : { ...blank, mainText: presencePrompt(steps.greeting, steps.opening), fullText: steps.items[0]!.full, reminder } });
   if (out === 'capped') return void await stop('missed', 'daily_cap');
   if (out === 'blocked') return void await stop('skipped_paused');
@@ -162,7 +165,7 @@ export async function placeTest(d: Deps, userId: string): Promise<void> {
   if ((await d.sessions.incr(`test_${userId}_${day}`, 86400)) > d.config.testCallsPerDay) return;
   const lang = callLanguage(d, user.locale, null);
   const t = d.scripts.get(lang).templates;
-  const text = line(t.test.prompt, { person_name: personName(t, { nickname: user.name ?? '', fullName: null }) });
+  const text = line(t.test.prompt, { person_name: personName(t, { nickname: '', fullName: user.name ?? null }) /* the test call greets the account holder by their own name */ });
   await place(d, { person: null, to: user.phone, zone: user.timeZone, purpose: 'test', groupId: null, attempt: 0, language: lang,
     session: { ...blank, mainText: text, fullText: text } });
 }

@@ -69,8 +69,8 @@ describe('Twilio TwiML', () => {
     const url = await say.urlFor('Namaste <ji> & "dawai"', 'hi');
     const { contentType, body } = p.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1', '9'], speech: true, timeoutSeconds: 8 } } }, { callId: 'call-1' });
     expect(contentType).toBe('text/xml');
-    expect(body).toContain('<Gather input="dtmf speech" language="hi-IN" speechTimeout="auto" hints="le li,le liya,le lee,leli,lelee,lily,लिली,');
-    expect(body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN"><prosody rate="85%">Namaste &lt;ji&gt; &amp; &quot;dawai&quot;</prosody></Say>');
+    expect(body).toContain('<Gather input="dtmf speech" language="hi-IN" speechTimeout="1" hints="le li,le liya,le lee,leli,lelee,lily,लिली,');
+    expect(body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN"><prosody rate="90%">Namaste &lt;ji&gt; &amp; &quot;dawai&quot;</prosody></Say>');
     expect(body).toMatch(/action="https:\/\/abc\.trycloudflare\.com\/webhooks\/twilio\/input\?c=call-1&amp;n=[0-9a-f]{16}"/);
     expect(body).toContain('<Redirect method="POST">');
   });
@@ -81,7 +81,7 @@ describe('Twilio TwiML', () => {
   });
   it('hangup with and without a final message', async () => {
     expect(p.renderNextAction({ action: 'hangup' }).body).toBe('<?xml version="1.0" encoding="UTF-8"?><Response><Hangup/></Response>');
-    expect(p.renderNextAction({ action: 'hangup', finalAudioUrl: await say.urlFor('Dhanyavaad', 'hi') }).body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN"><prosody rate="85%">Dhanyavaad</prosody></Say><Hangup/>');
+    expect(p.renderNextAction({ action: 'hangup', finalAudioUrl: await say.urlFor('Dhanyavaad', 'hi') }).body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN"><prosody rate="90%">Dhanyavaad</prosody></Say><Hangup/>');
   });
   it('Devanagari text survives the round trip', async () => {
     expect(decodeSay(await say.urlFor('नमस्ते जी', 'hi')).text).toBe('नमस्ते जी');
@@ -118,5 +118,40 @@ describe('Twilio placeCall', () => {
 describe('Twilio env', () => {
   it('names every missing variable, never values', () => {
     expect(() => twilioEnv({ TWILIO_ACCOUNT_SID: 'AC1' })).toThrow('TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, PUBLIC_BASE_URL');
+  });
+
+  it('v1.6: the acknowledgement is its own <Say> with no pause; speech timeout and model come from config', async () => {
+    const { SAY_SPLIT } = await import('../src/scripts/builder.js');
+    const { speechTimeoutFrom, speechModelFrom } = await import('../src/providers/twilio-factory.js');
+    const p = new TwilioProvider({ accountSid: 'AC1', authToken: 't', publicBaseUrl: 'https://x.example', speechTimeout: '2', speechModel: 'googlev2_telephony_short' });
+    const url = await new SayUrls().urlFor(`Theek hai.${SAY_SPLIT}Aapki doosri dawai.`, 'hi');
+    const { body } = p.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1'], speech: true, timeoutSeconds: 6 } } }, { callId: 'c1' });
+    expect(body).toMatch(/Theek hai<\/prosody><\/Say><Say [^>]*><prosody rate="90%">Aapki doosri dawai<\/prosody><\/Say>/);
+    expect(body).not.toContain('<Pause');
+    expect(body).toContain('speechTimeout="2" speechModel="googlev2_telephony_short"');
+    const dg = new TwilioProvider({ accountSid: 'AC1', authToken: 't', publicBaseUrl: 'https://x.example', speechModel: 'deepgram_nova-2' });
+    expect(dg.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1'], speech: true, timeoutSeconds: 6 } } }, { callId: 'c1' }).body)
+      .toContain('language="hi" speechTimeout="1" speechModel="deepgram_nova-2"'); // Deepgram: bare language code
+    expect([speechTimeoutFrom(undefined), speechTimeoutFrom('auto'), speechTimeoutFrom('3'), speechTimeoutFrom('99'), speechTimeoutFrom('x"')]).toEqual(['1', 'auto', '3', '1', '1']);
+    expect([speechModelFrom(undefined), speechModelFrom('googlev2_telephony_short'), speechModelFrom('a" b')]).toEqual([undefined, 'googlev2_telephony_short', undefined]);
+  });
+
+  it('safety (v1.6): the choices and the medicine are said outside the Gather; listening starts at the question', async () => {
+    const { LONG_PAUSE, SAY_SPLIT } = await import('../src/scripts/builder.js');
+    const p = new TwilioProvider({ accountSid: 'AC1', authToken: 't', publicBaseUrl: 'https://x.example' });
+    const text = `Theek hai.${SAY_SPLIT}Har dawai lene ke baad, haan boliye. Aapki pehli dawai, ek goli Telma ki hai.${LONG_PAUSE}Dawai lene ke baad, haan boliye, ya ek dabaiye.`;
+    const url = await new SayUrls().urlFor(text, 'hi');
+    const { body } = p.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1'], speech: true, timeoutSeconds: 6 } } }, { callId: 'c1' });
+    const gather = body.indexOf('<Gather');
+    expect(body.indexOf('Theek hai')).toBeLessThan(gather);
+    expect(body.indexOf('Har dawai lene ke baad')).toBeLessThan(gather);
+    expect(body.indexOf('Telma')).toBeLessThan(gather);
+    expect(body.indexOf('ya ek dabaiye')).toBeGreaterThan(gather);
+    expect(body.indexOf('ya ek dabaiye')).toBeLessThan(body.indexOf('</Gather>'));
+    expect(body).not.toContain('\u2016');
+    expect(body).toContain('bargeIn="false"'); // the question always plays in full
+    // A prompt with no mark (a plain question, e.g. the re-ask) is listened to whole.
+    const q = p.renderNextAction({ action: 'play', step: { audioUrl: await new SayUrls().urlFor('Maaf kijiye, samajh nahi aaya.', 'hi'), listen: { keys: ['1'], speech: true, timeoutSeconds: 6 } } }, { callId: 'c1' }).body;
+    expect(q.indexOf('<Gather')).toBeLessThan(q.indexOf('Maaf kijiye'));
   });
 });

@@ -1,10 +1,30 @@
 import type { CallerRelation, MedicineRow, PersonRow, ScheduleRow } from '../types.js';
 import { joinSentences, render } from './render.js';
 import { speakNumbers, scriptOf } from './spoken-numbers.js';
-import type { ScriptTemplates } from './templates.js';
+import type { ScriptTemplates, StepLook } from './templates.js';
 
 /** Marks the end of the short greeting inside the opening prompt: the provider says the parts as separate <Say>s with a 1 s <Pause> between. */
 export const SAY_BREAK = '\n';
+/** A longer pause inside one prompt (before the question after each medicine). Twilio renders it as a longer SSML <break>; elsewhere it is a plain space. */
+export const LONG_PAUSE = ' \u2016 ';
+export const LONG_PAUSE_MARK = '\u2016';
+/**
+ * Splits a prompt into separate <Say>s with no pause between: the short acknowledgement ("ठीक है।") is synthesised alone and plays
+ * at once, instead of waiting for the long next prompt to be synthesised (SSML synthesis is not streamed).
+ */
+export const SAY_SPLIT = '\u2029';
+/** Text for anything that cannot render the longer pause or the split (plain-text speech, TTS files, logs): the marks become spaces. */
+export const withoutPauseMarks = (text: string): string => text.split(/[\u2016\u2029]/).map((x) => x.trim()).filter(Boolean).join(' ');
+/** "Ack. Rest" -> "Ack.<SAY_SPLIT>Rest" when the prompt starts with the acknowledgement; otherwise unchanged. */
+export const splitAck = (ack: string, text: string): string => {
+  const a = ack.trim();
+  return a && text.startsWith(a) && text.length > a.length ? a + SAY_SPLIT + text.slice(a.length).trim() : text;
+};
+
+/** The call speaks three sizes. The app's older five map onto them (rai: very small; dal, matar: small; badam, bigger: large). */
+export const SIZE_TO_THREE: Record<string, 'very_small' | 'small' | 'large'> = {
+  very_small: 'very_small', small: 'small', large: 'large', rai: 'very_small', dal: 'small', matar: 'small', badam: 'large', bigger: 'large',
+};
 
 export interface ReminderItem {
   medicine: MedicineRow;
@@ -24,12 +44,21 @@ export interface ReminderScriptInput {
   announcedTodayMedicineIds: string[];
   /** Parent's local hour (0-23) of the dose time: picks the meal name and the day part. */
   localHour: number;
+  /**
+   * v1.6: medicines whose look and pack are said the first time (new or changed, look-alike, or a parent who cannot read the strip;
+   * see describeMedicineIds). The others get name and family name only; "phir se" / 0 plays the full description.
+   * Missing: the older rule (full on the first call of the day, short afterwards).
+   */
+  describeMedicineIds?: string[];
+  /** v1.6: medicines added in the last 7 days: introduced as "aapki nayi dawai" instead of "aapki teesri dawai". */
+  newMedicineIds?: string[];
 }
 
 export function personName(t: ScriptTemplates, person: Pick<PersonRow, 'nickname' | 'fullName'>): string {
-  // First word of the full name ("Ramesh Sharma" -> "Ramesh ji"); the nickname when there is no full name.
-  const base = (person.fullName ?? '').trim().split(/\s+/)[0] || person.nickname.trim();
-  return base + t.words.person_suffix;
+  // First word of the full name ("Ramesh Sharma" -> "Ramesh ji"). Never the nickname: it is the family's word for them
+  // ("Mummy", "Papa"), not their name. With no full name the greeting is just "Namaste ji".
+  const base = (person.fullName ?? '').trim().split(/\s+/)[0] ?? '';
+  return (base + t.words.person_suffix).trim();
 }
 
 export function childName(t: ScriptTemplates, name: string | null): string {
@@ -88,6 +117,43 @@ export function disambiguator(t: ScriptTemplates, m: MedicineRow): string {
   if (m.numberLabel !== null && m.numberLabel !== undefined) return render(t.words.disambiguator_number, { number: m.numberLabel });
   if (m.sayPrintedName) return render(t.words.disambiguator_printed_name, { strip_letters: spellOut(m.stripName) });
   return '';
+}
+
+/**
+ * v1.6: how a medicine looks, as whole sentences ("Yeh ek chhoti si safed rang ki gol aakar ki goli hai. Iska patta laal rang ka hai.").
+ * Only appearance fields are used (safety rule 2); family-typed values are never changed.
+ */
+export function lookSentences(t: ScriptTemplates, L: StepLook, m: MedicineRow): { appearance: string; pack: string; disambiguator: string } {
+  const g = (form: 'f' | 'm' | 'obl', key: string | null | undefined) => {
+    if (!key) return '';
+    const stem = L.colours[key] ?? L.colours[key.toLowerCase()] ?? key; // unknown values are spoken as entered
+    return render(L.coloured[form], { colour: stem });
+  };
+  const sizeWord = (f: 'f' | 'm') => {
+    const k = m.size ? SIZE_TO_THREE[m.size] ?? m.size : null;
+    const v = k ? L.sizes[k] : undefined;
+    return typeof v === 'string' ? v : (v?.[f] ?? '');
+  };
+  const sentences: string[] = [];
+  const anyLook = !!(m.size || m.colourPrimary || m.shape); // no look fields: no "Yeh ek goli hai." sentence
+  if (m.kind === 'tablet' && anyLook) {
+    sentences.push(render(L.tablet, { size: sizeWord('f'), colour: g('f', m.colourPrimary), shape: m.shape ? (L.shapes[m.shape] ?? m.shape) : '' }));
+    const mark = m.marking ? L.markings[m.marking] : '';
+    if (mark) sentences.push(mark);
+  } else if (m.kind === 'capsule' && (anyLook || m.colourSecondary)) {
+    sentences.push(m.colourSecondary
+      ? render(L.capsule_two_colour, { colour: word(t, 'colours', m.colourPrimary, 'm'), colour2: word(t, 'colours', m.colourSecondary, 'm') })
+      : render(L.capsule, { size: sizeWord('m'), colour: g('m', m.colourPrimary) }));
+  }
+  const pack: string[] = [];
+  if (m.keptIn === 'strip' && m.packColour) pack.push(render(L.strip, { pack_colour: g('m', m.packColour) })); // patta: masculine
+  if (m.keptIn === 'strip' && m.printColour) pack.push(render(L.print, { print_colour: g('obl', m.printColour) }));
+  if (m.keptIn === 'bottle' && m.packColour) pack.push(render(L.bottle, { pack_colour: g('f', m.packColour) })); // bottle: feminine
+  if (m.keptIn === 'bottle' && m.capColour) pack.push(render(L.cap, { cap_colour: g('m', m.capColour) })); // dhakkan: masculine
+  if (m.keptIn === 'loose') pack.push(L.loose);
+  const dis = m.numberLabel !== null && m.numberLabel !== undefined ? render(L.number, { number: m.numberLabel })
+    : m.sayPrintedName ? render(L.printed_name, { strip_letters: spellOut(m.stripName) }) : '';
+  return { appearance: joinSentences(sentences), pack: joinSentences(pack), disambiguator: dis };
 }
 
 export function foodPhrase(t: ScriptTemplates, food: ScheduleRow['food'], localHour: number): string {
@@ -151,6 +217,8 @@ export interface ReminderSteps {
   /** Said first and alone: "Namaste Ramesh ji." then a pause, then `presence` ("can you hear me?"). Only after a yes does `opening` play. */
   greeting: string;
   presence: string;
+  /** Re-ask when the presence answer was not a yes (v1.6); falls back to `presence`. */
+  presenceRetry: string;
   /** Per medicine: `first` is said the first time (full or short mode), `full` is the repeat for key 0 / "phir se". */
   items: Array<{ first: string; full: string }>;
 }
@@ -184,19 +252,29 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const items = input.items.map((it, i) => {
     const m = it.medicine;
     const strip = m.stripName.trim();
+    const isNew = !!r.step_new_ordinal && !!input.newMedicineIds?.includes(m.id);
     const common = {
-      ordinal: t.words.ordinals[i] ?? String(i + 1), strip_name: strip, strength: (m.strengthText ?? '').trim(),
+      ordinal: isNew ? r.step_new_ordinal! : (t.words.ordinals[i] ?? String(i + 1)), strip_name: strip, strength: (m.strengthText ?? '').trim(),
       // "Jise aap Sugar wali kehte hain." is left out when the family's name is the printed name.
       spoken_line: m.spokenName.trim().toLowerCase() === strip.toLowerCase() || !r.step_spoken_line ? '' : render(r.step_spoken_line, { spoken_name: m.spokenName }),
       spoken_name: m.spokenName, amount_text: it.schedule.amountText,
       disambiguator: disambiguator(t, m), extra_instruction: m.extraInstruction,
     };
-    const full = spoken(render(count === 1 ? r.step_item_one : r.step_item, { ...common, appearance_phrase: appearancePhrase(t, m), pack_phrase: packPhrase(t, m) }));
-    const short = spoken(render(count === 1 ? r.step_item_short_one : r.step_item_short, common));
+    const look = r.step_look ? lookSentences(t, r.step_look, m) : null;
+    if (look) common.disambiguator = look.disambiguator;
+    // The question after each medicine comes after a longer pause (LONG_PAUSE), so the description and the question do not run together.
+    // Speech only: whole-sentence pieces followed by the template's own full stop would say "hai.." / "है।।"; one mark is enough.
+    const tidy = (text: string) => text.replace(/([.।!?])(?:\s*[.।])+/g, '$1');
+    const withAsk = (text: string) => { const x = tidy(text); return r.step_item_ask ? x + LONG_PAUSE + spoken(r.step_item_ask) : x; };
+    const one = count === 1 && !isNew; // a single new medicine still says "aapki nayi dawai"
+    const full = withAsk(spoken(render(one ? r.step_item_one : r.step_item, {
+      ...common, appearance_phrase: look ? look.appearance : appearancePhrase(t, m), pack_phrase: look ? look.pack : packPhrase(t, m) })));
+    const short = withAsk(spoken(render(one ? r.step_item_short_one : r.step_item_short, common)));
     const sunday = input.isSunday && m.numberLabel !== null && m.numberLabel !== undefined && !seenNumbers.has(m.id)
       ? spoken(render(r.sunday_line, { number: m.numberLabel, spoken_name: m.spokenName })) : ''; // said once per medicine per day
     if (sunday) seenNumbers.add(m.id);
-    return { first: joinSentences([sunday, input.mode === 'full' ? full : short]), full };
+    const describe = input.describeMedicineIds ? input.describeMedicineIds.includes(m.id) : input.mode === 'full';
+    return { first: joinSentences([sunday, describe ? full : short]), full };
   });
   const vars = { person_name, meal_phrase, count_word, count }; // reminder calls never name the child or the relation
   const intro = spoken(input.mode === 'full' ? render(count === 1 ? r.step_intro_one : r.step_intro, vars)
@@ -204,7 +282,46 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const first = joinSentences([intro, items[0]?.first ?? '']);
   // A short separate greeting first ("Namaste Ramesh ji."), then a pause, so a slow synthesis of the long part cannot leave the line silent.
   const greeting = r.step_greeting ? spoken(render(r.step_greeting, { person_name })) : '';
-  return { opening: first, greeting, presence: r.step_presence ? spoken(r.step_presence) : '', items };
+  // v1.6: the opening after the greeting says who is calling and why, and its "haan" / 1 is the presence check.
+  const presenceLine = (count === 1 ? r.step_reminder_presence_one : undefined) ?? r.step_reminder_presence ?? r.step_presence;
+  const presence = presenceLine ? spoken(render(presenceLine, vars)) : '';
+  const retryLine = (count === 1 ? r.step_presence_retry_one : undefined) ?? r.step_presence_retry;
+  return { opening: first, greeting, presence, presenceRetry: retryLine ? spoken(render(retryLine, vars)) : presence, items };
+}
+
+/** How recent a change has to be for the call to describe a medicine on its own (v1.6). */
+export const DESCRIBE_CHANGED_WITHIN_DAYS = 7;
+
+/** Two tablets or two capsules whose pills could be mistaken for each other: every appearance field equal or unknown (rule 2: appearance only). */
+export function pillsLookAlike(a: MedicineRow, b: MedicineRow): boolean {
+  if (a.id === b.id || a.kind !== b.kind || (a.kind !== 'tablet' && a.kind !== 'capsule')) return false;
+  const same = (x: string | null | undefined, y: string | null | undefined) => !x || !y || x === y;
+  const size = (x: string | null) => (x ? SIZE_TO_THREE[x] ?? x : null);
+  return same(a.colourPrimary, b.colourPrimary) && same(a.colourSecondary, b.colourSecondary) && same(a.shape, b.shape)
+    && same(size(a.size), size(b.size)) && same(a.marking, b.marking);
+}
+
+/**
+ * v1.6: which of the call's medicines are described (look and pack) without being asked:
+ * changed in the last 7 days (or change date unknown), a new schedule, a pill that looks like another active medicine of the parent,
+ * a number or printed-name label set by the family, or a parent marked as unable to read the strip.
+ */
+export function describeMedicineIds(o: { items: ReminderItem[]; allActive: MedicineRow[]; canReadStrip: PersonRow['canReadStrip']; now: Date; localToday: string }): string[] {
+  const cutoff = o.now.getTime() - DESCRIBE_CHANGED_WITHIN_DAYS * 86_400_000;
+  const startCutoff = new Date(Date.parse(`${o.localToday}T00:00:00Z`) - DESCRIBE_CHANGED_WITHIN_DAYS * 86_400_000).toISOString().slice(0, 10);
+  return o.items.filter(({ medicine: m, schedule: s }) =>
+    o.canReadStrip === 'no'
+    || !m.updatedAt || m.updatedAt.getTime() >= cutoff
+    || s.startDate > startCutoff
+    || m.numberLabel !== null || m.sayPrintedName
+    || o.allActive.some((x) => x.active && pillsLookAlike(m, x)),
+  ).map((x) => x.medicine.id);
+}
+
+/** v1.6: medicines the family added in the last 7 days ("aapki nayi dawai"). An unknown creation date is not "new". */
+export function newMedicineIds(items: ReminderItem[], now: Date): string[] {
+  const cutoff = now.getTime() - DESCRIBE_CHANGED_WITHIN_DAYS * 86_400_000;
+  return items.filter((x) => !!x.medicine.createdAt && x.medicine.createdAt.getTime() >= cutoff).map((x) => x.medicine.id);
 }
 
 export function sundayLines(input: ReminderScriptInput): string[] {

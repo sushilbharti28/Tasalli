@@ -28,7 +28,7 @@ const tailAfter = (full: string, base: string): string => {
 };
 
 /** Lines for the one-medicine-at-a-time flow; optional keys in the engine format. */
-const stepLines = (r: NonNullable<CallScript['reminder_steps']>) => ({
+const stepLines = (r: NonNullable<CallScript['reminder_steps']>): Record<string, unknown> => ({
   ...(r.greeting ? { step_greeting: r.greeting } : {}), ...(r.spoken_line ? { step_spoken_line: r.spoken_line } : {}), ...(r.presence ? { step_presence: r.presence } : {}),
   step_intro: r.intro_many, step_intro_one: r.intro_one, step_short_intro: r.short_intro_many, step_short_intro_one: r.short_intro_one,
   step_item: flat(r.item), step_item_one: flat(r.item_one), step_item_short: flat(r.item_short), step_item_short_one: flat(r.item_short_one),
@@ -36,7 +36,14 @@ const stepLines = (r: NonNullable<CallScript['reminder_steps']>) => ({
   step_ack_next: r.ack_next, step_ack_not_now: r.ack_not_now, step_ack_silence: r.ack_silence, step_unclear: r.unclear,
   step_all_done: r.all_done, step_all_done_one: r.all_done_one, step_some_left: r.some_left, step_some_left_one: r.some_left_one,
   ...(r.repeat_limit ? { step_repeat_limit: r.repeat_limit } : {}), ...(r.time_up ? { step_time_up: r.time_up } : {}),
+  ...optional(r as unknown as Record<string, unknown>, {
+    reminder_presence: 'step_reminder_presence', reminder_presence_one: 'step_reminder_presence_one', presence_retry: 'step_presence_retry',
+    presence_retry_one: 'step_presence_retry_one', item_ask: 'step_item_ask', silence_repeat: 'step_silence_repeat', moving_on: 'step_moving_on',
+    will_call_again: 'step_will_call_again', end_no_call_back: 'step_end_no_call_back', look: 'step_look', new_ordinal: 'step_new_ordinal', no_answer: 'step_no_answer',
+  }),
 });
+const optional = (r: Record<string, unknown>, keys: Record<string, string>) =>
+  Object.fromEntries(Object.entries(keys).filter(([from]) => r[from] !== undefined).map(([from, to]) => [to, r[from]]));
 
 export function toEngineTemplates(s: CallScript): Record<string, unknown> {
   const t = s.templates, b = s.building, w = s.blocks;

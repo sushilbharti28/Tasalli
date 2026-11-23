@@ -30,17 +30,17 @@ describe('reminder flow', () => {
     expect(doses(w)[0]!.confirmedVia).toBe('speech');
   });
 
-  it('"nahi li" never confirms: snoozes once, second "nahi li" is missed with an alert', async () => {
+  it('"nahi li" never confirms (v1.6): not taken at once, the family is alerted, no call back', async () => {
     const w = world();
     w.med('Amlodac', '09:00');
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ say: 'nahi li' }] }, { answer: 'answered', inputs: [{ say: 'nahi li' }] });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ say: 'nahi li' }] }, { answer: 'answered', inputs: [{ key: '1' }] });
     await planned(w);
-    await w.advance(16);
-    expect(doses(w)[0]!.status).not.toBe('confirmed');
-    expect(w.provider.callsTo(PARENT)).toHaveLength(2); // original + snooze call 15 min later
+    await w.advance(60);
+    expect(w.provider.callsTo(PARENT)).toHaveLength(1); // no snooze or retry call
     expect(doses(w)[0]!.status).toBe('missed');
     expect(w.queue.alerts.map((a) => a.job.kind)).toEqual(['dose_missed']);
     expect(w.queue.alerts[0]!.job.reason).toBe('said_not_taken');
+    expect(w.playedText(0)[1]).toMatch(/^Theek hai, hum aapke ghar walon ko bata denge\./);
   });
 
   it.each(['nahi', 'abhi nahi li', 'nahi li haan thodi der mein', 'haan nahi'])('negative beats positive: "%s"', async (say) => {
@@ -52,16 +52,17 @@ describe('reminder flow', () => {
     expect(doses(w)[0]!.status).not.toBe('confirmed');
   });
 
-  it('key 2 snoozes once; the second snooze request says take it now', async () => {
-    const w = world();
-    w.med('Amlodac', '09:00');
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '2' }] }, { answer: 'answered', inputs: [{ key: '2' }] });
-    await planned(w);
-    await w.advance(16);
-    expect(w.provider.callsTo(PARENT)).toHaveLength(2);
-    expect(w.playedText(0)[1]).toMatch(/Koi baat nahi, thodi der mein phir yaad dilayenge/);
-    expect(doses(w)[0]!.status).toBe('missed'); // second "not now": no second snooze
-    expect(w.queue.alerts.map((a) => a.job.reason)).toEqual(['said_not_taken']);
+  it('key 2 and "baad mein" are "not taken" too (v1.6: no snooze)', async () => {
+    for (const input of [{ key: '2' }, { say: 'baad mein' }]) {
+      const w = world();
+      w.med('Amlodac', '09:00');
+      w.provider.script(PARENT, { answer: 'answered', inputs: [input] }, { answer: 'answered', inputs: [{ key: '1' }] });
+      await planned(w);
+      await w.advance(60);
+      expect(w.provider.callsTo(PARENT)).toHaveLength(1);
+      expect(doses(w)[0]!.status).toBe('missed');
+      expect(w.queue.alerts.map((a) => a.job.reason)).toEqual(['said_not_taken']);
+    }
   });
 
   it('key 0 repeats the full description', async () => {
@@ -179,17 +180,25 @@ describe('reminder flow', () => {
     expect(doses(w).filter((x) => x.dueAt.toISOString() < '2026-03-10T18:30:00Z').every((x) => x.status === 'confirmed')).toBe(true);
   });
 
-  it('full description on the first call of the day, short afterwards', async () => {
+  it('v1.6: a known medicine is said by name only; "phir se" / 0 then gives its look and pack; a look-alike is described', async () => {
     const w = world();
-    w.med('Amlodac', '09:00', { colourPrimary: 'white', shape: 'round', size: 'dal', keptIn: 'strip', packColour: 'blue' });
-    w.med('Ecosprin', '13:00', { colourPrimary: 'white', shape: 'round', size: 'dal', keptIn: 'strip', packColour: 'blue' });
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }] });
+    w.store.state.people.get(w.mom.id)!.canReadStrip = 'yes';
+    const old = new Date('2026-01-01T00:00:00Z');
+    w.med('Amlodac', '09:00', { colourPrimary: 'white', shape: 'round', size: 'small', keptIn: 'strip', packColour: 'blue', updatedAt: old });
+    w.med('Ecosprin', '13:00', { colourPrimary: 'white', shape: 'round', size: 'small', keptIn: 'strip', packColour: 'red', updatedAt: old });
+    w.med('Vitcap', '21:00', { kind: 'capsule', colourPrimary: 'yellow', keptIn: 'strip', packColour: 'green', updatedAt: old });
+    w.provider.script(PARENT,
+      { answer: 'answered', inputs: [{ key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }] },
+      { answer: 'answered', inputs: [{ say: 'phir se' }, { key: '1' }] });
     await planned(w);
-    await w.advance(60 * 6);
-    const [a, b] = [w.playedText(0)[0]!, w.playedText(1)[0]!];
-    expect(a).toMatch(/safed/);
-    expect(a.length).toBeGreaterThan(b.length);
-    expect(b).not.toMatch(/safed/);
+    await w.advance(60 * 13);
+    // Amlodac and Ecosprin are both small white round tablets: each is described, so the parent can tell them apart by the strip.
+    expect(w.playedText(0)[0]).toMatch(/Yeh ek chhoti si safed rang ki gol aakar ki goli hai\. Iska patta neele rang ka hai\./);
+    expect(w.playedText(1)[0]).toMatch(/Iska patta laal rang ka hai\./);
+    // Vitcap is unlike the others and not new: name only, then the description when asked.
+    const v = w.playedText(2);
+    expect(v[0]).toMatch(/Aapki dawai, ek goli Vitcap ki hai\. Dawai lene ke baad, "haan" boliye, ya ek dabaiye\. Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\. Abhi nahi le sakte, to "nahi" boliye, ya do dabaiye\.$/);
+    expect(v[1]).toMatch(/^Aapki dawai, ek goli Vitcap ki hai\. Yeh ek peele rang ka capsule hai\. Iska patta hare rang ka hai\./);
   });
 
   it('uses the number or printed name to tell look-alike medicines apart', async () => {
@@ -200,8 +209,8 @@ describe('reminder flow', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0).join(' ');
-    expect(said).toMatch(/do number wali/);
-    expect(said).toMatch(/T-E-L-M-A chaar-zero/);
+    expect(said).toMatch(/Iske patte par do number likha hai\./);
+    expect(said).toMatch(/Iske patte par T-E-L-M-A chaar-zero likha hai\./);
   });
 
   it('stores times in the parent time zone: 09:00 in New York is 13:00Z in March (EDT)', async () => {

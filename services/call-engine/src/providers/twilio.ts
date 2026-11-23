@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { CallEvent, CallLanguage, CallStep, NextAction, PlaceCallRequest, PlaceCallResult, TelephonyProvider } from '@tasalli/contracts';
 import type { AudioSource } from '../engine/deps.js';
+import { LONG_PAUSE_MARK, SAY_SPLIT, withoutPauseMarks } from '../scripts/builder.js';
 import { WebhookPayloadError, WebhookSignatureError } from './fake-telephony.js';
 
 export interface TwilioConfig {
@@ -15,23 +16,35 @@ export interface TwilioConfig {
   record?: boolean;
   /** Speak with SSML (slower rate, pauses). Default true; TWILIO_SSML=off turns it off (plain text). */
   ssml?: boolean;
+  /** Gather speechTimeout: seconds of silence after speech before Twilio stops listening, or "auto". Default 1 (TWILIO_SPEECH_TIMEOUT). */
+  speechTimeout?: string;
+  /** Gather speechModel, e.g. googlev2_telephony_short (TWILIO_SPEECH_MODEL). Default: Twilio's default model. */
+  speechModel?: string;
 }
 
 /** PlaceCallRequest plus the hard call limit (contract change requested: not in packages/contracts yet). */
 export type PlaceCallWithLimit = PlaceCallRequest & { timeLimitSeconds?: number };
 
-/** Pace of every <Say>: 85% of normal speed, and a 400 ms pause between the parts of a line and between sentences. */
-export const SSML_RATE = '85%';
-export const SSML_BREAK_MS = 400;
+/**
+ * Pace of every <Say> (v1.6, 24 Nov 2026: 85% / 400 ms felt slow, 95% / 250 ms too fast): 90% of normal speed;
+ * 200 ms at a comma, 350 ms at a sentence end, 700 ms at LONG_PAUSE (before the question after each medicine).
+ */
+export const SSML_RATE = '90%';
+export const SSML_COMMA_BREAK_MS = 200;
+export const SSML_SENTENCE_BREAK_MS = 350;
+export const SSML_LONG_BREAK_MS = 700;
 
 /**
- * Plain text -> SSML for <Say>. The text is cut at sentence ends (. । ? !) and at the commas/colons that separate
- * the parts of a medicine line (name: amount, appearance, pack), each part is XML-escaped on its own, and a
- * <break> goes between parts. Everything is wrapped in one <prosody rate>. Digits and words are never changed.
+ * Plain text -> SSML for <Say>. The text is cut at LONG_PAUSE marks, then at sentence ends (. । ? !), then at commas/colons;
+ * each part is XML-escaped on its own and a <break> of the matching length goes between parts. Everything is wrapped in one
+ * <prosody rate>. Digits and words are never changed.
  */
 export function toSsml(text: string): string {
-  const parts = text.split(/[.।?!,:;]+/).map((p) => p.trim()).filter(Boolean);
-  const body = parts.map(xmlEscape).join(`<break time="${SSML_BREAK_MS}ms"/>`);
+  const brk = (ms: number) => `<break time="${ms}ms"/>`;
+  const nonEmpty = (xs: string[]) => xs.map((x) => x.trim()).filter(Boolean);
+  const sentence = (x: string) => nonEmpty(x.split(/[,:;]+/)).map(xmlEscape).join(brk(SSML_COMMA_BREAK_MS));
+  const block = (x: string) => nonEmpty(x.split(/[.।?!]+/)).map(sentence).filter(Boolean).join(brk(SSML_SENTENCE_BREAK_MS));
+  const body = nonEmpty(text.split(LONG_PAUSE_MARK)).map(block).filter(Boolean).join(brk(SSML_LONG_BREAK_MS));
   return `<prosody rate="${SSML_RATE}">${body}</prosody>`;
 }
 
@@ -57,9 +70,15 @@ const HINTS = ['le li', 'le liya', 'le lee', 'leli', 'lelee', 'lily', 'लिल
 /** "Audio" for Twilio is the text itself: <Say> speaks it. Format: say:<lang>:<base64url text>. */
 export class SayUrls implements AudioSource {
   async urlFor(text: string, language: CallLanguage): Promise<string> {
-    return `say:${language}:${Buffer.from(text, 'utf8').toString('base64url')}`;
+    return encodeSay(language, text);
   }
 }
+
+/** Deepgram models take a bare language code ("hi"); Google models take "hi-IN" (Twilio error 13343 otherwise, 24 Nov 2026). */
+export const speechLanguage = (language: string, model?: string): string =>
+  model?.startsWith('deepgram') ? language.split('-')[0]! : language;
+
+export const encodeSay = (language: CallLanguage, text: string): string => `say:${language}:${Buffer.from(text, 'utf8').toString('base64url')}`;
 
 export function decodeSay(url: string): { language: CallLanguage; text: string } {
   const m = /^say:([a-z]{2}):([A-Za-z0-9_-]*)$/.exec(url);
@@ -130,8 +149,10 @@ export class TwilioProvider implements TelephonyProvider {
     const v = voiceFor(language);
     const voice = this.cfg.voices?.[language] ?? v.voice;
     // A line break splits the text into separate <Say>s with a 1 s <Pause> between: the short greeting is synthesised alone, so a slow synthesis of the long part cannot delay it.
+    // SAY_SPLIT does the same with no pause (the "ठीक है।" after an answer).
+    const one = (p: string) => `<Say voice="${xmlEscape(voice)}" language="${v.language}">${this.cfg.ssml === false ? xmlEscape(withoutPauseMarks(p)) : toSsml(p)}</Say>`;
     return text.split('\n').map((p) => p.trim()).filter(Boolean)
-      .map((p) => `<Say voice="${xmlEscape(voice)}" language="${v.language}">${this.cfg.ssml === false ? xmlEscape(p) : toSsml(p)}</Say>`)
+      .map((block) => block.split(SAY_SPLIT).map((p) => p.trim()).filter(Boolean).map(one).join(''))
       .join('<Pause length="1"/>');
   }
 
@@ -140,11 +161,20 @@ export class TwilioProvider implements TelephonyProvider {
     if (!step.listen) return `<Response>${this.say(step.audioUrl)}<Hangup/></Response>`;
     const lang = voiceFor(decodeSay(step.audioUrl).language);
     const attrs = step.listen.speech
-      ? `input="dtmf speech" language="${lang.language}" speechTimeout="auto" hints="${HINTS}"`
+      ? `input="dtmf speech" language="${speechLanguage(lang.language, this.cfg.speechModel)}" speechTimeout="${xmlEscape(this.cfg.speechTimeout ?? '1')}"${this.cfg.speechModel ? ` speechModel="${xmlEscape(this.cfg.speechModel)}"` : ''} hints="${HINTS}"`
       : 'input="dtmf"';
+    // Listening starts at the question (v1.6 safety fix, 24 Nov 2026): everything before the last LONG_PAUSE mark (the choices,
+    // the medicine and its description) is said OUTSIDE the Gather, so a "haan" or key said before the question is never taken
+    // as an answer to a medicine the parent has not heard yet. Prompts without the mark are questions and are listened to whole.
+    const { language, text } = decodeSay(step.audioUrl);
+    const cut = text.lastIndexOf(LONG_PAUSE_MARK);
+    const before = cut >= 0 ? text.slice(0, cut).trim() : '';
+    const question = cut >= 0 ? text.slice(cut + LONG_PAUSE_MARK.length).trim() : text;
+    const sayText = (x: string) => this.say(encodeSay(language, x));
     // No input: Gather falls through to the Redirect, which posts an empty input (a timeout) to the engine.
-    return `<Response><Gather ${attrs} numDigits="1" timeout="${step.listen.timeoutSeconds}" action="${action}" method="POST">`
-      + `${this.say(step.audioUrl)}</Gather><Redirect method="POST">${action}</Redirect></Response>`;
+    // bargeIn="false": the question always plays in full (a stray sound cut it short on a real call); listening starts after it.
+    return `<Response>${before ? sayText(before) : ''}<Gather ${attrs} bargeIn="false" numDigits="1" timeout="${step.listen.timeoutSeconds}" action="${action}" method="POST">`
+      + `${sayText(question)}</Gather><Redirect method="POST">${action}</Redirect></Response>`;
   }
 
   renderNextAction(next: NextAction, ctx?: { callId: string }): { contentType: string; body: string } {

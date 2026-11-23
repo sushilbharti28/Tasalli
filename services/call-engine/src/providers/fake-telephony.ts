@@ -130,7 +130,7 @@ export class FakeProvider implements TelephonyProvider {
       else if ('say' in input && step.listen.speech) {
         ev = input.asAudio
           ? { type: 'input', kind: 'speech', audioUrl: fakeAudioUrl(input.say, input.confidence ?? 0.95) }
-          : { type: 'input', kind: 'speech', transcript: input.say };
+          : { type: 'input', kind: 'speech', transcript: input.say, ...(input.confidence !== undefined ? { confidence: input.confidence } : {}) }; // like Twilio's SpeechResult + Confidence
       } else ev = { type: 'input', kind: 'speech' }; // timeout, or speech while only keys are accepted
       const res = await this.send(call, ev);
       const next = res ? (JSON.parse(res.body) as NextAction) : ({ action: 'hangup' } as NextAction);
@@ -191,8 +191,9 @@ export class FakeProvider implements TelephonyProvider {
     }
     if (b.type === 'input' && b.kind === 'key') return { type: 'input', ...base, kind: 'key', value: str('value') };
     if (b.type === 'input' && b.kind === 'speech') {
-      const ev: CallEvent = { type: 'input', ...base, kind: 'speech' };
+      const ev: CallEvent & { confidence?: number } = { type: 'input', ...base, kind: 'speech' };
       if (typeof b.transcript === 'string') ev.transcript = b.transcript;
+      if (typeof b.confidence === 'number') ev.confidence = b.confidence; // same extra field the Twilio adapter sets
       if (typeof b.audioUrl === 'string') ev.audioUrl = b.audioUrl;
       return ev;
     }

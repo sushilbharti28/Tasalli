@@ -33,7 +33,7 @@ Work only inside the paths your agent owns. If you need a change elsewhere, open
 1. **The app never computes, suggests or changes a dose.** It repeats exactly what the family entered.
 2. **The app never compares what is inside medicines** (composition, brand equivalence). The look-alike check compares appearance fields only.
 3. **No call before consent.** A person must be `consented` before any reminder is scheduled. Key 9 (or a stop phrase) blocks the number across all accounts immediately.
-4. **"No" beats "yes".** Speech handling checks negative phrases ("nahi", "nahi li", "baad mein") before positive ones. Unclear speech is never a confirmation; fall back to the keypad.
+4. **"No" beats "yes".** Speech handling checks negative phrases ("nahi", "nahi li", "baad mein") before positive ones. Unclear speech is never a confirmation: ask once more (speech or keypad), and if it is still unclear leave the dose unconfirmed.
 5. **Caps:** at most 6 calls per phone number per day across all accounts; at most 4 people per account.
 6. **Exactly once.** Every provider webhook is idempotent. A repeated webhook never creates a second call or a second confirmation.
 7. **Times are stored in the parent's time zone** and converted only at the edges.

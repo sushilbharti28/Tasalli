@@ -59,6 +59,10 @@ export interface MedicineRow {
   sayPrintedName: boolean;
   extraInstruction: string | null;
   active: boolean;
+  /** Last change (medicines.updated_at). Missing or null = unknown, and the call then describes the medicine (v1.6). */
+  updatedAt?: Date | null;
+  /** When the family added it (medicines.created_at). Added in the last 7 days: the call says "aapki nayi dawai" (v1.6). */
+  createdAt?: Date | null;
 }
 
 export interface ScheduleRow {

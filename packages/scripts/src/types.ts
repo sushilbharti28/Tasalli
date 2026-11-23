@@ -121,6 +121,31 @@ export interface ReminderSteps {
   all_done: string; all_done_one: string; some_left: string; some_left_one: string;
   /** Optional: a medicine heard 3 times moves on; soft call time limit reached. */
   repeat_limit?: string; time_up?: string;
+  /** Optional (v1.6): reminder opening that doubles as the presence check ({meal_phrase} {count_word}), and its re-ask. */
+  reminder_presence?: string; reminder_presence_one?: string; presence_retry?: string; presence_retry_one?: string;
+  /** Optional (v1.6): the question said after each medicine (after a longer pause), and the line before a medicine is played again after silence. */
+  item_ask?: string; silence_repeat?: string;
+  /** Optional (v1.6): after repeat_limit, "moving to the next one", and "we will call again" (only when a call really follows). */
+  moving_on?: string; will_call_again?: string; end_no_call_back?: string;
+  /** Optional (v1.6): how a medicine looks, as whole sentences. */
+  look?: StepLook;
+  /** Optional (v1.6): instead of {ordinal} for a medicine added in the last 7 days. */
+  new_ordinal?: string;
+  /** Optional (v1.6): short re-ask when nothing was heard after a medicine's question (instead of replaying the medicine). */
+  no_answer?: string;
+}
+
+/** Appearance and pack sentences for the one-medicine-at-a-time call (v1.6). Sizes are three: very_small, small, large. */
+export interface StepLook {
+  sizes: Record<'very_small' | 'small' | 'large', BlockWord>;
+  /** Colour word before "rang" (oblique); `coloured` wraps it per gender: {colour}. */
+  colours: Record<string, string>;
+  coloured: { f: string; m: string; obl: string };
+  shapes: Record<string, string>;
+  tablet: string; capsule: string; capsule_two_colour: string;
+  markings: Record<string, string>;
+  strip: string; print: string; loose: string; bottle: string; cap: string;
+  number: string; printed_name: string;
 }
 
 export interface CallScript {

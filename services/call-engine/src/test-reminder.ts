@@ -22,12 +22,15 @@ import type { MedicineRow } from './types.js';
  * Needs the tunnel to be up (same setup as test-call).
  */
 async function main() {
-  process.env.TWILIO_RECORD = 'false'; // test: not recorded
+  // Test calls are not recorded, unless --record (to listen to what the recogniser missed): the recording then stays at Twilio
+  // (Console > Monitor > Call recordings); this throwaway script never copies or deletes it.
+  const record = process.argv.includes('--record');
+  process.env.TWILIO_RECORD = record ? 'true' : 'false';
   loadRootEnv();
-  process.env.TWILIO_RECORD = 'false';
+  process.env.TWILIO_RECORD = record ? 'true' : 'false';
   const split = process.argv.includes('--split');
   const to = process.argv.slice(2).find((a) => !a.startsWith('--'));
-  if (!to || !/^\+[1-9]\d{6,14}$/.test(to)) throw new Error('Usage: test-reminder <E.164 number> [--split], e.g. +919876543210');
+  if (!to || !/^\+[1-9]\d{6,14}$/.test(to)) throw new Error('Usage: test-reminder <E.164 number> [--split] [--record], e.g. +919876543210');
   const env = twilioEnv(process.env);
   const log = createLogger();
   const { provider, audio } = buildTwilio(process.env);
@@ -41,16 +44,18 @@ async function main() {
   queue.setHandler((n, d) => engine.handleJob(n, d));
   const user = store.addUser({ phone: to, name: 'Rahul', locale: 'hi' });
   store.addSubscription(user.id); // local test only: the billing gate needs an entitled account
-  const person = store.addPerson({ ownerUserId: user.id, phone: to, nickname: 'Papa', fullName: 'Ramesh Sharma', callerRelation: 'son', language: 'hi', consent: 'consented' });
+  const person = store.addPerson({ ownerUserId: user.id, phone: to, nickname: 'Papa', fullName: 'Ramesh Sharma', callerRelation: 'son', language: 'hi', consent: 'consented', canReadStrip: 'yes' });
 
+  // v1.6: BP wali and sugar wali are long-known medicines (name only; "phir se" / 0 gives the look), pet wali dawai was added today ("aapki nayi dawai", described).
+  const known = new Date(Date.now() - 30 * 86_400_000);
   const now = new Date(Math.floor(Date.now() / 60_000) * 60_000);
   const localTime = DateTime.fromJSDate(now, { zone: person.timeZone }).toFormat('HH:mm');
   const meds: Array<{ m: Partial<MedicineRow> & { spokenName: string }; amount: string; food: 'before' | 'after' }> = [
-    { m: { stripName: 'Telma 40', spokenName: 'BP wali tablet', kind: 'tablet', size: 'dal', colourPrimary: 'white', shape: 'round', marking: 'line', keptIn: 'strip', packColour: 'red' },
+    { m: { stripName: 'Telma 40', spokenName: 'BP wali tablet', kind: 'tablet', size: 'dal', colourPrimary: 'white', shape: 'round', marking: 'line', keptIn: 'strip', packColour: 'red', createdAt: known, updatedAt: known },
       amount: '1 goli', food: 'after' },
-    { m: { stripName: 'Glycomet 500', spokenName: 'sugar wali', kind: 'capsule', colourPrimary: 'yellow', colourSecondary: 'white', keptIn: 'strip', packColour: 'silver' },
+    { m: { stripName: 'Glycomet 500', spokenName: 'sugar wali', kind: 'capsule', colourPrimary: 'yellow', colourSecondary: 'white', keptIn: 'strip', packColour: 'silver', createdAt: known, updatedAt: known },
       amount: '1 capsule', food: split ? 'before' : 'after' },
-    { m: { stripName: 'Cremaffin', spokenName: 'pet wali dawai', kind: 'syrup', keptIn: 'bottle', packColour: 'brown', capColour: 'red' },
+    { m: { stripName: 'Cremaffin', spokenName: 'pet wali dawai', kind: 'syrup', keptIn: 'bottle', packColour: 'brown', capColour: 'red', createdAt: new Date(), updatedAt: new Date() },
       amount: '1 chammach (5 ml)', food: 'after' },
   ];
   const doseIds: string[] = [];
@@ -66,7 +71,7 @@ async function main() {
   const server = createWebhookServer(engine, provider, env.publicBaseUrl, log).listen(port);
   for (const id of doseIds) await queue.add('dose.due', { doseId: id }); // like the scheduler: same time and food timing share one call
   await queue.runDue();
-  console.log(`Calling ${maskPhone(to)} about ${split ? 'the first call of ' : ''}3 medicines. Answer; for each one say "le li"/"haan" or press 1, "nahi li" or 2 for not now, "phir se" or 0 to hear it again (at most twice). Waiting up to 5 minutes...`);
+  console.log(`Calling ${maskPhone(to)} about ${split ? 'the first call of ' : ''}3 medicines. Answer "haan" or 1 to the opening; for each medicine say "haan" or press 1, "nahi li" or 2 for not now, "phir se" or 0 to hear it again (at most twice). Waiting up to 5 minutes...`);
   const deadline = Date.now() + 300_000;
   let call = store.allCalls()[0];
   while (Date.now() < deadline) {
@@ -81,6 +86,10 @@ async function main() {
   const from = session?.answeredAtMs ?? call?.startedAt?.getTime();
   const to2 = call?.endedAt?.getTime();
   console.log(from !== undefined && to2 !== undefined ? `Elapsed call seconds: ${Math.round((to2 - from) / 1000)} (soft limit ${softLimitSeconds(doseIds.length)} s)` : 'Elapsed call seconds: unknown (the call did not connect or finish)');
+  if (session?.presence) {
+    const h = session.presence.heard ?? [];
+    console.log(`- opening question ("haan" or 1 to hear the medicines): ${session.presence.state === 'ok' ? 'answered' : 'not answered'}; heard: ${h.length ? h.map((x) => `"${x}"`).join(', ') : 'nothing'}`);
+  }
   for (const id of doseIds) {
     const outcome = session?.reminder?.outcomes[id];
     const dose = await store.getDose(id);
@@ -93,6 +102,7 @@ async function main() {
     const heard = session?.reminder?.heard[id] ?? [];
     console.log(`- ${names.get(id)}: ${label}; heard: ${heard.length ? heard.map((h) => `"${h}"`).join(', ') : 'nothing'}`);
   }
+  if (record) console.log('Recorded: listen in the Twilio Console > Monitor > Call recordings (kept at Twilio; delete it there when done).');
   server.close();
   process.exit(0);
 }

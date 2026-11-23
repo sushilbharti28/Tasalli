@@ -72,6 +72,27 @@ export interface ScriptTemplates {
     step_repeat_limit?: string;
     /** Said when the call's soft time limit is reached: the call ends and the unconfirmed doses follow the normal retry/snooze rules. */
     step_time_up?: string;
+    /** v1.6 (optional; the older keys are used when missing). The reminder opening after the greeting, which doubles as the presence check: {meal_phrase} {count_word}. */
+    step_reminder_presence?: string;
+    step_reminder_presence_one?: string;
+    /** Re-ask when the opening's answer was not a yes. */
+    step_presence_retry?: string;
+    step_presence_retry_one?: string;
+    /** Said after every medicine, after a longer pause (LONG_PAUSE). */
+    step_item_ask?: string;
+    /** Said before a medicine is played again after silence. */
+    step_silence_repeat?: string;
+    /** After step_repeat_limit when another medicine follows; and "we will call again", only when a call really follows. */
+    step_moving_on?: string;
+    step_will_call_again?: string;
+    /** The last line when no call follows (no retry left, no 15 minute reminder): never promises a call. */
+    step_end_no_call_back?: string;
+    /** Appearance and pack as whole sentences (see packages/scripts StepLook). Without it, the older appearance/pack phrases are used. */
+    step_look?: StepLook;
+    /** Said instead of {ordinal} for a medicine added in the last 7 days ("नई दवाई" -> "आपकी नई दवाई, ..."). */
+    step_new_ordinal?: string;
+    /** Short re-ask when nothing was heard after a medicine's question (v1.6). Without it, the medicine is replayed. */
+    step_no_answer?: string;
   };
   consent: {
     prompt: string;          // {person_name} {relation_phrase} {child_name}
@@ -113,6 +134,18 @@ export interface ScriptTemplates {
   words_gendered?: Partial<Record<'colours' | 'shapes' | 'sizes', Record<string, Partial<Record<'m' | 'f' | 'obl', string>>>>>;
 }
 
+/** Appearance sentences for the one-medicine-at-a-time call (v1.6). Sizes are three; older size keys are mapped (SIZE_TO_THREE). */
+export interface StepLook {
+  sizes: Record<string, string | Partial<Record<'m' | 'f', string>>>;
+  colours: Record<string, string>;
+  coloured: { f: string; m: string; obl: string };
+  shapes: Record<string, string>;
+  tablet: string; capsule: string; capsule_two_colour: string;
+  markings: Record<string, string>;
+  strip: string; print: string; loose: string; bottle: string; cap: string;
+  number: string; printed_name: string;
+}
+
 export const HI_TEMPLATES: ScriptTemplates = {
   language: 'hi',
   status: 'needs native-speaker review',
@@ -136,33 +169,58 @@ export const HI_TEMPLATES: ScriptTemplates = {
     no_input_goodbye: 'Hum thodi der mein phir phone karenge. Namaste.',
     step_greeting: 'Namaste {person_name}.',
     step_presence: 'Kya aapko awaaz aa rahi hai? "Haan" boliye, ya 1 dabaiye.',
-    step_spoken_line: 'Jise aap {spoken_name} kehte hain.',
-    step_intro: 'Aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
-    step_intro_one: 'Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
-    step_short_intro: 'Aapki {meal_phrase} wali {count_word} dawaiyon ka samay ho gaya hai. Ek-ek karke batate hain.',
-    step_short_intro_one: 'Aapki {meal_phrase} wali dawai ka samay ho gaya hai.',
-    step_item: '{ordinal} dawai: {strip_name} {strength}. {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
-    step_item_one: 'Dawai: {strip_name} {strength}. {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
-    step_item_short: '{ordinal} dawai: {strip_name} {strength}. {spoken_line} {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
-    step_item_short_one: 'Dawai: {strip_name} {strength}. {spoken_line} {amount_text}, {disambiguator}. {extra_instruction}. Le li ho to "le li" ya "haan" boliye, ya 1 dabaiye. Dobara sunne ke liye "phir se" boliye, ya 0 dabaiye.',
+    step_spoken_line: 'Ise aap {spoken_name} kehte hain.',
+    step_intro: 'Theek hai. Hum ek-ek karke dawai batate hain.',
+    step_intro_one: 'Theek hai.',
+    step_short_intro: 'Theek hai. Hum ek-ek karke dawai batate hain.',
+    step_short_intro_one: 'Theek hai.',
+    step_item: 'Aapki {ordinal} dawai, {amount_text} {strip_name} {strength} ki hai. {spoken_line} {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}.',
+    step_item_one: 'Aapki dawai, {amount_text} {strip_name} {strength} ki hai. {spoken_line} {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}.',
+    step_item_short: 'Aapki {ordinal} dawai, {amount_text} {strip_name} {strength} ki hai. {spoken_line} {disambiguator} {extra_instruction}.',
+    step_item_short_one: 'Aapki dawai, {amount_text} {strip_name} {strength} ki hai. {spoken_line} {disambiguator} {extra_instruction}.',
     step_meals: { breakfast: 'nashte', lunch: 'dopahar ke khane', dinner: 'raat ke khane' },
     step_food_rel: { before: 'se pehle', after: 'ke baad', with: 'ke saath' },
     step_day_part: { morning: 'subah ki', afternoon: 'dopahar ki', evening: 'shaam ki', night: 'raat ki' },
     step_relations: { son: 'aapke bete', daughter: 'aapki beti', grandson: 'aapke pote', granddaughter: 'aapki poti', daughter_in_law: 'aapki bahu', son_in_law: 'aapke damad' },
     step_count_words: ['ek', 'do', 'teen', 'chaar', 'paanch', 'chhah', 'saat', 'aath', 'nau', 'das'],
     step_ack_next: 'Theek hai.',
-    step_ack_not_now: 'Koi baat nahi, thodi der mein phir yaad dilayenge.',
+    step_ack_not_now: 'Theek hai, hum aapke ghar walon ko bata denge.',
     step_ack_silence: 'Koi baat nahi.',
-    step_unclear: 'Maaf kijiye, samajh nahi aaya. Le li ho to 1 dabaiye.',
-    step_all_done: 'Bahut achha. Sab dawaiyan le li gayi hain. Dhanyavaad.',
-    step_all_done_one: 'Bahut achha. Dawai le li gayi hai. Dhanyavaad.',
-    step_some_left: 'Dhanyavaad. Baaki dawai ke liye thodi der mein phir phone karenge.',
-    step_some_left_one: 'Dhanyavaad. Dawai ke liye thodi der mein phir phone karenge.',
-    step_repeat_limit: 'Koi baat nahi, aage badhte hain.',
-    step_time_up: 'Samay poora ho gaya. Baaki dawai ke liye thodi der mein phir phone karenge. Dhanyavaad.',
+    step_unclear: 'Maaf kijiye, samajh nahi aaya. Dawai lene ke baad, "haan" boliye, ya 1 dabaiye. Dawai ka rang-roop sunna ho, ya dobara sunna ho, to "phir se" boliye, ya 0 dabaiye.',
+    step_all_done: 'Bahut achha, aapne saari dawaiyan le li hain. Dhanyavaad, namaste.',
+    step_all_done_one: 'Bahut achha, aapne dawai le li hai. Dhanyavaad, namaste.',
+    step_some_left: 'Chinta mat kijiye, baaki dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.',
+    step_some_left_one: 'Chinta mat kijiye, is dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.',
+    step_repeat_limit: 'Koi baat nahi.',
+    step_time_up: 'Samay poora ho gaya.',
+    step_reminder_presence: 'Hum Tasalli app se bol rahe hain. Aapko {meal_phrase} wali {count_word} dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.',
+    step_reminder_presence_one: 'Hum Tasalli app se bol rahe hain. Aapko {meal_phrase} wali dawai ki yaad dilane ke liye phone kiya hai. Dawai ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.',
+    step_presence_retry: 'Maaf kijiye, samajh nahi aaya. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.',
+    step_presence_retry_one: 'Maaf kijiye, samajh nahi aaya. Dawai ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.',
+    step_item_ask: 'Dawai lene ke baad, "haan" boliye, ya 1 dabaiye. Dobara sunna ho, to "phir se" boliye, ya 0 dabaiye. Abhi nahi le sakte, to "nahi" boliye, ya 2 dabaiye.',
+    step_silence_repeat: 'Hum phir se batate hain.',
+    step_moving_on: '',
+    step_will_call_again: 'Is dawai ke liye hum thodi der mein phir phone karenge.',
+    step_end_no_call_back: 'Dhanyavaad, namaste.',
+    step_new_ordinal: 'nayi',
+    step_no_answer: 'Maaf kijiye, aapka jawab sunai nahi diya. Hum phir se batate hain.',
+    step_look: {
+      sizes: { very_small: { f: 'bahut chhoti si', m: 'bahut chhota sa' }, small: { f: 'chhoti si', m: 'chhota sa' }, large: { f: 'badi si', m: 'bada sa' } },
+      colours: { white: 'safed', cream: 'cream', yellow: 'peele', orange: 'narangi', pink: 'gulabi', red: 'laal', maroon: 'gehre laal', brown: 'bhoore', green: 'hare',
+        blue: 'neele', purple: 'baingani', grey: 'slate', black: 'kaale', silver: 'chaandi ke', golden: 'sunehre', transparent: 'sheeshe jaise' },
+      coloured: { f: '{colour} rang ki', m: '{colour} rang ka', obl: '{colour} rang' },
+      shapes: { round: 'gol aakar ki', oval: 'ande ke aakar ki', long: 'lambi', square: 'chaukor' },
+      tablet: 'Yeh ek {size} {colour} {shape} goli hai.',
+      capsule: 'Yeh ek {size} {colour} capsule hai.',
+      capsule_two_colour: 'Yeh capsule dekhne mein aadha {colour} aur aadha {colour2} hai.',
+      markings: { line: 'Iske beech mein ek line hai.', letters: 'Is par kuch likha hua hai.' },
+      strip: 'Iska patta {pack_colour} hai.', print: 'Patte par {print_colour} se likha hai.', loose: 'Yeh dibbe mein khuli rakhi hai.',
+      bottle: 'Iski bottle {pack_colour} hai.', cap: 'Iska dhakkan {cap_colour} hai.',
+      number: 'Iske patte par {number} number likha hai.', printed_name: 'Iske patte par {strip_letters} likha hai.',
+    },
   },
   consent: {
-    prompt: 'Namaste {person_name}. Yeh Tasalli ki taraf se phone hai. {relation_phrase} {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Yeh call record ki jayegi. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.',
+    prompt: 'Namaste {person_name}. Yeh Tasalli app ki taraf se phone hai. {relation_phrase} {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Yeh call record ki jayegi. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.',
     unclear: 'Maaf kijiye, samajh nahi aaya. Haan ke liye 1 dabaiye. Phone nahi chahiye to 9 dabaiye.',
     keypad_only: 'Haan ke liye 1 dabaiye. Phone nahi chahiye to 9 dabaiye.',
     yes_ack: 'Dhanyavaad. Ab hum dawai ke samay par phone karenge. Namaste.',
@@ -198,6 +256,13 @@ export const HI_TEMPLATES: ScriptTemplates = {
     print_phrase: '{print_colour} likhai',
     disambiguator_number: '{number} number wali',
     disambiguator_printed_name: 'jis patte par {strip_letters} likha hai',
+  },
+  /** Masculine forms for capsules (and the capsule halves); feminine forms are the plain words above. */
+  words_gendered: {
+    colours: {
+      yellow: { m: 'peela', f: 'peeli', obl: 'peele' }, green: { m: 'hara', f: 'hari', obl: 'hare' }, blue: { m: 'neela', f: 'neeli', obl: 'neele' },
+      brown: { m: 'bhoora', f: 'bhoori', obl: 'bhoore' }, black: { m: 'kaala', f: 'kaali', obl: 'kaale' },
+    },
   },
 };
 

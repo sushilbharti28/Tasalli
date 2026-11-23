@@ -20,5 +20,17 @@ export function twilioEnv(env: NodeJS.ProcessEnv): TwilioEnv {
 
 export function buildTwilio(env: NodeJS.ProcessEnv): { provider: TelephonyProvider; audio: AudioSource } {
   const c = twilioEnv(env);
-  return { provider: new TwilioProvider({ accountSid: c.accountSid, authToken: c.authToken, publicBaseUrl: c.publicBaseUrl, record: env.TWILIO_RECORD !== 'false', ssml: env.TWILIO_SSML !== 'off' }), audio: new SayUrls() };
+  return { provider: new TwilioProvider({ accountSid: c.accountSid, authToken: c.authToken, publicBaseUrl: c.publicBaseUrl, record: env.TWILIO_RECORD !== 'false', ssml: env.TWILIO_SSML !== 'off',
+    speechTimeout: speechTimeoutFrom(env.TWILIO_SPEECH_TIMEOUT), speechModel: speechModelFrom(env.TWILIO_SPEECH_MODEL) }), audio: new SayUrls() };
+}
+
+/** "auto" or whole seconds (1-10); anything else falls back to 1. */
+export function speechTimeoutFrom(v: string | undefined): string {
+  const x = (v ?? '').trim();
+  return x === 'auto' || /^(10|[1-9])$/.test(x) ? x : '1';
+}
+/** A Twilio speech model name (letters, digits, _ . -), or none for Twilio's default. */
+export function speechModelFrom(v: string | undefined): string | undefined {
+  const x = (v ?? '').trim();
+  return /^[a-z0-9_.-]{1,60}$/i.test(x) ? x : undefined;
 }

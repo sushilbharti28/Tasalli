@@ -1,12 +1,11 @@
 import type { CallEvent, NextAction, ReplyIntent } from '@tasalli/contracts';
-import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
-import { MINUTE } from '../clock.js';
+import { CONSENT_KEYS, REMINDER_KEYS } from '../contracts-values.js';
 import { fetchAudio } from '../providers/fake-speech.js';
 import { joinSentences } from '../scripts/render.js';
-import { line, childName } from '../scripts/builder.js';
+import { line, childName, splitAck } from '../scripts/builder.js';
 import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
 import { MAX_REPEATS_PER_MEDICINE, softLimitSeconds } from '../flows/limits.js';
-import { MIN_CONFIDENCE, matchIntent, hasNegation } from '../speech/intent.js';
+import { matchIntent, hasNegation, isExactConfirm } from '../speech/intent.js';
 import type { CallSession } from '../flows/session.js';
 import type { CallResultRow, CallRow, PersonRow } from '../types.js';
 import { alertFor, listenStep } from './calls.js';
@@ -36,6 +35,10 @@ async function interpret(d: Deps, s: CallSession, ev: InputEvent): Promise<{ int
       d.log.warn('transcribe failed', { callId: s.callId, err: (err as Error).message });
     }
   }
+  // Twilio reports confidence 0.0 for some clear answers ("हां!"). On a medicine, 0.0 counts as "no score given" only when the
+  // whole reply is exactly a confirm phrase; anything partial or unknown stays unclear, and real low scores (e.g. 0.3) never confirm.
+  // Consent answers stay strict (founder decision, 24 Nov 2026).
+  if (ctx === 'reminder' && confidence === 0 && isExactConfirm(transcript, d.scripts.get(s.language).phrases, ctx)) confidence = 1;
   let intent = matchIntent(transcript, d.scripts.get(s.language).phrases, ctx, confidence).intent;
   // Opting out must work in any language the parent might say it in.
   if (intent !== 'stop') {
@@ -74,9 +77,13 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
   // Presence check first ("can you hear me?"): never a dose or consent confirmation; 9 / a stop phrase still opts out.
   if (s.presence?.state === 'pending') {
     const p = s.presence;
+    // Speech confidence is not used here: this step is never a dose or consent confirmation, and Twilio reports 0.0 for some
+    // clear answers (a real "हां!" on 24 Nov 2026 came with confidence 0.0). The words still have to be a yes, with no negation.
+    const presencePhrases = d.scripts.get(s.language).phrases;
+    const yesWords = kind === 'speech' && raw.trim() !== '' && matchIntent(raw, presencePhrases, s.purpose === 'reminder' ? 'reminder' : 'consent', 1).intent === 'confirm';
     const heardYou = kind === 'key' ? intent !== 'stop' // any key but 9
-      : intent === 'confirm' || (intent === 'unclear' && raw.trim() !== '' && ((ev as { confidence?: number }).confidence ?? 1) >= MIN_CONFIDENCE
-        && !hasNegation(raw, d.scripts.get(s.language).phrases) && PRESENCE_YES.test(raw.normalize('NFC').toLowerCase()));
+      : raw.trim() !== '' && !hasNegation(raw, presencePhrases) && (yesWords || PRESENCE_YES.test(raw.normalize('NFC').toLowerCase()));
+    (p.heard ??= []).push(kind === 'key' ? `key ${raw}` : raw.slice(0, 80));
     if (intent === 'stop') {
       await stopNumber(d, s.to, kind === 'key' ? 'key_9' : 'stop_phrase', kind, call);
       return bye(s.purpose === 'consent' ? t.consent.stop_ack : t.reminder.stop_ack, 'stop');
@@ -85,7 +92,7 @@ export async function handleInput(d: Deps, call: CallRow, s: CallSession, ev: In
       p.state = 'ok';
       s.unclearCount = 0;
       s.keypadOnly = false;
-      return ask(p.next, true);
+      return ask(s.purpose === 'reminder' ? splitAck(t.reminder.step_ack_next, p.next) : p.next, true); // "ठीक है।" plays at once
     }
     if (++p.asks === 1) return ask(p.text, true); // once more
     return bye(s.purpose === 'consent' ? t.consent.no_input_goodbye : t.reminder.no_input_goodbye, 'none'); // no medicine marked: the normal 10-minute retry follows
@@ -174,19 +181,19 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
     const silent = ids.filter((id) => r.outcomes[id] === 'none');
     let result: CallResultRow = 'confirmed';
     if (declined.length > 0) {
-      const used = (await d.store.listCallsForGroup(gid)).some((c) => c.result === 'snoozed');
-      if (!used) {
-        // Snooze once: the call that comes back covers whatever is still unconfirmed in the group (confirmed doses are not called again).
-        await d.queue.add('reminder.snooze', { callGroupId: gid }, { delayMs: RULES.snoozeMinutes * MINUTE, jobId: `snooze_${gid}` });
-        result = 'snoozed';
-      } else {
-        if ((await d.store.closeDoses(declined, 'missed')) > 0) await alertFor(d, person, 'dose_missed', gid, declined, `missed_${gid}`, 'said_not_taken');
-        result = silent.length > 0 ? 'none' : 'declined';
-      }
+      // v1.6 (founder decision, 24 Nov 2026): "nahi" / 2 means not taken. No snooze call: the dose is closed as missed and the
+      // family is alerted now, so they can follow up (e.g. the strip ran out). Unanswered doses still get the normal retries.
+      if ((await d.store.closeDoses(declined, 'missed')) > 0) await alertFor(d, person, 'dose_missed', gid, declined, `missed_${gid}`, 'said_not_taken');
+      result = silent.length > 0 ? 'none' : 'declined';
     } else if (silent.length > 0) {
       result = 'none'; // the normal 10-minute retry covers the doses nobody answered for
     }
-    const end = timeUp ? (t.step_time_up ?? t.step_some_left) : result === 'confirmed' ? (n === 1 ? t.step_all_done_one : t.step_all_done) : (n === 1 ? t.step_some_left_one : t.step_some_left);
+    // "We will call again" only when a call really follows: a 10-minute retry that is still left (only for unanswered doses).
+    const callsBack = result === 'none' && r.retryLeft !== false;
+    const someLeft = n === 1 ? t.step_some_left_one : t.step_some_left;
+    const end = t.step_end_no_call_back !== undefined // v1.6 wording: time_up no longer carries the promise itself
+      ? joinSentences([timeUp ? (t.step_time_up ?? '') : '', result === 'confirmed' && !timeUp ? (n === 1 ? t.step_all_done_one : t.step_all_done) : callsBack ? someLeft : t.step_end_no_call_back])
+      : timeUp ? (t.step_time_up ?? t.step_some_left) : result === 'confirmed' ? (n === 1 ? t.step_all_done_one : t.step_all_done) : someLeft;
     return bye(joinSentences([ack, end]), result);
   };
   const advance = async (outcome: 'confirmed' | 'declined' | 'none', ack: string, forceTimeUp = false): Promise<NextAction> => {
@@ -204,7 +211,15 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
       return finish(ack, true);
     }
     s.fullText = upcoming.full;
-    return ask(joinSentences([ack, upcoming.first]), true);
+    return ask(ack ? splitAck(ack, joinSentences([ack, upcoming.first])) : upcoming.first, true); // the ack plays at once
+  };
+
+  // No usable answer for this medicine: "not recorded", then (if another medicine follows) "moving on", and "we will call again" only when a retry is left.
+  // On the last medicine, finish() says whether a call follows.
+  const notRecorded = (): string => {
+    if (t.step_moving_on === undefined) return t.step_repeat_limit ?? t.step_ack_silence; // languages without the v1.6 lines
+    const last = r.index >= n - 1;
+    return joinSentences([t.step_repeat_limit ?? '', last ? '' : t.step_moving_on, !last && r.retryLeft !== false ? (t.step_will_call_again ?? '') : '']);
   };
 
   switch (intent) {
@@ -220,28 +235,24 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
     case 'confirm':
       await d.store.confirmDoses([cur.doseId], via, d.clock.now());
       return advance('confirmed', t.step_ack_next);
-    case 'snooze':
+    case 'snooze': // "baad mein": v1.6 has no snooze; like "nahi" it is not taken now and the family is told
     case 'decline':
       return advance('declined', t.step_ack_not_now);
     case 'repeat':
       if (overLimit()) return advance('none', '', true);
-      if (s.repeats >= MAX_REPEATS_PER_MEDICINE) return advance('none', t.step_repeat_limit ?? t.step_ack_silence); // heard 3 times: leave it, move on
+      if (s.repeats >= MAX_REPEATS_PER_MEDICINE) return advance('none', notRecorded()); // heard 3 times: leave it, move on
       s.repeats++;
       return ask(cur.full, !s.keypadOnly);
-    default: { // unclear or silence: ask once (keypad only), then leave this medicine unconfirmed
-      // Silence (nothing heard, no key) first plays the same medicine again, once. It counts toward the repeat limit and never confirms.
-      if (via === 'speech' && raw.trim() === '' && !s.keypadOnly && !s.silenceRepeated && s.repeats < MAX_REPEATS_PER_MEDICINE && !overLimit()) {
+    default: { // no answer or unclear (v1.6 workflow, founder decision 24 Nov 2026)
+      // First time for this medicine: "we did not hear you, here it is again", the same summary (name only stays name only) and
+      // the question with all three choices. Second time: leave it open and move on; the normal retry call covers it.
+      // Rule 4: unclear speech or silence never confirms. The replay does not count toward the "phir se" limit.
+      if (!s.silenceRepeated && !overLimit()) {
         s.silenceRepeated = true;
-        s.repeats++;
-        return ask(cur.full, true);
+        return ask(joinSentences([t.step_no_answer ?? t.step_silence_repeat ?? '', cur.first]), true);
       }
-      s.unclearCount++;
-      if (s.unclearCount === 1) {
-        if (overLimit()) return advance('none', '', true);
-        s.keypadOnly = true;
-        return ask(t.step_unclear, false);
-      }
-      return advance('none', t.step_ack_silence);
+      if (overLimit()) return advance('none', '', true);
+      return advance('none', notRecorded());
     }
   }
 }
