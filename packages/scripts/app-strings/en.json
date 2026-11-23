@@ -47,7 +47,7 @@
     "nickname": "What do you call them?",
     "nicknameHint": "For example Papa, Mummy, Nani",
     "fullName": "Full name",
-    "fullNameHint": "Used in the first call: \"Namaste … ji\"",
+    "fullNameHint": "Calls greet them by this name: \"Namaste … ji\"",
     "phone": "Their phone number",
     "language": "Call language",
     "timeZone": "Their time zone",
@@ -119,11 +119,9 @@
     },
     "size": "Size",
     "sizes": {
-      "rai": "Rai (tiny)",
-      "dal": "Dal (small)",
-      "matar": "Matar (medium)",
-      "badam": "Badam (large)",
-      "bigger": "Bigger"
+      "very_small": "Very small",
+      "small": "Small",
+      "large": "Large"
     },
     "marking": "Marking on it",
     "markings": {

@@ -12,7 +12,7 @@ const HI_COLOUR: Record<string, string> = {
   white: 'safed', yellow: 'peeli', orange: 'narangi', pink: 'gulabi', red: 'laal', brown: 'bhoori',
   green: 'hari', blue: 'neeli', purple: 'baingani', black: 'kaali', silver: 'chaandi rang ki', gold: 'sunehri', clear: 'saaf',
 };
-const HI_SIZE: Record<string, string> = { rai: 'bahut chhoti', dal: 'chhoti', matar: 'matar jitni', badam: 'badi', bigger: 'kaafi badi' };
+const HI_SIZE: Record<string, string> = { very_small: 'bahut chhoti si', small: 'chhoti si', large: 'badi si' };
 const HI_SHAPE: Record<string, string> = { round: 'gol', oval: 'andaakaar', long: 'lambi', square: 'chaukor' };
 const HI_KIND: Record<string, string> = { tablet: 'goli', capsule: 'capsule', syrup: 'syrup', other: 'dawai' };
 const HI_FOOD: Record<string, string> = { before: 'khane se pehle', after: 'khane ke baad', with: 'khane ke saath', any: '' };

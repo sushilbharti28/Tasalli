@@ -1,7 +1,7 @@
 import { AppearanceOnly, autoResolve, findLookAlikes, LookAlikeCandidate, looksAlike, recommend } from '../../src/medicines/look-alike';
 
 const tablet = (over: Partial<AppearanceOnly> = {}): AppearanceOnly => ({
-  kind: 'tablet', colourPrimary: 'white', colourSecondary: null, shape: 'round', size: 'dal', marking: 'plain',
+  kind: 'tablet', colourPrimary: 'white', colourSecondary: null, shape: 'round', size: 'small', marking: 'plain',
   keptIn: 'strip', packColour: null, printColour: null, capColour: null, ...over,
 });
 const cand = (id: string, appearance: AppearanceOnly, extra: Partial<LookAlikeCandidate> = {}): LookAlikeCandidate => ({
@@ -20,7 +20,7 @@ describe('look-alike check (appearance only, safety rule 2)', () => {
   it('a different colour, shape or size means no look-alike', () => {
     expect(looksAlike(tablet(), tablet({ colourPrimary: 'pink' }))).toBe(false);
     expect(looksAlike(tablet(), tablet({ shape: 'oval' }))).toBe(false);
-    expect(looksAlike(tablet(), tablet({ size: 'badam' }))).toBe(false);
+    expect(looksAlike(tablet(), tablet({ size: 'large' }))).toBe(false);
   });
 
   it('unknown fields are treated as possibly the same (flag when in doubt)', () => {

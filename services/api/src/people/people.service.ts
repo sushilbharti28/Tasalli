@@ -113,7 +113,7 @@ export class PeopleService {
         `insert into people (owner_user_id, is_self, nickname, full_name, phone_e164, language, time_zone, can_read_strip, consent, consent_at)
          values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) returning *`,
         [
-          user.id, dto.isSelf, dto.nickname, dto.fullName ?? null, phone, dto.language,
+          user.id, dto.isSelf, dto.nickname, dto.fullName.trim(), phone, dto.language,
           dto.timeZone ?? 'Asia/Kolkata', dto.canReadStrip ?? 'not_sure',
           dto.isSelf ? 'consented' : 'pending', dto.isSelf ? now : null,
         ],
@@ -149,9 +149,10 @@ export class PeopleService {
       const after = (await this.db.one<PersonRow>(
         c,
         `update people set nickname = coalesce($2, nickname), language = coalesce($3::call_language, language),
-                time_zone = coalesce($4, time_zone), paused = coalesce($5, paused), can_read_strip = coalesce($6, can_read_strip)
+                time_zone = coalesce($4, time_zone), paused = coalesce($5, paused), can_read_strip = coalesce($6, can_read_strip),
+                full_name = coalesce($7, full_name)
           where id = $1 returning *`,
-        [personId, dto.nickname ?? null, dto.language ?? null, dto.timeZone ?? null, dto.paused ?? null, dto.canReadStrip ?? null],
+        [personId, dto.nickname ?? null, dto.language ?? null, dto.timeZone ?? null, dto.paused ?? null, dto.canReadStrip ?? null, dto.fullName?.trim() ?? null],
       ))!;
       await this.audit.record(c, { actorUserId: user.id, actorKind: 'user', entity: 'person', entityId: personId, action: 'updated', before: snapshot(before), after: snapshot(after) });
       if (before.time_zone !== after.time_zone || before.paused !== after.paused) await this.doses.refresh(c, personId);

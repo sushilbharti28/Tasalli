@@ -152,16 +152,16 @@ components:
         paused: { type: boolean }
     PersonCreate:
       type: object
-      required: [isSelf, nickname, language]
+      required: [isSelf, nickname, fullName, language]
       properties:
         isSelf: { type: boolean }
-        nickname: { type: string }
-        fullName: { type: string }
+        nickname: { type: string, description: 'The family word, e.g. Papa. Never spoken on calls.' }
+        fullName: { type: string, minLength: 1, maxLength: 80, description: 'Required (v1.6). Calls greet the parent by its first word: "Namaste Ramesh ji".' }
         phone: { type: string, description: 'E.164; ignored when isSelf' }
         language: { $ref: '#/components/schemas/CallLanguage' }
         timeZone: { type: string, default: Asia/Kolkata }
         canReadStrip: { type: string, enum: [yes, no, not_sure] }
-    PersonUpdate: { type: object, properties: { nickname: { type: string }, language: { $ref: '#/components/schemas/CallLanguage' }, timeZone: { type: string }, paused: { type: boolean }, canReadStrip: { type: string, enum: [yes, no, not_sure] } } }
+    PersonUpdate: { type: object, properties: { nickname: { type: string }, fullName: { type: string, minLength: 1, maxLength: 80 }, language: { $ref: '#/components/schemas/CallLanguage' }, timeZone: { type: string }, paused: { type: boolean }, canReadStrip: { type: string, enum: [yes, no, not_sure] } } }
     MedicineKind: { type: string, enum: [tablet, capsule, syrup, other] }
     Appearance:
       type: object
@@ -169,7 +169,7 @@ components:
         colourPrimary: { type: string }
         colourSecondary: { type: string }
         shape: { type: string, enum: [round, oval, long, square] }
-        size: { type: string, enum: [rai, dal, matar, badam, bigger] }
+        size: { type: string, enum: [very_small, small, large], description: 'v1.6: three sizes (older rai/dal/matar/badam/bigger were migrated)' }
         marking: { type: string, enum: [plain, line, letters, unknown] }
         keptIn: { type: string, enum: [strip, loose, bottle] }
         packColour: { type: string }
@@ -193,7 +193,9 @@ components:
         stripName: { type: string }
         strengthText: { type: string }
         spokenName: { type: string }
-        appearance: { $ref: '#/components/schemas/Appearance' }
+        appearance:
+          allOf: [{ $ref: '#/components/schemas/Appearance' }]
+          description: 'v1.6: required look fields by kind (400 when missing). tablet: colourPrimary, shape, size, keptIn. capsule: colourPrimary, size, keptIn. syrup: keptIn, packColour. A strip (keptIn=strip) also needs packColour. other: none.'
         numberLabel: { type: integer, nullable: true }
         sayPrintedName: { type: boolean }
         extraInstruction: { type: string }

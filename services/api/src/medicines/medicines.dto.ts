@@ -12,7 +12,7 @@ export class AppearanceDto {
   @IsOptional() @IsString() @MaxLength(30) colourPrimary?: string;
   @IsOptional() @IsString() @MaxLength(30) colourSecondary?: string;
   @IsOptional() @IsIn(['round', 'oval', 'long', 'square']) shape?: string;
-  @IsOptional() @IsIn(['rai', 'dal', 'matar', 'badam', 'bigger']) size?: string;
+  @IsOptional() @IsIn(['very_small', 'small', 'large']) size?: string;
   @IsOptional() @IsIn(['plain', 'line', 'letters', 'unknown']) marking?: string;
   @IsOptional() @IsIn(['strip', 'loose', 'bottle']) keptIn?: string;
   @IsOptional() @IsString() @MaxLength(30) packColour?: string;
@@ -46,6 +46,17 @@ export class MedicineCreateDto {
 }
 
 /** Appearance fields that make no sense for a kind are rejected rather than silently stored. */
+/**
+ * v1.6: the look fields the reminder call describes must be there (the app's add-medicine form already asks for them).
+ * Mirrors apps/mobile/src/features/medicine/draft.ts (steps "looks" and "kept"). A strip also needs its colour.
+ */
+export const REQUIRED_FOR_KIND: Record<(typeof KINDS)[number], (keyof AppearanceDto)[]> = {
+  tablet: ['colourPrimary', 'shape', 'size', 'keptIn'],
+  capsule: ['colourPrimary', 'size', 'keptIn'],
+  syrup: ['keptIn', 'packColour'],
+  other: [],
+};
+
 export const NOT_FOR_KIND: Record<(typeof KINDS)[number], (keyof AppearanceDto)[]> = {
   tablet: ['colourSecondary', 'capColour'],
   capsule: ['capColour'],

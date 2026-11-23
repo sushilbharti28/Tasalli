@@ -946,8 +946,10 @@ export interface components {
         };
         PersonCreate: {
             isSelf: boolean;
+            /** @description The family word, e.g. Papa. Never spoken on calls. */
             nickname: string;
-            fullName?: string;
+            /** @description Required (v1.6). Calls greet the parent by its first word: "Namaste Ramesh ji". */
+            fullName: string;
             /** @description E.164; ignored when isSelf */
             phone?: string;
             language: components["schemas"]["CallLanguage"];
@@ -958,6 +960,7 @@ export interface components {
         };
         PersonUpdate: {
             nickname?: string;
+            fullName?: string;
             language?: components["schemas"]["CallLanguage"];
             timeZone?: string;
             paused?: boolean;
@@ -972,7 +975,8 @@ export interface components {
             /** @enum {string} */
             shape?: "round" | "oval" | "long" | "square";
             /** @enum {string} */
-            size?: "rai" | "dal" | "matar" | "badam" | "bigger";
+            /** @description v1.6: three sizes (older rai/dal/matar/badam/bigger were migrated) */
+            size?: "very_small" | "small" | "large";
             /** @enum {string} */
             marking?: "plain" | "line" | "letters" | "unknown";
             /** @enum {string} */

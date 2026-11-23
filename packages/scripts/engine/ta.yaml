@@ -76,11 +76,9 @@ words:
     golden: தங்க கலர்
     transparent: கண்ணாடி மாதிரி
   sizes:
-    rai: கடுகு அளவு சின்னது
-    dal: பருப்பு அளவு
-    matar: பட்டாணி அளவு
-    badam: பாதாம் அளவு
-    bigger: பாதாமை விடப் பெரியது
+    very_small: மிகச் சிறியது
+    small: சிறியது
+    large: பெரியது
   shapes:
     round: உருண்டையான
     oval: முட்டை வடிவ

@@ -189,11 +189,9 @@ words:
     golden: सुनहरा
     transparent: शीशे जैसा
   sizes:
-    rai: राई जितना छोटा
-    dal: दाल के दाने जितना
-    matar: मटर के दाने जितना
-    badam: बादाम जितना
-    bigger: बादाम से बड़ा
+    very_small: बहुत छोटा
+    small: छोटा
+    large: बड़ा
   shapes:
     round: गोल
     oval: अंडे के आकार का
@@ -265,21 +263,15 @@ words_gendered:
       f: लंबी
       obl: लंबे
   sizes:
-    rai:
-      m: राई जितना छोटा
-      f: राई जितनी छोटी
-    dal:
-      m: दाल के दाने जितना
-      f: दाल के दाने जितनी
-    matar:
-      m: मटर के दाने जितना
-      f: मटर के दाने जितनी
-    badam:
-      m: बादाम जितना
-      f: बादाम जितनी
-    bigger:
-      m: बादाम से बड़ा
-      f: बादाम से बड़ी
+    very_small:
+      m: बहुत छोटा
+      f: बहुत छोटी
+    small:
+      m: छोटा
+      f: छोटी
+    large:
+      m: बड़ा
+      f: बड़ी
 phrases:
   negation_words:
     - नहीं

@@ -49,7 +49,7 @@ export interface MedicineRow {
   colourPrimary: string | null;
   colourSecondary: string | null;
   shape: 'round' | 'oval' | 'long' | 'square' | null;
-  size: 'rai' | 'dal' | 'matar' | 'badam' | 'bigger' | null;
+  size: 'very_small' | 'small' | 'large' | null; // v1.6 (older rai/dal/matar/badam/bigger rows are migrated)
   marking: 'plain' | 'line' | 'letters' | 'unknown' | null;
   keptIn: 'strip' | 'loose' | 'bottle' | null;
   packColour: string | null;

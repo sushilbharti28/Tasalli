@@ -9,7 +9,7 @@ import { localToday } from '../doses/dose-times';
 import { PeopleService, PersonRow } from '../people/people.service';
 import { EventsService } from '../queues/events.service';
 import { findLookAlikes, LookAlikeCandidate, LookAlikeConflict } from './look-alike';
-import { MedicineCreateDto, NOT_FOR_KIND } from './medicines.dto';
+import { MedicineCreateDto, NOT_FOR_KIND, REQUIRED_FOR_KIND } from './medicines.dto';
 import { SCRIPT_PREVIEWER, ScriptPreviewer } from './script-previewer';
 
 export interface MedicineRow {
@@ -159,6 +159,10 @@ export class MedicinesService {
   private validate(dto: MedicineCreateDto, person: PersonRow): NormalisedSchedule[] {
     const bad = NOT_FOR_KIND[dto.kind].filter((f) => dto.appearance?.[f] != null);
     if (bad.length) throw new BadRequestException(`Not used for ${dto.kind}: ${bad.join(', ')}`);
+    const a = dto.appearance ?? {};
+    const missing = REQUIRED_FOR_KIND[dto.kind].filter((f) => a[f] == null || String(a[f]).trim() === '');
+    if (a.keptIn === 'strip' && (a.packColour == null || a.packColour.trim() === '') && !missing.includes('packColour')) missing.push('packColour');
+    if (missing.length) throw new BadRequestException(`Needed for ${dto.kind}: appearance.${missing.join(', appearance.')}`);
     const today = localToday(this.clock.now(), person.time_zone);
     const seen = new Set<string>();
     return dto.schedules.map((s) => {

@@ -30,6 +30,7 @@ export default function AddPerson() {
     const e: Record<string, string> = {};
     if (isSelf === undefined) e.who = t('med.pickOne');
     if (!nickname.trim()) e.nickname = t('med.required');
+    if (!fullName.trim()) e.fullName = t('med.required'); // calls greet by this name, never the nickname
     const phone = isSelf ? null : toE164(cc, local);
     if (isSelf === false && !phone) e.phone = t('signIn.invalidPhone');
     if (!canReadStrip) e.canRead = t('med.pickOne');
@@ -41,7 +42,7 @@ export default function AddPerson() {
         body: {
           isSelf: !!isSelf,
           nickname: nickname.trim(),
-          ...(fullName.trim() ? { fullName: fullName.trim() } : {}),
+          fullName: fullName.trim(),
           ...(phone ? { phone } : {}),
           language,
           timeZone,
@@ -93,7 +94,7 @@ export default function AddPerson() {
       {errors.who ? <ErrorText>{errors.who}</ErrorText> : null}
 
       <Field label={t('person.nickname')} hint={t('person.nicknameHint')} value={nickname} onChangeText={setNickname} error={errors.nickname} testID="nickname" />
-      <Field label={t('person.fullName')} hint={t('person.fullNameHint')} value={fullName} onChangeText={setFullName} autoComplete="name" testID="full-name" />
+      <Field label={t('person.fullName')} hint={t('person.fullNameHint')} value={fullName} onChangeText={setFullName} error={errors.fullName} autoComplete="name" testID="full-name" />
       {isSelf === false ? (
         <>
           <ChipGroup label={t('signIn.country')} options={COUNTRY_CODES.map((c) => c.code)} value={cc} onChange={setCc} labelOf={(c) => c} />
