@@ -308,7 +308,7 @@ describe('the parent is greeted by name, never by the nickname', () => {
 });
 
 describe('consent call names the child and the relation', () => {
-  it.each([['son', /^Namaste Ramesh ji\. Yeh Tasalli ki taraf se phone hai\. aapke bete Rohit aapko dawai ki yaad dilane/],
+  it.each([['son', /^Namaste Ramesh ji\. Yeh Tasalli app ki taraf se phone hai\. aapke bete Rohit aapko dawai ki yaad dilane/],
     ['daughter_in_law', /aapki bahu Rohit aapko/], ['other', /phone hai\. Rohit aapko/], [null, /phone hai\. Rohit aapko/]])('%s', async (rel, re) => {
     const w = world();
     w.store.state.people.get(w.mom.id)!.fullName = 'Ramesh Sharma';
