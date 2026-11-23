@@ -193,7 +193,9 @@ components:
         stripName: { type: string }
         strengthText: { type: string }
         spokenName: { type: string }
-        appearance: { $ref: '#/components/schemas/Appearance' }
+        appearance:
+          allOf: [{ $ref: '#/components/schemas/Appearance' }]
+          description: 'v1.6: required look fields by kind (400 when missing). tablet: colourPrimary, shape, size, keptIn. capsule: colourPrimary, size, keptIn. syrup: keptIn, packColour. A strip (keptIn=strip) also needs packColour. other: none.'
         numberLabel: { type: integer, nullable: true }
         sayPrintedName: { type: boolean }
         extraInstruction: { type: string }

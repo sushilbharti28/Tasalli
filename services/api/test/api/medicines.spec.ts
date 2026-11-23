@@ -90,11 +90,26 @@ describe('medicines, look-alike, doses, consent gating', () => {
   });
 
   it('supports all four kinds and rejects fields that do not fit the kind', async () => {
-    await addMed(tablet({ kind: 'capsule', appearance: { colourPrimary: 'red', colourSecondary: 'white', shape: 'long' } })).expect(201);
-    await addMed({ kind: 'syrup', stripName: 'Cough syrup', spokenName: 'Khansi ki dawa', appearance: { packColour: 'brown', capColour: 'white' },
+    await addMed(tablet({ kind: 'capsule', appearance: { colourPrimary: 'red', colourSecondary: 'white', shape: 'long', size: 'small', keptIn: 'loose' } })).expect(201);
+    await addMed({ kind: 'syrup', stripName: 'Cough syrup', spokenName: 'Khansi ki dawa', appearance: { keptIn: 'bottle', packColour: 'brown', capColour: 'white' },
       schedules: [{ localTime: '21:00', amountText: '1 chammach (5 ml)', food: 'after' }] }).expect(201);
     await addMed({ kind: 'other', stripName: 'Inhaler', spokenName: 'Inhaler', schedules: [{ localTime: '08:00', amountText: '2 puffs', food: 'any' }] }).expect(201);
     await addMed(tablet({ kind: 'syrup', appearance: { shape: 'round' } })).expect(400);
+  });
+
+  it('v1.6: the look the call describes is required by kind (the app form already asks for it)', async () => {
+    const look = { colourPrimary: 'white', shape: 'round', size: 'small', keptIn: 'strip', packColour: 'green' };
+    const without = (k: string) => Object.fromEntries(Object.entries(look).filter(([x]) => x !== k));
+    for (const k of ['colourPrimary', 'shape', 'size', 'keptIn', 'packColour']) {
+      const r = await addMed(tablet({ appearance: without(k) })).expect(400);
+      expect(JSON.stringify(r.body)).toContain(`appearance.${k}`);
+    }
+    await addMed(tablet({ appearance: undefined })).expect(400);
+    await addMed(tablet({ appearance: { ...look, colourPrimary: '  ' } })).expect(400);
+    await addMed(tablet({ appearance: { ...without('packColour'), keptIn: 'loose' } })).expect(201); // loose: no strip colour needed
+    await addMed(tablet({ kind: 'capsule', appearance: { colourPrimary: 'red', keptIn: 'loose' } })).expect(400); // capsule without size
+    await addMed({ kind: 'syrup', stripName: 'Syrup', spokenName: 'Syrup', appearance: { keptIn: 'bottle' },
+      schedules: [{ localTime: '21:00', amountText: '1 chammach', food: 'after' }] }).expect(400); // bottle colour missing
   });
 
   it('keeps amount text verbatim and validates input', async () => {
