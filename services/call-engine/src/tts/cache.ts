@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { dirname, join, normalize, sep } from 'node:path';
 import type { CallLanguage, SpeechProvider } from '@tasalli/contracts';
+import { withoutPauseMarks } from '../scripts/builder.js';
 
 /** Where generated audio lives. Local filesystem for dev; object storage (Mumbai region) later. */
 export interface AudioStorage {
@@ -91,6 +92,7 @@ export class AudioCache {
   constructor(private readonly speech: SpeechProvider, private readonly storage: AudioStorage) {}
 
   async urlFor(text: string, language: CallLanguage): Promise<string> {
+    text = withoutPauseMarks(text); // TTS files have no SSML: the longer pause mark is dropped
     // After a restart the provider's mime type is not known yet: probe each supported extension.
     const known = this.mimeByLang.get(`${this.speech.name}/${language}`);
     for (const mime of known ? [known] : Object.keys(EXT)) {

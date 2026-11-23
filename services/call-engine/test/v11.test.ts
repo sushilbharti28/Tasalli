@@ -25,25 +25,27 @@ describe('scripts from packages/scripts/engine', () => {
     expect(pack.templates.words_gendered?.colours?.yellow?.f).toBe('पीली');
   });
 
-  it('one medicine uses full_intro_one; two use the count', async () => {
-    const w = world(undefined, { scripts: hindi() });
+  it('opening (v1.6): greeting, who is calling and why, then "haan" or 1 to hear the medicine; one medicine vs a count', async () => {
+    const w = world(undefined, { scripts: hindi(), presence: true });
     w.med('Amlodac', '09:00');
-    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }] });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }] });
     await planned(w);
     await w.advance(5);
-    expect(w.playedText(0)[0]).toContain('आपकी सुबह की वाली दवाई का समय हो गया है');
+    expect(w.playedText(0)[0]).toBe('नमस्ते Kamla जी।\nहम तसल्ली से बोल रहे हैं। आपको सुबह की वाली दवाई की याद दिलाने के लिए फ़ोन किया है। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या एक दबाइए।');
+    expect(w.playedText(0)[1]).toMatch(/^ठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए।.*आपकी दवाई, ek goli Amlodac की है।/);
 
-    const w2 = world(undefined, { scripts: hindi() });
+    const w2 = world(undefined, { scripts: hindi(), presence: true });
     w2.med('Amlodac', '09:00');
     w2.med('Metolar', '09:10');
-    w2.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }] });
+    w2.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }, { key: '1' }] });
     await planned(w2);
     await w2.advance(40);
     expect(w2.provider.callsTo(PARENT)).toHaveLength(1); // grouped
-    expect(w2.playedText(0)[0]).toContain('आपकी सुबह की वाली दो दवाइयों का समय हो गया है');
+    expect(w2.playedText(0)[0]).toContain('आपको सुबह की वाली दो दवाइयों की याद दिलाने के लिए फ़ोन किया है।');
+    expect(w2.playedText(0)[1]).toMatch(/^ठीक है। हम एक-एक करके दवाई बताते हैं।.*आपकी पहली दवाई, ek goli Amlodac की है।/);
   });
 
-  it('Hindi colour words agree with the noun: tablet feminine, capsule masculine, strip oblique, bottle feminine', async () => {
+  it('Hindi look sentences (v1.6) agree with the noun: tablet feminine, capsule masculine, patta and dhakkan masculine, bottle feminine', async () => {
     const w = world(undefined, { scripts: hindi() });
     w.med('Amlodac', '09:00', { kind: 'tablet', colourPrimary: 'yellow', shape: 'long', keptIn: 'strip', packColour: 'green' });
     w.med('Vitcap', '09:05', { kind: 'capsule', colourPrimary: 'yellow', keptIn: 'bottle', packColour: 'blue', capColour: 'black' });
@@ -51,10 +53,10 @@ describe('scripts from packages/scripts/engine', () => {
     await planned(w);
     await w.advance(40);
     const said = w.playedText(0).join(' ');
-    expect(said).toContain('पीली लंबी गोली');
-    expect(said).toContain('हरे पत्ते वाली');
-    expect(said).toContain('पीला कैप्सूल');
-    expect(said).toContain('नीली बोतल वाली');
+    expect(said).toContain('यह एक पीले रंग की लंबी गोली है।');
+    expect(said).toContain('इसका पत्ता हरे रंग का है।');
+    expect(said).toContain('यह एक पीले रंग का कैप्सूल है।');
+    expect(said).toContain('इसकी बोतल नीले रंग की है। इसका ढक्कन काले रंग का है।');
   });
 
   it('second call of the day is short_single', async () => {
@@ -65,8 +67,8 @@ describe('scripts from packages/scripts/engine', () => {
     await planned(w);
     await w.advance(60 * 13);
     expect(w.provider.callsTo(PARENT)).toHaveLength(2);
-    expect(w.playedText(0)[0]).toContain('आपकी सुबह की वाली दवाई का समय हो गया है');
-    expect(w.playedText(1)[0]).toBe('नमस्ते Mummy जी।\nआपकी रात की वाली दवाई का समय हो गया है। दवाई: Metolar। ek goli। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या एक दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या ज़ीरो दबाइए।');
+    expect(w.playedText(0)[0]).toContain('आपकी दवाई, ek goli Amlodac की है।');
+    expect(w.playedText(1)[0]).toBe('नमस्ते Kamla जी।\nठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या ज़ीरो दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या दो दबाइए। आपकी दवाई, ek goli Metolar की है। दवाई लेने के बाद, "हाँ" बोलिए, या एक दबाइए।');
   });
 
   it('"nahi li" never confirms: says the not-now line, then the dose is snoozed', async () => {

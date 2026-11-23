@@ -19,7 +19,7 @@ meta:
 templates:
   consent:
     ask: 'नमस्ते {person_name} जी। यह तसल्ली की तरफ़ से फ़ोन है। {relation_phrase} {child_name} आपको दवाई की याद दिलाने के लिए फ़ोन करवाना चाहते हैं। यह कॉल रिकॉर्ड की जाएगी। अगर आप हाँ कहना चाहते हैं, तो "हाँ" बोलिए, या 1 दबाइए। अगर आप ये फ़ोन नहीं चाहते, तो 9 दबाइए। फिर हम कभी फ़ोन नहीं करेंगे।'
-    agreed: 'धन्यवाद जी। अब दवाई के समय पर हम फ़ोन करेंगे। हर बार "ले ली" या "हाँ" बोलिए, या 1 दबाइए। कभी भी 9 दबाकर फ़ोन बंद करवा सकते हैं। नमस्ते।'
+    agreed: 'धन्यवाद जी। अब दवाई के समय पर हम फ़ोन करेंगे। हर बार दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। कभी भी 9 दबाकर फ़ोन बंद करवा सकते हैं। नमस्ते।'
     declined: 'ठीक है जी। हम आपको फ़ोन नहीं करेंगे। नमस्ते।'
     stopped: 'ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। नमस्ते।'
     unclear: 'माफ़ कीजिए, समझ नहीं आया। हाँ कहना हो, तो 1 दबाइए। फ़ोन नहीं चाहिए, तो 9 दबाइए।'
@@ -30,14 +30,14 @@ templates:
     count_one: 'अभी एक दवाई लेनी है।'
     count_many: 'अभी {count} दवाइयाँ लेनी हैं।'
     item: '{ordinal}, {spoken_name}: {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {food_phrase}।][ {extra_instruction}]'
-    ask: 'दवाई ले लें, फिर बोलिए "ले ली" या "हाँ", या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2।'
+    ask: 'दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2।'
     more_options: 'डॉक्टर ने दवाई बदली हो, तो 3 दबाइए।'
 
   reminder_short:
-    single: '{person_name} जी, {spoken_name} का समय। {amount_text}[, {food_phrase}]। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+    single: '{person_name} जी, {spoken_name} का समय। {amount_text}[, {food_phrase}]। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
     group_greeting: '{person_name} जी, दवाई का समय।'
     group_item: '{spoken_name}: {amount_text}[, {food_phrase}]।'
-    ask: 'ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+    ask: 'दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
 
   test_call:
     intro: 'यह तसल्ली की टेस्ट कॉल है। आपके घर वालों को ऐसी ही कॉल आएगी।'
@@ -53,8 +53,8 @@ templates:
   reply_ack:
     confirmed: 'धन्यवाद जी। {child_name} को बता देंगे। नमस्ते।'
     snoozed: 'ठीक है जी। पंद्रह मिनट बाद फिर याद दिलाएँगे। नमस्ते।'
-    snooze_used_up: 'पंद्रह मिनट वाली याद एक ही बार होती है। दवाई ले लें, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए।'
-    not_taken: 'ठीक है जी। दवाई ले लें, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2 दबाइए।'
+    snooze_used_up: 'पंद्रह मिनट वाली याद एक ही बार होती है। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए।'
+    not_taken: 'ठीक है जी। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2 दबाइए।'
     doctor_changed: 'ठीक है जी। {child_name} को बता देंगे कि डॉक्टर ने दवाई बदली है। नमस्ते।'
     unwell: 'ठीक है जी। {child_name} को बता देंगे। ज़रूरत हो, तो अपने डॉक्टर से बात कीजिए। नमस्ते।'
     stop: 'ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। {child_name} को भी बता देंगे। नमस्ते।'
@@ -69,24 +69,52 @@ engine_extra:
   list_and: ' और '
   declined_ack: 'ठीक है जी। {child_name} को बता देंगे। नमस्ते।'   # not taken and the 15 minute reminder already used
 
-# One medicine at a time (call engine v1.3): the call goes through the due medicines in order and confirms each one.
+# One medicine at a time (call engine v1.3; wording v1.6, 24 Nov 2026): the call goes through the due medicines in order and confirms each one.
 # {ordinal} already says "medicine" (see blocks.ordinals). Not in the other languages yet: the engine falls back to its built-in lines.
+# Prompts ask for "हाँ" or 1 only; "ले ली" is no longer asked for (it was misheard) but is still accepted (replies.confirm).
 reminder_steps:
   # Variables (reminder lines never name the child; {relation_phrase} {child_name} are for the consent call): {person_name} {meal_phrase} {count_word} {count} {ordinal} {strip_name} {strength} {spoken_line} {spoken_name} {amount_text}
   # {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}. {ordinal} already says "medicine" (blocks.ordinals).
-  # The food timing is said once in the intro ({meal_phrase}), so the item lines leave it out. A call only groups doses with the same food timing.
+  # The food timing is said once in the opening ({meal_phrase}), so the item lines leave it out. A call only groups doses with the same food timing.
   greeting: 'नमस्ते {person_name} जी।'
-  # Presence check, asked right after the greeting and before any medicine (network lag and drops are common): any yes or key continues; it is never a dose confirmation.
+  # Consent call: presence check after the greeting, before the consent question. Any yes or key continues.
   presence: 'क्या आपको आवाज़ आ रही है? "हाँ" बोलिए, या 1 दबाइए।'
-  spoken_line: 'जिसे आप {spoken_name} कहते हैं।'
-  intro_many: 'आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
-  intro_one: 'आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
-  short_intro_many: 'आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।'
-  short_intro_one: 'आपकी {meal_phrase} वाली दवाई का समय हो गया है।'
-  item: '{ordinal}: {strip_name} {strength}। {spoken_line} {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  item_one: 'दवाई: {strip_name} {strength}। {spoken_line} {amount_text}[, {appearance_phrase}][, {pack_phrase}][, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  item_short: '{ordinal}: {strip_name} {strength}। {spoken_line} {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  item_short_one: 'दवाई: {strip_name} {strength}। {spoken_line} {amount_text}[, {disambiguator}]।[ {extra_instruction}।] ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  # Reminder call opening, said after the greeting. Its "हाँ" / 1 is also the presence check; it is never a dose confirmation.
+  reminder_presence: 'हम तसल्ली से बोल रहे हैं। आपको {meal_phrase} वाली {count_word} दवाइयों की याद दिलाने के लिए फ़ोन किया है। दवाइयों के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
+  reminder_presence_one: 'हम तसल्ली से बोल रहे हैं। आपको {meal_phrase} वाली दवाई की याद दिलाने के लिए फ़ोन किया है। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
+  presence_retry: 'माफ़ कीजिए, समझ नहीं आया। दवाइयों के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
+  presence_retry_one: 'माफ़ कीजिए, समझ नहीं आया। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।'
+  spoken_line: 'इसे आप {spoken_name} कहते हैं।'
+  # After the opening's "हाँ": all the choices are explained once, then the first medicine.
+  intro_many: 'ठीक है। हम एक-एक करके दवाई बताते हैं। हर दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।'
+  intro_one: 'ठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।'
+  short_intro_many: 'ठीक है। हम एक-एक करके दवाई बताते हैं। हर दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।'
+  short_intro_one: 'ठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।'
+  # {appearance_phrase} {pack_phrase} {disambiguator} are whole sentences here (see `look`). The engine adds a longer pause, then item_ask.
+  item: 'आपकी {ordinal}, {amount_text} {strip_name} {strength} की है। {spoken_line} {appearance_phrase} {pack_phrase} {disambiguator}[ {extra_instruction}।]'
+  item_one: 'आपकी दवाई, {amount_text} {strip_name} {strength} की है। {spoken_line} {appearance_phrase} {pack_phrase} {disambiguator}[ {extra_instruction}।]'
+  item_short: 'आपकी {ordinal}, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator}[ {extra_instruction}।]'
+  item_short_one: 'आपकी दवाई, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator}[ {extra_instruction}।]'
+  item_ask: 'दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए।'
+  # How a medicine looks, as short sentences. Sizes are three: very_small, small, large (the app's older rai/dal/matar/badam/bigger map onto them).
+  look:
+    sizes: { very_small: { f: 'बहुत छोटी सी', m: 'बहुत छोटा सा' }, small: { f: 'छोटी सी', m: 'छोटा सा' }, large: { f: 'बड़ी सी', m: 'बड़ा सा' } }
+    # Colour before "रंग" (oblique form); `coloured` adds "रंग की / का".
+    colours: { white: 'सफ़ेद', cream: 'क्रीम', yellow: 'पीले', orange: 'नारंगी', pink: 'गुलाबी', red: 'लाल', maroon: 'गहरे लाल', brown: 'भूरे', green: 'हरे', blue: 'नीले', purple: 'बैंगनी', grey: 'स्लेटी', black: 'काले', silver: 'चाँदी के', golden: 'सुनहरे', transparent: 'शीशे जैसे' }
+    coloured: { f: '{colour} रंग की', m: '{colour} रंग का', obl: '{colour} रंग' }
+    shapes: { round: 'गोल आकार की', oval: 'अंडे के आकार की', long: 'लंबी', square: 'चौकोर' }
+    tablet: 'यह एक {size} {colour} {shape} गोली है।'
+    capsule: 'यह एक {size} {colour} कैप्सूल है।'
+    # {colour} {colour2}: the plain masculine colour words (blocks.colours, m form).
+    capsule_two_colour: 'यह कैप्सूल देखने में आधा {colour} और आधा {colour2} है।'
+    markings: { line: 'इसके बीच में एक लाइन है।', letters: 'इस पर कुछ लिखा हुआ है।' }
+    strip: 'इसका पत्ता {pack_colour} है।'
+    print: 'पत्ते पर {print_colour} से लिखा है।'
+    loose: 'यह डिब्बे में खुली रखी है।'
+    bottle: 'इसकी बोतल {pack_colour} है।'
+    cap: 'इसका ढक्कन {cap_colour} है।'
+    number: 'इसके पत्ते पर {number} नंबर लिखा है।'
+    printed_name: 'इसके पत्ते पर {strip_letters} लिखा है।'
   # {meal_phrase} = meal + relation (dose hour: before 11 breakfast, 11-16 lunch, after 16 dinner); with no food rule, the day part.
   meals: { breakfast: 'नाश्ते', lunch: 'दोपहर के खाने', dinner: 'रात के खाने' }
   food_rel: { before: 'से पहले', after: 'के बाद', with: 'के साथ' }
@@ -96,14 +124,20 @@ reminder_steps:
   ack_next: 'ठीक है।'
   ack_not_now: 'कोई बात नहीं, थोड़ी देर में फिर याद दिलाएँगे।'
   ack_silence: 'कोई बात नहीं।'
-  unclear: 'माफ़ कीजिए, समझ नहीं आया। ले ली हो, तो 1 दबाइए।'
-  all_done: 'बहुत अच्छा। सब दवाइयाँ ले ली गई हैं। धन्यवाद।'
-  all_done_one: 'बहुत अच्छा। दवाई ले ली गई है। धन्यवाद।'
-  some_left: 'धन्यवाद। बाकी दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे।'
-  some_left_one: 'धन्यवाद। दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे।'
-  # A medicine heard 3 times (repeated twice) stays unconfirmed and the call moves on; soft call time limit reached.
-  repeat_limit: 'कोई बात नहीं, आगे बढ़ते हैं।'
-  time_up: 'समय पूरा हो गया। बाकी दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे। धन्यवाद।'
+  silence_repeat: 'हम फिर से बताते हैं।'
+  # Unclear speech or a key that means nothing: asked once more, by voice or key. Unclear speech never confirms.
+  unclear: 'माफ़ कीजिए, समझ नहीं आया। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।'
+  all_done: 'बहुत अच्छा, आपने सारी दवाइयाँ ले ली हैं। धन्यवाद, नमस्ते।'
+  all_done_one: 'बहुत अच्छा, आपने दवाई ले ली है। धन्यवाद, नमस्ते।'
+  # Said only when a call really follows (a retry or the 15 minute reminder); otherwise end_no_call_back.
+  some_left: 'चिंता मत कीजिए, बाकी दवाई के लिए हम थोड़ी देर में फिर फ़ोन करेंगे। धन्यवाद, नमस्ते।'
+  some_left_one: 'चिंता मत कीजिए, इस दवाई के लिए हम थोड़ी देर में फिर फ़ोन करेंगे। धन्यवाद, नमस्ते।'
+  end_no_call_back: 'धन्यवाद, नमस्ते।'
+  # A medicine with no usable answer (heard 3 times, or unclear twice): not recorded, move on, and (only when a call follows) we will call again.
+  repeat_limit: 'माफ़ कीजिए, किसी वजह से इस दवाई का जवाब दर्ज नहीं हो पाया।'
+  moving_on: 'हम अगली दवाई पर चलते हैं।'
+  will_call_again: 'चिंता मत कीजिए, इस दवाई के लिए हम आपको फिर फ़ोन करेंगे।'
+  time_up: 'समय पूरा हो गया।'
 
 building:
   appearance:

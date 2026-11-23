@@ -97,10 +97,10 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   const mode = prior.answeredCalls === 0 ? 'full' : 'short';
   const steps = buildReminderSteps({ ...base, mode });
   const reminder = { items: details.map((x, i) => ({ doseId: x.dose.id, first: steps.items[i]!.first, full: steps.items[i]!.full })),
-    index: 0, outcomes: {}, heard: {} };
+    index: 0, outcomes: {}, heard: {}, retryLeft: decodeAttempt(attemptCode).n < RULES.retryCount };
   const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode,
     language: lang, session: steps.presence
-      ? { ...blank, mainText: presencePrompt(steps.greeting, steps.presence), fullText: steps.items[0]!.full, reminder, presence: { state: 'pending' as const, asks: 0, text: steps.presence, next: steps.opening } }
+      ? { ...blank, mainText: presencePrompt(steps.greeting, steps.presence), fullText: steps.items[0]!.full, reminder, presence: { state: 'pending' as const, asks: 0, text: steps.presenceRetry, next: steps.opening } }
       : { ...blank, mainText: presencePrompt(steps.greeting, steps.opening), fullText: steps.items[0]!.full, reminder } });
   if (out === 'capped') return void await stop('missed', 'daily_cap');
   if (out === 'blocked') return void await stop('skipped_paused');
@@ -162,7 +162,7 @@ export async function placeTest(d: Deps, userId: string): Promise<void> {
   if ((await d.sessions.incr(`test_${userId}_${day}`, 86400)) > d.config.testCallsPerDay) return;
   const lang = callLanguage(d, user.locale, null);
   const t = d.scripts.get(lang).templates;
-  const text = line(t.test.prompt, { person_name: personName(t, { nickname: user.name ?? '', fullName: null }) });
+  const text = line(t.test.prompt, { person_name: personName(t, { nickname: '', fullName: user.name ?? null }) /* the test call greets the account holder by their own name */ });
   await place(d, { person: null, to: user.phone, zone: user.timeZone, purpose: 'test', groupId: null, attempt: 0, language: lang,
     session: { ...blank, mainText: text, fullText: text } });
 }

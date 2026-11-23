@@ -16,7 +16,7 @@ export interface CallSession {
   keypadOnly: boolean;
   /** Reminder calls: silence on the current medicine was already answered by playing it again (once per medicine). */
   silenceRepeated?: boolean;
-  /** Reminder and consent calls: "can you hear me?" comes first. `next` is what plays after a yes (intro and first medicine, or the consent question). */
+  /** Reminder and consent calls: "can you hear me?" comes first. `text` is the re-ask; `next` is what plays after a yes (intro and first medicine, or the consent question). */
   presence?: { state: 'pending' | 'ok'; asks: number; text: string; next: string };
   /** When the call was answered (ms since epoch). Set once, by the 'answered' status (or by the first input if that never arrived). */
   answeredAtMs?: number;
@@ -29,6 +29,8 @@ export interface CallSession {
     outcomes: Record<string, 'confirmed' | 'declined' | 'none'>;
     /** What was heard for each medicine, for logs and test-reminder. */
     heard: Record<string, string[]>;
+    /** A 10-minute retry call is still left for this group (attempt n < RULES.retryCount). Lines that promise a call back are said only when one really follows. Missing (older sessions): treated as true. */
+    retryLeft?: boolean;
   };
   /** NextAction returned per input event id, replayed for duplicate webhooks. */
   responses: Record<string, NextAction>;

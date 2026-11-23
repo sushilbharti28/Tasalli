@@ -200,8 +200,8 @@ describe('reminder flow', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0).join(' ');
-    expect(said).toMatch(/do number wali/);
-    expect(said).toMatch(/T-E-L-M-A chaar-zero/);
+    expect(said).toMatch(/Iske patte par do number likha hai\./);
+    expect(said).toMatch(/Iske patte par T-E-L-M-A chaar-zero likha hai\./);
   });
 
   it('stores times in the parent time zone: 09:00 in New York is 13:00Z in March (EDT)', async () => {

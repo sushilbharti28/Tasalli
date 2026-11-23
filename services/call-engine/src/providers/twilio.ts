@@ -1,6 +1,7 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import type { CallEvent, CallLanguage, CallStep, NextAction, PlaceCallRequest, PlaceCallResult, TelephonyProvider } from '@tasalli/contracts';
 import type { AudioSource } from '../engine/deps.js';
+import { LONG_PAUSE_MARK, withoutPauseMarks } from '../scripts/builder.js';
 import { WebhookPayloadError, WebhookSignatureError } from './fake-telephony.js';
 
 export interface TwilioConfig {
@@ -20,18 +21,26 @@ export interface TwilioConfig {
 /** PlaceCallRequest plus the hard call limit (contract change requested: not in packages/contracts yet). */
 export type PlaceCallWithLimit = PlaceCallRequest & { timeLimitSeconds?: number };
 
-/** Pace of every <Say>: 85% of normal speed, and a 400 ms pause between the parts of a line and between sentences. */
-export const SSML_RATE = '85%';
-export const SSML_BREAK_MS = 400;
+/**
+ * Pace of every <Say> (v1.6, 24 Nov 2026: 85% / 400 ms felt slow, 95% / 250 ms too fast): 90% of normal speed;
+ * 200 ms at a comma, 350 ms at a sentence end, 700 ms at LONG_PAUSE (before the question after each medicine).
+ */
+export const SSML_RATE = '90%';
+export const SSML_COMMA_BREAK_MS = 200;
+export const SSML_SENTENCE_BREAK_MS = 350;
+export const SSML_LONG_BREAK_MS = 700;
 
 /**
- * Plain text -> SSML for <Say>. The text is cut at sentence ends (. । ? !) and at the commas/colons that separate
- * the parts of a medicine line (name: amount, appearance, pack), each part is XML-escaped on its own, and a
- * <break> goes between parts. Everything is wrapped in one <prosody rate>. Digits and words are never changed.
+ * Plain text -> SSML for <Say>. The text is cut at LONG_PAUSE marks, then at sentence ends (. । ? !), then at commas/colons;
+ * each part is XML-escaped on its own and a <break> of the matching length goes between parts. Everything is wrapped in one
+ * <prosody rate>. Digits and words are never changed.
  */
 export function toSsml(text: string): string {
-  const parts = text.split(/[.।?!,:;]+/).map((p) => p.trim()).filter(Boolean);
-  const body = parts.map(xmlEscape).join(`<break time="${SSML_BREAK_MS}ms"/>`);
+  const brk = (ms: number) => `<break time="${ms}ms"/>`;
+  const nonEmpty = (xs: string[]) => xs.map((x) => x.trim()).filter(Boolean);
+  const sentence = (x: string) => nonEmpty(x.split(/[,:;]+/)).map(xmlEscape).join(brk(SSML_COMMA_BREAK_MS));
+  const block = (x: string) => nonEmpty(x.split(/[.।?!]+/)).map(sentence).filter(Boolean).join(brk(SSML_SENTENCE_BREAK_MS));
+  const body = nonEmpty(text.split(LONG_PAUSE_MARK)).map(block).filter(Boolean).join(brk(SSML_LONG_BREAK_MS));
   return `<prosody rate="${SSML_RATE}">${body}</prosody>`;
 }
 
@@ -131,7 +140,7 @@ export class TwilioProvider implements TelephonyProvider {
     const voice = this.cfg.voices?.[language] ?? v.voice;
     // A line break splits the text into separate <Say>s with a 1 s <Pause> between: the short greeting is synthesised alone, so a slow synthesis of the long part cannot delay it.
     return text.split('\n').map((p) => p.trim()).filter(Boolean)
-      .map((p) => `<Say voice="${xmlEscape(voice)}" language="${v.language}">${this.cfg.ssml === false ? xmlEscape(p) : toSsml(p)}</Say>`)
+      .map((p) => `<Say voice="${xmlEscape(voice)}" language="${v.language}">${this.cfg.ssml === false ? xmlEscape(withoutPauseMarks(p)) : toSsml(p)}</Say>`)
       .join('<Pause length="1"/>');
   }
 

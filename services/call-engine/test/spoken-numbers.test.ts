@@ -55,7 +55,7 @@ describe('speakNumbers (speech only)', () => {
   it('text without numbers is unchanged', () => {
     const t = 'Le li ho to "le li" ya "haan" boliye. Dobara sunne ke liye "phir se" boliye.';
     expect(r(t)).toBe(t);
-    expect(d('नमस्ते Mummy जी।')).toBe('नमस्ते Mummy जी।');
+    expect(d('नमस्ते Kamla जी।')).toBe('नमस्ते Kamla जी।');
   });
   it('is idempotent (applying it twice changes nothing)', () => {
     const once = r('Telma 40, 1.5 goli, 5 ml');

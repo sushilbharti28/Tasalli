@@ -42,7 +42,7 @@ describe('v1.4 recognition: confirm variants (the transcript "लिली।" w
 });
 
 describe('v1.4 prompt wording', () => {
-  it('every medicine line (full and short, one or many) ends with the new prompt', async () => {
+  it('every medicine line (full and short, one or many) ends with the short question (v1.6: "haan" or 1; no "le li")', async () => {
     const w = world(undefined, { scripts: new ScriptLibrary(null) });
     w.med('BP wali', '09:00');
     w.med('Sugar wali', '09:05');
@@ -51,24 +51,31 @@ describe('v1.4 prompt wording', () => {
     await w.settle();
     await w.advance(1);
     const said = w.playedText(0);
-    const prompt = 'Le li ho to "le li" ya "haan" boliye, ya ek dabaiye. Dobara sunne ke liye "phir se" boliye, ya zero dabaiye.';
+    const prompt = 'Dawai lene ke baad, "haan" boliye, ya ek dabaiye.';
     expect(said[0]!.endsWith(prompt)).toBe(true);
     expect(said[1]!.endsWith(prompt)).toBe(true);
   });
-  it('the Hindi script has the Devanagari prompt', () => {
+  it('the Hindi script has the Devanagari question, and no prompt asks for "le li"', () => {
     const t = new ScriptLibrary(DEFAULT_SCRIPTS_DIR).get('hi').templates.reminder;
-    const p = 'ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।';
-    for (const k of ['step_item', 'step_item_one', 'step_item_short', 'step_item_short_one'] as const) expect(t[k].endsWith(p)).toBe(true);
+    expect(t.step_item_ask).toBe('दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए।');
+    for (const k of ['step_item', 'step_item_one', 'step_item_short', 'step_item_short_one', 'step_intro', 'step_intro_one', 'step_unclear'] as const) {
+      expect(t[k]).not.toMatch(/"ले ली"/);
+    }
+    expect(t.step_intro).toMatch(/"फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।$/);
   });
 });
 
 describe('v1.4 SSML pace', () => {
   const say = new SayUrls();
   const mk = (ssml?: boolean) => new TwilioProvider({ accountSid: 'ACtest', authToken: 't', publicBaseUrl: 'https://x.example', ssml });
-  it('wraps in prosody 85% with a 400 ms break between parts and sentences', () => {
-    expect(toSsml('BP wali: 1 goli, safed gol goli, laal patte wali. Le li ho to 1 dabaiye।')).toBe(
-      '<prosody rate="85%">BP wali<break time="400ms"/>1 goli<break time="400ms"/>safed gol goli<break time="400ms"/>laal patte wali'
-      + '<break time="400ms"/>Le li ho to 1 dabaiye</prosody>');
+  it('wraps in prosody 90%: 200 ms at a comma, 350 ms at a sentence end, 700 ms at the long pause before the question', () => {
+    expect(toSsml('Aapki pehli dawai, 1 goli Telma ki hai. Iska patta laal hai। \u2016 Dawai lene ke baad, haan boliye।')).toBe(
+      '<prosody rate="90%">Aapki pehli dawai<break time="200ms"/>1 goli Telma ki hai<break time="350ms"/>Iska patta laal hai'
+      + '<break time="700ms"/>Dawai lene ke baad<break time="200ms"/>haan boliye</prosody>');
+  });
+  it('plain text (TWILIO_SSML=off) and TTS never say the long-pause mark', async () => {
+    const { body } = mk(false).renderNextAction({ action: 'hangup', finalAudioUrl: await say.urlFor('Patta laal hai. \u2016 Haan boliye.', 'hi') });
+    expect(body).toContain('>Patta laal hai. Haan boliye.</Say>');
   });
   it('escapes XML inside SSML, and no raw text can open a tag', () => {
     const s = toSsml('A <b>&</b> "x", y\'s. </prosody><break/>');
@@ -82,9 +89,9 @@ describe('v1.4 SSML pace', () => {
   it('renders inside <Say> in a Gather and in a hangup', async () => {
     const url = await say.urlFor('पहली दवाई: BP wali। 1 गोली, सफ़ेद गोली।', 'hi');
     const { body } = mk().renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1'], speech: true, timeoutSeconds: 8 } } }, { callId: 'c1' });
-    expect(body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN"><prosody rate="85%">पहली दवाई<break time="400ms"/>BP wali<break time="400ms"/>1 गोली<break time="400ms"/>सफ़ेद गोली</prosody></Say></Gather>');
+    expect(body).toContain('<Say voice="Google.hi-IN-Chirp3-HD-Aoede" language="hi-IN"><prosody rate="90%">पहली दवाई<break time="200ms"/>BP wali<break time="350ms"/>1 गोली<break time="200ms"/>सफ़ेद गोली</prosody></Say></Gather>');
     const bye = mk().renderNextAction({ action: 'hangup', finalAudioUrl: await say.urlFor('Koi baat nahi. Dhanyavaad.', 'hi') }).body;
-    expect(bye).toContain('<prosody rate="85%">Koi baat nahi<break time="400ms"/>Dhanyavaad</prosody></Say><Hangup/>');
+    expect(bye).toContain('<prosody rate="90%">Koi baat nahi<break time="350ms"/>Dhanyavaad</prosody></Say><Hangup/>');
   });
   it('ssml:false (TWILIO_SSML=off) gives plain escaped text', async () => {
     const { body } = mk(false).renderNextAction({ action: 'hangup', finalAudioUrl: await say.urlFor('A & B. C', 'hi') });
@@ -102,7 +109,6 @@ describe('v1.4 limits (pure)', () => {
 
 const planned = async (w: World) => { await w.queue.add('schedule.replan', { personId: w.mom.id }); await w.settle(); };
 const status = (w: World) => w.store.allDoses().filter((d) => d.dueAt.toISOString() < '2026-03-10T12:00:00Z').map((d) => d.status);
-const MORE = 'Dobara sunne ke liye "phir se" boliye, ya zero dabaiye.';
 
 describe('v1.4 repeat limit: heard 3 times at most', () => {
   function two(scenario: Parameters<World['provider']['script']>[1]) {
@@ -112,17 +118,17 @@ describe('v1.4 repeat limit: heard 3 times at most', () => {
     w.provider.script(PARENT, scenario, { answer: 'answered', inputs: [{ key: '1' }] });
     return w;
   }
-  it('third repeat request: "Koi baat nahi, aage badhte hain.", dose stays unconfirmed, call moves on', async () => {
+  it('third repeat request: "not recorded", moving on, "we will call again"; dose stays unconfirmed, call moves on', async () => {
     const w = two({ answer: 'answered', inputs: [{ key: '0' }, { say: 'phir se' }, { key: '0' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
     expect(said).toHaveLength(5); // opening, repeat 1, repeat 2, "aage badhte hain" + medicine 2, closing line
-    expect(said[1]).toMatch(/^Pehli dawai: BP wali\./);
+    expect(said[1]).toMatch(/^Aapki Pehli dawai, ek goli BP wali ki hai\./);
     expect(said[2]).toBe(said[1]);
-    expect(said[3]).toMatch(/^Koi baat nahi, aage badhte hain\. Doosri dawai: Sugar wali\./);
+    expect(said[3]).toMatch(/^Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya\. Hum agli dawai par chalte hain\. Chinta mat kijiye, is dawai ke liye hum aapko phir phone karenge\. Aapki Doosri dawai, ek goli Sugar wali ki hai\./);
     expect(said[3]).not.toBe(said[1]);
-    expect(said.filter((x) => x.includes('Pehli dawai: BP wali')).length).toBe(3); // heard 3 times in all
+    expect(said.filter((x) => x.includes('Pehli dawai, ek goli BP wali')).length).toBe(3); // heard 3 times in all
     expect(status(w)).toEqual(['calling', 'confirmed']);
     expect(w.store.allCalls()[0]!.result).toBe('none');
     await w.advance(11); // normal follow-up: the 10 minute retry asks only about BP wali
@@ -134,7 +140,7 @@ describe('v1.4 repeat limit: heard 3 times at most', () => {
     const w = two({ answer: 'answered', duplicateWebhooks: true, inputs: [{ key: '0' }, { key: '0' }, { key: '0' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
-    expect(w.playedText(0).filter((x) => x.includes('Pehli dawai: BP wali')).length).toBe(3);
+    expect(w.playedText(0).filter((x) => x.includes('Pehli dawai, ek goli BP wali')).length).toBe(3);
     expect(status(w)).toEqual(['calling', 'confirmed']);
     expect(w.provider.callsTo(PARENT)).toHaveLength(1);
   });
@@ -143,7 +149,7 @@ describe('v1.4 repeat limit: heard 3 times at most', () => {
     await planned(w);
     await w.advance(1);
     expect(status(w)).toEqual(['confirmed', 'confirmed']);
-    expect(w.playedText(0).join(' ')).not.toMatch(/aage badhte hain/);
+    expect(w.playedText(0).join(' ')).not.toMatch(/agli dawai par chalte hain/);
   });
   it('last medicine repeated a third time: moves on to the closing line, dose stays open', async () => {
     const w = world();
@@ -152,19 +158,22 @@ describe('v1.4 repeat limit: heard 3 times at most', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[said.length - 1]).toMatch(/^Koi baat nahi, aage badhte hain\. Dhanyavaad\./);
+    expect(said[said.length - 1]).toBe('Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya. Chinta mat kijiye, is dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.');
     expect(status(w)).toEqual(['calling']);
   });
-  it('the prompt every time offers the repeat words', async () => {
-    const w = two({ answer: 'answered', inputs: [{ key: '0' }, { key: '1' }, { key: '1' }] });
+  it('the repeat words are explained once at the start and again in the unclear re-ask; each medicine ends with the short question', async () => {
+    const w = two({ answer: 'answered', inputs: [{ key: '0' }, { say: 'hmm' }, { key: '1' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
-    expect(w.playedText(0)[1]!.endsWith(MORE)).toBe(true);
+    const said = w.playedText(0);
+    expect(said[0]).toMatch(/Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\./);
+    expect(said[1]!.endsWith('Dawai lene ke baad, "haan" boliye, ya ek dabaiye.')).toBe(true);
+    expect(said[2]).toMatch(/Dobara sunna ho, to "phir se" boliye, ya zero dabaiye\.$/);
   });
 });
 
 describe('v1.4 call time limit (fake clock)', () => {
-  const TIME_UP = 'Samay poora ho gaya. Baaki dawai ke liye thodi der mein phir phone karenge. Dhanyavaad.';
+  const TIME_UP = 'Samay poora ho gaya. Chinta mat kijiye, baaki dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste.';
   function meds(n: number, scenario: Parameters<World['provider']['script']>[1]) {
     const w = world();
     for (let i = 0; i < n; i++) w.med(`Dawai ${i + 1}`, `09:0${i}`);

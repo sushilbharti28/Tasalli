@@ -2,6 +2,28 @@
 
 Scripts are templates in `packages/scripts/<language>.yaml`. Variables in `{curly}` come from the family's own entries and are spoken verbatim. The call never adds medical advice.
 
+## Reminder call, one medicine at a time (v1.6, 24 Nov 2026; the lines in use)
+
+Hindi only for now. The call speaks Devanagari from `packages/scripts/hi.yaml` (`reminder_steps`); this is the same text in Roman Hindi for review. `[pause]` is the longer pause before the question.
+
+1. Opening (its "haan" / 1 is also the check that the parent can hear the call):
+   > Namaste {person_name} ji. Hum Tasalli se bol rahe hain. Aapko {meal_phrase} wali {count_word} dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya 1 dabaiye.
+2. After "haan": the choices, once.
+   > Theek hai. Hum ek-ek karke dawai batate hain. Har dawai lene ke baad, "haan" boliye, ya 1 dabaiye. Dobara sunna ho, to "phir se" boliye, ya 0 dabaiye. Abhi nahi leni ho, to "nahi" boliye, ya 2 dabaiye.
+3. Each medicine (look and pack only on the first call of the day):
+   > Aapki pehli dawai, 1 goli Telma 40 mg ki hai. Ise aap BP wali kehte hain. Yeh ek chhoti si safed rang ki gol aakar ki goli hai. Iske beech mein ek line hai. Iska patta laal rang ka hai. [pause] Dawai lene ke baad, "haan" boliye, ya 1 dabaiye.
+   >
+   > Aapki doosri dawai, 1 capsule Glycomet 500 ki hai. Ise aap sugar wali kehte hain. Yeh capsule dekhne mein aadha peela aur aadha safed hai. Iska patta chaandi ke rang ka hai. [pause] Dawai lene ke baad, "haan" boliye, ya 1 dabaiye.
+   >
+   > Aapki teesri dawai, 1 chammach (5 ml) Cremaffin ki hai. Ise aap pet wali dawai kehte hain. Iski bottle bhoore rang ki hai. Iska dhakkan laal rang ka hai. [pause] Dawai lene ke baad, "haan" boliye, ya 1 dabaiye.
+4. Replies: "haan" / 1: "Theek hai." and the next medicine. "nahi" / 2: "Koi baat nahi, thodi der mein phir yaad dilayenge." Silence: "Hum phir se batate hain." and the medicine again (once). Unclear: "Maaf kijiye, samajh nahi aaya. Dawai lene ke baad, "haan" boliye, ya 1 dabaiye. Dobara sunna ho, to "phir se" boliye, ya 0 dabaiye."
+5. No usable answer (heard 3 times, or unclear twice): "Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya. Hum agli dawai par chalte hain. Chinta mat kijiye, is dawai ke liye hum aapko phir phone karenge." (The last sentence only when a call follows.)
+6. Endings: "Bahut achha, aapne saari dawaiyan le li hain. Dhanyavaad, namaste." / "Chinta mat kijiye, baaki dawai ke liye hum thodi der mein phir phone karenge. Dhanyavaad, namaste." / when no call follows: "Dhanyavaad, namaste."
+
+Sizes are three: bahut chhoti si, chhoti si, badi si. "Le li" is never asked for; a clear "le li" still confirms.
+
+The sections below are the earlier drafts, kept for the other languages.
+
 ## Consent call (Hindi example, shown in Hindi and English)
 
 > Namaste {person_name} ji. {child_name} aapko dawai ki yaad dilane ke liye phone karwana chahte hain. Agar aap haan kehna chahte hain, to "haan" boliye ya 1 dabaiye. Agar aap ye phone nahi chahte, to 9 dabaiye, phir hum kabhi phone nahi karenge.

@@ -1,10 +1,20 @@
 import type { CallerRelation, MedicineRow, PersonRow, ScheduleRow } from '../types.js';
 import { joinSentences, render } from './render.js';
 import { speakNumbers, scriptOf } from './spoken-numbers.js';
-import type { ScriptTemplates } from './templates.js';
+import type { ScriptTemplates, StepLook } from './templates.js';
 
 /** Marks the end of the short greeting inside the opening prompt: the provider says the parts as separate <Say>s with a 1 s <Pause> between. */
 export const SAY_BREAK = '\n';
+/** A longer pause inside one prompt (before the question after each medicine). Twilio renders it as a longer SSML <break>; elsewhere it is a plain space. */
+export const LONG_PAUSE = ' \u2016 ';
+export const LONG_PAUSE_MARK = '\u2016';
+/** Text for anything that cannot render the longer pause (plain-text speech, TTS files, logs): the mark becomes a space. */
+export const withoutPauseMarks = (text: string): string => text.split(LONG_PAUSE_MARK).map((x) => x.trim()).filter(Boolean).join(' ');
+
+/** The call speaks three sizes. The app's older five map onto them (rai: very small; dal, matar: small; badam, bigger: large). */
+export const SIZE_TO_THREE: Record<string, 'very_small' | 'small' | 'large'> = {
+  very_small: 'very_small', small: 'small', large: 'large', rai: 'very_small', dal: 'small', matar: 'small', badam: 'large', bigger: 'large',
+};
 
 export interface ReminderItem {
   medicine: MedicineRow;
@@ -27,9 +37,10 @@ export interface ReminderScriptInput {
 }
 
 export function personName(t: ScriptTemplates, person: Pick<PersonRow, 'nickname' | 'fullName'>): string {
-  // First word of the full name ("Ramesh Sharma" -> "Ramesh ji"); the nickname when there is no full name.
-  const base = (person.fullName ?? '').trim().split(/\s+/)[0] || person.nickname.trim();
-  return base + t.words.person_suffix;
+  // First word of the full name ("Ramesh Sharma" -> "Ramesh ji"). Never the nickname: it is the family's word for them
+  // ("Mummy", "Papa"), not their name. With no full name the greeting is just "Namaste ji".
+  const base = (person.fullName ?? '').trim().split(/\s+/)[0] ?? '';
+  return (base + t.words.person_suffix).trim();
 }
 
 export function childName(t: ScriptTemplates, name: string | null): string {
@@ -88,6 +99,42 @@ export function disambiguator(t: ScriptTemplates, m: MedicineRow): string {
   if (m.numberLabel !== null && m.numberLabel !== undefined) return render(t.words.disambiguator_number, { number: m.numberLabel });
   if (m.sayPrintedName) return render(t.words.disambiguator_printed_name, { strip_letters: spellOut(m.stripName) });
   return '';
+}
+
+/**
+ * v1.6: how a medicine looks, as whole sentences ("Yeh ek chhoti si safed rang ki gol aakar ki goli hai. Iska patta laal rang ka hai.").
+ * Only appearance fields are used (safety rule 2); family-typed values are never changed.
+ */
+export function lookSentences(t: ScriptTemplates, L: StepLook, m: MedicineRow): { appearance: string; pack: string; disambiguator: string } {
+  const g = (form: 'f' | 'm' | 'obl', key: string | null | undefined) => {
+    if (!key) return '';
+    const stem = L.colours[key] ?? L.colours[key.toLowerCase()] ?? key; // unknown values are spoken as entered
+    return render(L.coloured[form], { colour: stem });
+  };
+  const sizeWord = (f: 'f' | 'm') => {
+    const k = m.size ? SIZE_TO_THREE[m.size] ?? m.size : null;
+    const v = k ? L.sizes[k] : undefined;
+    return typeof v === 'string' ? v : (v?.[f] ?? '');
+  };
+  const sentences: string[] = [];
+  if (m.kind === 'tablet') {
+    sentences.push(render(L.tablet, { size: sizeWord('f'), colour: g('f', m.colourPrimary), shape: m.shape ? (L.shapes[m.shape] ?? m.shape) : '' }));
+    const mark = m.marking ? L.markings[m.marking] : '';
+    if (mark) sentences.push(mark);
+  } else if (m.kind === 'capsule') {
+    sentences.push(m.colourSecondary
+      ? render(L.capsule_two_colour, { colour: word(t, 'colours', m.colourPrimary, 'm'), colour2: word(t, 'colours', m.colourSecondary, 'm') })
+      : render(L.capsule, { size: sizeWord('m'), colour: g('m', m.colourPrimary) }));
+  }
+  const pack: string[] = [];
+  if (m.keptIn === 'strip' && m.packColour) pack.push(render(L.strip, { pack_colour: g('m', m.packColour) })); // patta: masculine
+  if (m.keptIn === 'strip' && m.printColour) pack.push(render(L.print, { print_colour: g('obl', m.printColour) }));
+  if (m.keptIn === 'bottle' && m.packColour) pack.push(render(L.bottle, { pack_colour: g('f', m.packColour) })); // bottle: feminine
+  if (m.keptIn === 'bottle' && m.capColour) pack.push(render(L.cap, { cap_colour: g('m', m.capColour) })); // dhakkan: masculine
+  if (m.keptIn === 'loose') pack.push(L.loose);
+  const dis = m.numberLabel !== null && m.numberLabel !== undefined ? render(L.number, { number: m.numberLabel })
+    : m.sayPrintedName ? render(L.printed_name, { strip_letters: spellOut(m.stripName) }) : '';
+  return { appearance: joinSentences(sentences), pack: joinSentences(pack), disambiguator: dis };
 }
 
 export function foodPhrase(t: ScriptTemplates, food: ScheduleRow['food'], localHour: number): string {
@@ -151,6 +198,8 @@ export interface ReminderSteps {
   /** Said first and alone: "Namaste Ramesh ji." then a pause, then `presence` ("can you hear me?"). Only after a yes does `opening` play. */
   greeting: string;
   presence: string;
+  /** Re-ask when the presence answer was not a yes (v1.6); falls back to `presence`. */
+  presenceRetry: string;
   /** Per medicine: `first` is said the first time (full or short mode), `full` is the repeat for key 0 / "phir se". */
   items: Array<{ first: string; full: string }>;
 }
@@ -191,8 +240,15 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
       spoken_name: m.spokenName, amount_text: it.schedule.amountText,
       disambiguator: disambiguator(t, m), extra_instruction: m.extraInstruction,
     };
-    const full = spoken(render(count === 1 ? r.step_item_one : r.step_item, { ...common, appearance_phrase: appearancePhrase(t, m), pack_phrase: packPhrase(t, m) }));
-    const short = spoken(render(count === 1 ? r.step_item_short_one : r.step_item_short, common));
+    const look = r.step_look ? lookSentences(t, r.step_look, m) : null;
+    if (look) common.disambiguator = look.disambiguator;
+    // The question after each medicine comes after a longer pause (LONG_PAUSE), so the description and the question do not run together.
+    // Speech only: whole-sentence pieces followed by the template's own full stop would say "hai.." / "है।।"; one mark is enough.
+    const tidy = (text: string) => text.replace(/([.।!?])(?:\s*[.।])+/g, '$1');
+    const withAsk = (text: string) => { const x = tidy(text); return r.step_item_ask ? x + LONG_PAUSE + spoken(r.step_item_ask) : x; };
+    const full = withAsk(spoken(render(count === 1 ? r.step_item_one : r.step_item, {
+      ...common, appearance_phrase: look ? look.appearance : appearancePhrase(t, m), pack_phrase: look ? look.pack : packPhrase(t, m) })));
+    const short = withAsk(spoken(render(count === 1 ? r.step_item_short_one : r.step_item_short, common)));
     const sunday = input.isSunday && m.numberLabel !== null && m.numberLabel !== undefined && !seenNumbers.has(m.id)
       ? spoken(render(r.sunday_line, { number: m.numberLabel, spoken_name: m.spokenName })) : ''; // said once per medicine per day
     if (sunday) seenNumbers.add(m.id);
@@ -204,7 +260,11 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const first = joinSentences([intro, items[0]?.first ?? '']);
   // A short separate greeting first ("Namaste Ramesh ji."), then a pause, so a slow synthesis of the long part cannot leave the line silent.
   const greeting = r.step_greeting ? spoken(render(r.step_greeting, { person_name })) : '';
-  return { opening: first, greeting, presence: r.step_presence ? spoken(r.step_presence) : '', items };
+  // v1.6: the opening after the greeting says who is calling and why, and its "haan" / 1 is the presence check.
+  const presenceLine = (count === 1 ? r.step_reminder_presence_one : undefined) ?? r.step_reminder_presence ?? r.step_presence;
+  const presence = presenceLine ? spoken(render(presenceLine, vars)) : '';
+  const retryLine = (count === 1 ? r.step_presence_retry_one : undefined) ?? r.step_presence_retry;
+  return { opening: first, greeting, presence, presenceRetry: retryLine ? spoken(render(retryLine, vars)) : presence, items };
 }
 
 export function sundayLines(input: ReminderScriptInput): string[] {

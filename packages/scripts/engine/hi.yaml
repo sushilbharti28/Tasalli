@@ -6,34 +6,34 @@ reminder:
   full_intro: नमस्ते {person_name} जी, {child_name} की तरफ़ से दवाई का समय। अभी {count} दवाइयाँ लेनी हैं।
   full_intro_one: नमस्ते {person_name} जी, {child_name} की तरफ़ से दवाई का समय। अभी एक दवाई लेनी है।
   full_item: "{ordinal}, {spoken_name}: {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {food_phrase}। {extra_instruction}"
-  full_outro: दवाई ले लें, फिर बोलिए "ले ली" या "हाँ", या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2। डॉक्टर ने दवाई बदली हो, तो 3 दबाइए।
+  full_outro: दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2। डॉक्टर ने दवाई बदली हो, तो 3 दबाइए।
   short_intro: "{person_name} जी, दवाई का समय।"
   short_item: "{spoken_name}: {amount_text}, {food_phrase}।"
-  short_outro: ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।
-  short_single: '{person_name} जी, {spoken_name} का समय। {amount_text}, {food_phrase}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  short_outro: दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।
+  short_single: '{person_name} जी, {spoken_name} का समय। {amount_text}, {food_phrase}। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
   sunday_line: "{spoken_name} की नई पत्ती खोली हो, तो उस पर {number} लिख दीजिए।"
   unclear: माफ़ कीजिए, समझ नहीं आया। फिर से बोलिए।
   keypad_only: दवाई ले ली हो, तो 1 दबाइए। बाद में याद दिलाने के लिए 2। दोबारा सुनने के लिए 0।
   confirm_ack: धन्यवाद जी। {child_name} को बता देंगे। नमस्ते।
   snooze_ack: ठीक है जी। पंद्रह मिनट बाद फिर याद दिलाएँगे। नमस्ते।
-  snooze_used: पंद्रह मिनट वाली याद एक ही बार होती है। दवाई ले लें, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए।
+  snooze_used: पंद्रह मिनट वाली याद एक ही बार होती है। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए।
   declined_ack: ठीक है जी। {child_name} को बता देंगे। नमस्ते।
-  not_taken_ack: ठीक है जी। दवाई ले लें, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2 दबाइए।
+  not_taken_ack: ठीक है जी। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। पंद्रह मिनट बाद याद दिलाने के लिए 2 दबाइए।
   doctor_changed_ack: ठीक है जी। {child_name} को बता देंगे कि डॉक्टर ने दवाई बदली है। नमस्ते।
   unwell_ack: ठीक है जी। {child_name} को बता देंगे। ज़रूरत हो, तो अपने डॉक्टर से बात कीजिए। नमस्ते।
   stop_ack: ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। {child_name} को भी बता देंगे। नमस्ते।
   no_input_goodbye: जवाब नहीं मिला। नमस्ते।
   step_greeting: नमस्ते {person_name} जी।
-  step_spoken_line: जिसे आप {spoken_name} कहते हैं।
+  step_spoken_line: इसे आप {spoken_name} कहते हैं।
   step_presence: क्या आपको आवाज़ आ रही है? "हाँ" बोलिए, या 1 दबाइए।
-  step_intro: आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।
-  step_intro_one: आपकी {meal_phrase} वाली दवाई का समय हो गया है।
-  step_short_intro: आपकी {meal_phrase} वाली {count_word} दवाइयों का समय हो गया है। एक-एक करके बताते हैं।
-  step_short_intro_one: आपकी {meal_phrase} वाली दवाई का समय हो गया है।
-  step_item: '{ordinal}: {strip_name} {strength}। {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  step_item_one: 'दवाई: {strip_name} {strength}। {spoken_line} {amount_text}, {appearance_phrase}, {pack_phrase}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  step_item_short: '{ordinal}: {strip_name} {strength}। {spoken_line} {amount_text}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
-  step_item_short_one: 'दवाई: {strip_name} {strength}। {spoken_line} {amount_text}, {disambiguator}। {extra_instruction}। ले ली हो, तो "ले ली" या "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनने के लिए "फिर से" बोलिए, या 0 दबाइए।'
+  step_intro: ठीक है। हम एक-एक करके दवाई बताते हैं। हर दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।
+  step_intro_one: ठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।
+  step_short_intro: ठीक है। हम एक-एक करके दवाई बताते हैं। हर दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।
+  step_short_intro_one: ठीक है। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए। अभी नहीं लेनी हो, तो "नहीं" बोलिए, या 2 दबाइए।
+  step_item: आपकी {ordinal}, {amount_text} {strip_name} {strength} की है। {spoken_line} {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}।
+  step_item_one: आपकी दवाई, {amount_text} {strip_name} {strength} की है। {spoken_line} {appearance_phrase} {pack_phrase} {disambiguator} {extra_instruction}।
+  step_item_short: आपकी {ordinal}, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator} {extra_instruction}।
+  step_item_short_one: आपकी दवाई, {amount_text} {strip_name} {strength} की है। {spoken_line} {disambiguator} {extra_instruction}।
   step_meals:
     breakfast: नाश्ते
     lunch: दोपहर के खाने
@@ -68,18 +68,77 @@ reminder:
   step_ack_next: ठीक है।
   step_ack_not_now: कोई बात नहीं, थोड़ी देर में फिर याद दिलाएँगे।
   step_ack_silence: कोई बात नहीं।
-  step_unclear: माफ़ कीजिए, समझ नहीं आया। ले ली हो, तो 1 दबाइए।
-  step_all_done: बहुत अच्छा। सब दवाइयाँ ले ली गई हैं। धन्यवाद।
-  step_all_done_one: बहुत अच्छा। दवाई ले ली गई है। धन्यवाद।
-  step_some_left: धन्यवाद। बाकी दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे।
-  step_some_left_one: धन्यवाद। दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे।
-  step_repeat_limit: कोई बात नहीं, आगे बढ़ते हैं।
-  step_time_up: समय पूरा हो गया। बाकी दवाई के लिए थोड़ी देर में फिर फ़ोन करेंगे। धन्यवाद।
+  step_unclear: माफ़ कीजिए, समझ नहीं आया। दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। दोबारा सुनना हो, तो "फिर से" बोलिए, या 0 दबाइए।
+  step_all_done: बहुत अच्छा, आपने सारी दवाइयाँ ले ली हैं। धन्यवाद, नमस्ते।
+  step_all_done_one: बहुत अच्छा, आपने दवाई ले ली है। धन्यवाद, नमस्ते।
+  step_some_left: चिंता मत कीजिए, बाकी दवाई के लिए हम थोड़ी देर में फिर फ़ोन करेंगे। धन्यवाद, नमस्ते।
+  step_some_left_one: चिंता मत कीजिए, इस दवाई के लिए हम थोड़ी देर में फिर फ़ोन करेंगे। धन्यवाद, नमस्ते।
+  step_repeat_limit: माफ़ कीजिए, किसी वजह से इस दवाई का जवाब दर्ज नहीं हो पाया।
+  step_time_up: समय पूरा हो गया।
+  step_reminder_presence: हम तसल्ली से बोल रहे हैं। आपको {meal_phrase} वाली {count_word} दवाइयों की याद दिलाने के लिए फ़ोन किया है। दवाइयों के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।
+  step_reminder_presence_one: हम तसल्ली से बोल रहे हैं। आपको {meal_phrase} वाली दवाई की याद दिलाने के लिए फ़ोन किया है। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।
+  step_presence_retry: माफ़ कीजिए, समझ नहीं आया। दवाइयों के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।
+  step_presence_retry_one: माफ़ कीजिए, समझ नहीं आया। दवाई के बारे में सुनने के लिए, "हाँ" बोलिए, या 1 दबाइए।
+  step_item_ask: दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए।
+  step_silence_repeat: हम फिर से बताते हैं।
+  step_moving_on: हम अगली दवाई पर चलते हैं।
+  step_will_call_again: चिंता मत कीजिए, इस दवाई के लिए हम आपको फिर फ़ोन करेंगे।
+  step_end_no_call_back: धन्यवाद, नमस्ते।
+  step_look:
+    sizes:
+      very_small:
+        f: बहुत छोटी सी
+        m: बहुत छोटा सा
+      small:
+        f: छोटी सी
+        m: छोटा सा
+      large:
+        f: बड़ी सी
+        m: बड़ा सा
+    colours:
+      white: सफ़ेद
+      cream: क्रीम
+      yellow: पीले
+      orange: नारंगी
+      pink: गुलाबी
+      red: लाल
+      maroon: गहरे लाल
+      brown: भूरे
+      green: हरे
+      blue: नीले
+      purple: बैंगनी
+      grey: स्लेटी
+      black: काले
+      silver: चाँदी के
+      golden: सुनहरे
+      transparent: शीशे जैसे
+    coloured:
+      f: "{colour} रंग की"
+      m: "{colour} रंग का"
+      obl: "{colour} रंग"
+    shapes:
+      round: गोल आकार की
+      oval: अंडे के आकार की
+      long: लंबी
+      square: चौकोर
+    tablet: यह एक {size} {colour} {shape} गोली है।
+    capsule: यह एक {size} {colour} कैप्सूल है।
+    capsule_two_colour: यह कैप्सूल देखने में आधा {colour} और आधा {colour2} है।
+    markings:
+      line: इसके बीच में एक लाइन है।
+      letters: इस पर कुछ लिखा हुआ है।
+    strip: इसका पत्ता {pack_colour} है।
+    print: पत्ते पर {print_colour} से लिखा है।
+    loose: यह डिब्बे में खुली रखी है।
+    bottle: इसकी बोतल {pack_colour} है।
+    cap: इसका ढक्कन {cap_colour} है।
+    number: इसके पत्ते पर {number} नंबर लिखा है।
+    printed_name: इसके पत्ते पर {strip_letters} लिखा है।
 consent:
   prompt: नमस्ते {person_name} जी। यह तसल्ली की तरफ़ से फ़ोन है। {relation_phrase} {child_name} आपको दवाई की याद दिलाने के लिए फ़ोन करवाना चाहते हैं। यह कॉल रिकॉर्ड की जाएगी। अगर आप हाँ कहना चाहते हैं, तो "हाँ" बोलिए, या 1 दबाइए। अगर आप ये फ़ोन नहीं चाहते, तो 9 दबाइए। फिर हम कभी फ़ोन नहीं करेंगे।
   unclear: माफ़ कीजिए, समझ नहीं आया। हाँ कहना हो, तो 1 दबाइए। फ़ोन नहीं चाहिए, तो 9 दबाइए।
   keypad_only: माफ़ कीजिए, समझ नहीं आया। हाँ कहना हो, तो 1 दबाइए। फ़ोन नहीं चाहिए, तो 9 दबाइए।
-  yes_ack: धन्यवाद जी। अब दवाई के समय पर हम फ़ोन करेंगे। हर बार "ले ली" या "हाँ" बोलिए, या 1 दबाइए। कभी भी 9 दबाकर फ़ोन बंद करवा सकते हैं। नमस्ते।
+  yes_ack: धन्यवाद जी। अब दवाई के समय पर हम फ़ोन करेंगे। हर बार दवाई लेने के बाद, "हाँ" बोलिए, या 1 दबाइए। कभी भी 9 दबाकर फ़ोन बंद करवा सकते हैं। नमस्ते।
   no_ack: ठीक है जी। हम आपको फ़ोन नहीं करेंगे। नमस्ते।
   stop_ack: ठीक है जी। अब हम आपको कभी फ़ोन नहीं करेंगे। नमस्ते।
   no_input_goodbye: जवाब नहीं मिला। नमस्ते।

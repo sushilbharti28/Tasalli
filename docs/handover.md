@@ -40,9 +40,12 @@ Notes:
 ## Founder decisions (do not change without asking)
 
 Calls:
-- Hindi only for now. Voice `Google.hi-IN-Chirp3-HD-Aoede` (override with `TWILIO_VOICE`). SSML: 85% rate and 400 ms breaks; whether the rate takes effect on this voice is not yet confirmed by ear.
+- Hindi only for now. Voice `Google.hi-IN-Chirp3-HD-Aoede` (override with `TWILIO_VOICE`). SSML: 90% rate; pauses 200 ms at a comma, 350 ms at a sentence end, 700 ms before the question after each medicine (24 Nov 2026: 85% felt slow, 95% too fast).
 - Consent call: presence check first, names the relation and child ("aapke bete Rahul…"), announces recording. Reminder calls never mention the child or relation.
-- Reminder call: greeting, presence check ("Kya aapko awaaz aa rahi hai?"), opening with meal names ("Aapki dopahar ke khane ke baad wali teen dawaiyon ka samay ho gaya hai"), then one medicine at a time: printed name and strength, "Jise aap {spoken name} kehte hain", amount, look, pack; confirm by "le li"/"haan"/1; "phir se"/0 repeats (max 2 repeats); silence repeats once; "nahi li"/2 leaves it for a follow-up.
+- Reminder call (v1.6 wording, 24 Nov 2026): "Namaste Ramesh ji." Then who is calling and why ("Hum Tasalli se bol rahe hain. Aapko dopahar ke khane ke baad wali teen dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, haan boliye, ya 1 dabaiye."); that yes is the presence check. Then all choices once (haan/1, phir se/0, nahi/2), then one medicine at a time: "Aapki pehli dawai, {amount} {printed name} {strength} ki hai. Ise aap {spoken name} kehte hain." plus look and pack as short sentences, a longer pause, "Dawai lene ke baad, haan boliye, ya 1 dabaiye." Full Roman text: `docs/call-scripts.md`.
+- Calls greet the parent by the first word of their full name ("Namaste Ramesh ji"), never by the nickname ("Mummy", "Papa" is the family's word, not a name). No full name: "Namaste ji".
+- Prompts never ask for "le li" (it was misheard); a clear "le li" still confirms. Unclear speech gets one re-ask with the same choices (speech or key; rule 4 updated); a medicine with no usable answer: "Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya. Hum agli dawai par chalte hain. Chinta mat kijiye, is dawai ke liye hum aapko phir phone karenge." The call-again promise is only said when a call really follows (retry or 15-minute reminder left).
+- Sizes are three: very small, small, large (bahut chhoti si / chhoti si / badi si). The call maps the app's older five (rai, dal/matar, badam/bigger); the app and contract change to three is the next PR.
 - All numbers are spoken as Hindi words (ek, ek sau bees milligram, aadha, dedh). Stored data stays verbatim.
 - One call groups only doses with the same 30-minute window and the same food timing.
 - Time limit: 180 s for up to 5 medicines, +40 s for each extra; Twilio TimeLimit is 30 s more as a backstop.

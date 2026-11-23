@@ -24,30 +24,30 @@ describe('v1.5 medicine line: printed name and strength, then what the family ca
     return { steps, items };
   };
 
-  it('strip name and strength, then "Jise aap ... kehte hain", then amount; numbers are words', () => {
+  it('amount, strip name and strength in one sentence, then "Ise aap ... kehte hain"; numbers are words', () => {
     const { steps } = build({});
-    expect(steps.items[0]!.full).toMatch(/^Pehli dawai: Glycomet paanch sau milligram\. Jise aap sugar wali kehte hain\. ek capsule/);
+    expect(steps.items[0]!.full).toMatch(/^Aapki Pehli dawai, ek capsule Glycomet paanch sau milligram ki hai\. Ise aap sugar wali kehte hain\./);
     expect(steps.items[0]!.full).not.toMatch(/\d/);
   });
-  it('single medicine: "Dawai: ..." with no ordinal', () => {
+  it('single medicine: "Aapki dawai, ..." with no ordinal', () => {
     const { steps } = build({}, { count: 1 });
-    expect(steps.items[0]!.full).toMatch(/^Dawai: Glycomet paanch sau milligram\. Jise aap sugar wali kehte hain\./);
+    expect(steps.items[0]!.full).toMatch(/^Aapki dawai, ek capsule Glycomet paanch sau milligram ki hai\. Ise aap sugar wali kehte hain\./);
     expect(steps.items[0]!.full).not.toMatch(/Pehli/);
   });
   it('empty strength is left out', () => {
     const { steps } = build({ strengthText: null });
-    expect(steps.items[0]!.full).toMatch(/^Pehli dawai: Glycomet\. Jise aap sugar wali kehte hain\./);
-    expect(build({ strengthText: '  ' }).steps.items[0]!.full).toMatch(/^Pehli dawai: Glycomet\. Jise/);
+    expect(steps.items[0]!.full).toMatch(/^Aapki Pehli dawai, ek capsule Glycomet ki hai\. Ise aap sugar wali kehte hain\./);
+    expect(build({ strengthText: '  ' }).steps.items[0]!.full).toMatch(/^Aapki Pehli dawai, ek capsule Glycomet ki hai\. Ise/);
   });
-  it('spoken name equal to the strip name (any case) leaves out the "Jise aap" sentence', () => {
+  it('spoken name equal to the strip name (any case) leaves out the "Ise aap" sentence', () => {
     const { steps } = build({ spokenName: 'GLYCOMET' });
-    expect(steps.items[0]!.full).toMatch(/^Pehli dawai: Glycomet paanch sau milligram\. ek capsule/);
-    expect(steps.items[0]!.full).not.toMatch(/Jise aap/);
+    expect(steps.items[0]!.full).toMatch(/^Aapki Pehli dawai, ek capsule Glycomet paanch sau milligram ki hai\. Yeh/);
+    expect(steps.items[0]!.full).not.toMatch(/Ise aap/);
   });
   it('the short (later in the day) form shows the strip name too', () => {
     const { steps } = build({}, { mode: 'short' });
-    expect(steps.items[0]!.first).toMatch(/^Pehli dawai: Glycomet paanch sau milligram\. Jise aap sugar wali kehte hain\. ek capsule/);
-    expect(steps.items[0]!.first).not.toMatch(/goli, |capsule,/); // no appearance in the short form
+    expect(steps.items[0]!.first).toMatch(/^Aapki Pehli dawai, ek capsule Glycomet paanch sau milligram ki hai\. Ise aap sugar wali kehte hain\./);
+    expect(steps.items[0]!.first).not.toMatch(/Yeh /); // no appearance in the short form
     expect(steps.items[0]!.full).not.toBe(steps.items[0]!.first);
   });
   it('speech only: the stored amount, strength and names are never changed', () => {
@@ -63,7 +63,7 @@ describe('v1.5 medicine line: printed name and strength, then what the family ca
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0).join(' ');
-    expect(said).toMatch(/Dawai: Telma chaalees chaalees milligram\. Jise aap BP wali tablet kehte hain\. ek goli/);
+    expect(said).toMatch(/Aapki dawai, ek goli Telma chaalees chaalees milligram ki hai\. Ise aap BP wali tablet kehte hain\./);
     expect(said).not.toMatch(/\d/);
     const med = [...w.store.state.medicines.values()][0]!;
     expect(med.stripName).toBe('Telma 40');
@@ -75,7 +75,7 @@ describe('v1.5 medicine line: printed name and strength, then what the family ca
 describe('v1.5 greeting, silence and listen time', () => {
   it('the greeting is its own <Say>, then a 1 s pause, then the rest (Twilio TwiML)', async () => {
     const p = new TwilioProvider({ accountSid: 'AC1', authToken: 't', publicBaseUrl: 'https://x.example' });
-    const url = await new SayUrls().urlFor('Namaste Mummy ji.\nAapki dawai ka samay ho gaya hai.', 'hi');
+    const url = await new SayUrls().urlFor('Namaste Kamla ji.\nAapki dawai ka samay ho gaya hai.', 'hi');
     const { body } = p.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1'], speech: true, timeoutSeconds: 8 } } }, { callId: 'c1' });
     const says = body.match(/<Say /g) ?? [];
     expect(says).toHaveLength(2);
@@ -97,7 +97,7 @@ describe('v1.5 greeting, silence and listen time', () => {
     await w.advance(1);
     const call = w.provider.callsTo(PARENT)[0]!;
     expect(call.request.firstStep.listen?.timeoutSeconds).toBe(8);
-    expect(w.playedText(0)[0]!.split('\n')[0]).toBe('Namaste Mummy ji.');
+    expect(w.playedText(0)[0]!.split('\n')[0]).toBe('Namaste Kamla ji.');
     expect(timeouts).toEqual([6]); // the second medicine
   });
 
@@ -108,9 +108,9 @@ describe('v1.5 greeting, silence and listen time', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[1]).toMatch(/^Dawai: BP wali\./); // same medicine again, in full
+    expect(said[1]).toMatch(/^Hum phir se batate hain\. Aapki dawai, ek goli BP wali ki hai\./); // same medicine again, in full
     expect(said[1]).toBe(w.provider.callsTo(PARENT)[0]!.played.map((u) => w.text(u))[1]);
-    expect(said[2]).toMatch(/Maaf kijiye/); // second silence: asked once, keypad
+    expect(said[2]).toMatch(/^Maaf kijiye, samajh nahi aaya\. Dawai lene ke baad, "haan" boliye/); // second silence: asked once more, speech or key
     expect(doses(w)).toEqual(['calling']); // never confirmed
     expect(w.store.allCalls()[0]!.result).toBe('none');
   });
@@ -124,8 +124,8 @@ describe('v1.5 greeting, silence and listen time', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[3]).toMatch(/^Koi baat nahi, aage badhte hain\./);
-    expect(said[3]).toMatch(/Doosri dawai: Sugar wali/);
+    expect(said[3]).toMatch(/^Maaf kijiye, kisi wajah se is dawai ka jawab darj nahi ho paaya\. Hum agli dawai par chalte hain\. Chinta mat kijiye/);
+    expect(said[3]).toMatch(/Doosri dawai, ek goli Sugar wali/);
     expect(doses(w)).toEqual(['calling', 'confirmed']);
   });
 
@@ -135,7 +135,7 @@ describe('v1.5 greeting, silence and listen time', () => {
     w.provider.script(PARENT, { answer: 'answered', inputs: [{ silence: true }, { silence: true }, { silence: true }, { silence: true }] });
     await planned(w);
     await w.advance(1);
-    expect(w.playedText(0).filter((t) => /Dawai: BP wali/.test(t))).toHaveLength(2); // opening + exactly one replay
+    expect(w.playedText(0).filter((t) => /Aapki dawai, ek goli BP wali/.test(t))).toHaveLength(2); // opening + exactly one replay
   });
 });
 
@@ -154,9 +154,9 @@ describe('v1.5 presence check ("can you hear me?")', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[0]).toBe('Namaste Mummy ji.\nKya aapko awaaz aa rahi hai? "Haan" boliye, ya ek dabaiye.');
+    expect(said[0]).toBe('Namaste Kamla ji.\nHum Tasalli se bol rahe hain. Aapko subah ki wali do dawaiyon ki yaad dilane ke liye phone kiya hai. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya ek dabaiye.');
     expect(said[0]).not.toMatch(/BP wali/);
-    expect(said[1]).toMatch(/Aapki subah ki wali do dawaiyon.*Pehli dawai: BP wali/);
+    expect(said[1]).toMatch(/^Theek hai\. Hum ek-ek karke dawai batate hain\. .*Abhi nahi leni ho.*Aapki Pehli dawai, ek goli BP wali/);
     expect(doses(w)).toEqual(['calling', 'calling']); // key 1 on "can you hear me" confirmed nothing
   });
 
@@ -164,7 +164,7 @@ describe('v1.5 presence check ("can you hear me?")', () => {
     const w = two({ ...ok, inputs: [{ say }, { key: '1' }, { key: '1' }] });
     await planned(w);
     await w.advance(1);
-    expect(w.playedText(0)[1]).toMatch(/Pehli dawai: BP wali/);
+    expect(w.playedText(0)[1]).toMatch(/Pehli dawai, ek goli BP wali/);
     expect(doses(w)).toEqual(['confirmed', 'confirmed']);
   });
 
@@ -190,8 +190,8 @@ describe('v1.5 presence check ("can you hear me?")', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[1]).toMatch(/^Kya aapko awaaz aa rahi hai/);
-    expect(said[2]).toMatch(/Pehli dawai: BP wali/);
+    expect(said[1]).toBe('Maaf kijiye, samajh nahi aaya. Dawaiyon ke baare mein sunne ke liye, "haan" boliye, ya ek dabaiye.');
+    expect(said[2]).toMatch(/Pehli dawai, ek goli BP wali/);
     expect(doses(w)).toEqual(['confirmed', 'confirmed']);
   });
 
@@ -244,8 +244,8 @@ describe('v1.5 presence check ("can you hear me?")', () => {
     await planned(w);
     await w.advance(1);
     const said = w.playedText(0);
-    expect(said[1]).toMatch(/Pehli dawai: BP wali/);
-    expect(said[2]).toMatch(/Doosri dawai: Sugar wali/);
+    expect(said[1]).toMatch(/Pehli dawai, ek goli BP wali/);
+    expect(said[2]).toMatch(/Doosri dawai, ek goli Sugar wali/);
     expect(doses(w)).toEqual(['confirmed', 'confirmed']);
     expect(w.provider.callsTo(PARENT)).toHaveLength(1);
   });
@@ -290,7 +290,7 @@ describe('v1.5 presence check ("can you hear me?")', () => {
     await w.queue.add('consent.call', { personId: w.mom.id });
     await w.settle();
     const said = w.playedText(0);
-    expect(said[0]).toMatch(/^Namaste Mummy ji\.\nKya aapko awaaz aa rahi hai/);
+    expect(said[0]).toMatch(/^Namaste Kamla ji\.\nKya aapko awaaz aa rahi hai/);
     expect(said[1]).toMatch(/Tasalli/);
     expect(said[1]).not.toMatch(/^Namaste/); // the greeting is not said twice
     expect(w.mom.consent).toBe('consented');

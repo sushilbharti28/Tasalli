@@ -186,7 +186,12 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
     } else if (silent.length > 0) {
       result = 'none'; // the normal 10-minute retry covers the doses nobody answered for
     }
-    const end = timeUp ? (t.step_time_up ?? t.step_some_left) : result === 'confirmed' ? (n === 1 ? t.step_all_done_one : t.step_all_done) : (n === 1 ? t.step_some_left_one : t.step_some_left);
+    // "We will call again" only when a call really follows: the 15 minute reminder, or a 10-minute retry that is still left.
+    const callsBack = result === 'snoozed' || (result === 'none' && r.retryLeft !== false);
+    const someLeft = n === 1 ? t.step_some_left_one : t.step_some_left;
+    const end = t.step_end_no_call_back !== undefined // v1.6 wording: time_up no longer carries the promise itself
+      ? joinSentences([timeUp ? (t.step_time_up ?? '') : '', result === 'confirmed' && !timeUp ? (n === 1 ? t.step_all_done_one : t.step_all_done) : callsBack ? someLeft : t.step_end_no_call_back])
+      : timeUp ? (t.step_time_up ?? t.step_some_left) : result === 'confirmed' ? (n === 1 ? t.step_all_done_one : t.step_all_done) : someLeft;
     return bye(joinSentences([ack, end]), result);
   };
   const advance = async (outcome: 'confirmed' | 'declined' | 'none', ack: string, forceTimeUp = false): Promise<NextAction> => {
@@ -207,6 +212,14 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
     return ask(joinSentences([ack, upcoming.first]), true);
   };
 
+  // No usable answer for this medicine: "not recorded", then (if another medicine follows) "moving on", and "we will call again" only when a retry is left.
+  // On the last medicine, finish() says whether a call follows.
+  const notRecorded = (): string => {
+    if (t.step_moving_on === undefined) return t.step_repeat_limit ?? t.step_ack_silence; // languages without the v1.6 lines
+    const last = r.index >= n - 1;
+    return joinSentences([t.step_repeat_limit ?? '', last ? '' : t.step_moving_on, !last && r.retryLeft !== false ? (t.step_will_call_again ?? '') : '']);
+  };
+
   switch (intent) {
     case 'stop':
       await stopNumber(d, s.to, via === 'key' ? 'key_9' : 'stop_phrase', via, call);
@@ -225,23 +238,23 @@ async function reminderStep(d: Deps, call: CallRow, s: CallSession, person: Pers
       return advance('declined', t.step_ack_not_now);
     case 'repeat':
       if (overLimit()) return advance('none', '', true);
-      if (s.repeats >= MAX_REPEATS_PER_MEDICINE) return advance('none', t.step_repeat_limit ?? t.step_ack_silence); // heard 3 times: leave it, move on
+      if (s.repeats >= MAX_REPEATS_PER_MEDICINE) return advance('none', notRecorded()); // heard 3 times: leave it, move on
       s.repeats++;
       return ask(cur.full, !s.keypadOnly);
-    default: { // unclear or silence: ask once (keypad only), then leave this medicine unconfirmed
+    default: { // unclear or silence: ask once more (speech or key), then leave this medicine unconfirmed
       // Silence (nothing heard, no key) first plays the same medicine again, once. It counts toward the repeat limit and never confirms.
       if (via === 'speech' && raw.trim() === '' && !s.keypadOnly && !s.silenceRepeated && s.repeats < MAX_REPEATS_PER_MEDICINE && !overLimit()) {
         s.silenceRepeated = true;
         s.repeats++;
-        return ask(cur.full, true);
+        return ask(joinSentences([t.step_silence_repeat ?? '', cur.full]), true);
       }
       s.unclearCount++;
       if (s.unclearCount === 1) {
         if (overLimit()) return advance('none', '', true);
-        s.keypadOnly = true;
-        return ask(t.step_unclear, false);
+        // Rule 4: unclear speech never confirms. The re-ask listens for speech and keys again; only a clear yes or key 1 confirms.
+        return ask(t.step_unclear, true);
       }
-      return advance('none', t.step_ack_silence);
+      return advance('none', notRecorded());
     }
   }
 }
