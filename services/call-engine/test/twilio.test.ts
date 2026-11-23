@@ -129,6 +129,9 @@ describe('Twilio env', () => {
     expect(body).toMatch(/Theek hai<\/prosody><\/Say><Say [^>]*><prosody rate="90%">Aapki doosri dawai<\/prosody><\/Say>/);
     expect(body).not.toContain('<Pause');
     expect(body).toContain('speechTimeout="2" speechModel="googlev2_telephony_short"');
+    const dg = new TwilioProvider({ accountSid: 'AC1', authToken: 't', publicBaseUrl: 'https://x.example', speechModel: 'deepgram_nova-2' });
+    expect(dg.renderNextAction({ action: 'play', step: { audioUrl: url, listen: { keys: ['1'], speech: true, timeoutSeconds: 6 } } }, { callId: 'c1' }).body)
+      .toContain('language="hi" speechTimeout="1" speechModel="deepgram_nova-2"'); // Deepgram: bare language code
     expect([speechTimeoutFrom(undefined), speechTimeoutFrom('auto'), speechTimeoutFrom('3'), speechTimeoutFrom('99'), speechTimeoutFrom('x"')]).toEqual(['1', 'auto', '3', '1', '1']);
     expect([speechModelFrom(undefined), speechModelFrom('googlev2_telephony_short'), speechModelFrom('a" b')]).toEqual([undefined, 'googlev2_telephony_short', undefined]);
   });

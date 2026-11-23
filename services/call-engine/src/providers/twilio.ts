@@ -74,6 +74,10 @@ export class SayUrls implements AudioSource {
   }
 }
 
+/** Deepgram models take a bare language code ("hi"); Google models take "hi-IN" (Twilio error 13343 otherwise, 24 Nov 2026). */
+export const speechLanguage = (language: string, model?: string): string =>
+  model?.startsWith('deepgram') ? language.split('-')[0]! : language;
+
 export const encodeSay = (language: CallLanguage, text: string): string => `say:${language}:${Buffer.from(text, 'utf8').toString('base64url')}`;
 
 export function decodeSay(url: string): { language: CallLanguage; text: string } {
@@ -157,7 +161,7 @@ export class TwilioProvider implements TelephonyProvider {
     if (!step.listen) return `<Response>${this.say(step.audioUrl)}<Hangup/></Response>`;
     const lang = voiceFor(decodeSay(step.audioUrl).language);
     const attrs = step.listen.speech
-      ? `input="dtmf speech" language="${lang.language}" speechTimeout="${xmlEscape(this.cfg.speechTimeout ?? '1')}"${this.cfg.speechModel ? ` speechModel="${xmlEscape(this.cfg.speechModel)}"` : ''} hints="${HINTS}"`
+      ? `input="dtmf speech" language="${speechLanguage(lang.language, this.cfg.speechModel)}" speechTimeout="${xmlEscape(this.cfg.speechTimeout ?? '1')}"${this.cfg.speechModel ? ` speechModel="${xmlEscape(this.cfg.speechModel)}"` : ''} hints="${HINTS}"`
       : 'input="dtmf"';
     // Listening starts at the question (v1.6 safety fix, 24 Nov 2026): everything before the last LONG_PAUSE mark (the choices,
     // the medicine and its description) is said OUTSIDE the Gather, so a "haan" or key said before the question is never taken
