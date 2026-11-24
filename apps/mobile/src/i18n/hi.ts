@@ -167,7 +167,7 @@ const hi: Messages = {
     title: 'आज',
     week: 'इस हफ़्ते: {{total}} में से {{done}} खुराक पक्की हुईं',
     empty: 'आज कोई खुराक नहीं।',
-    status: { upcoming: 'आने वाली', calling: 'अभी कॉल हो रही है', confirmed: '{{time}} पर पक्की', missed: 'छूट गई', skipped_paused: 'रुकी हुई' },
+    status: { upcoming: 'आने वाली', calling: 'अभी कॉल हो रही है', confirmed: '{{time}} पर पक्की', missed: 'छूट गई', skipped_paused: 'रुकी हुई', cancelled: 'बंद की गई' },
     via: { key: '1 दबाया', speech: 'हाँ बोला', manual: 'आपने लिखा' },
     markTaken: 'ले ली, ऐसा लिखें',
     noPeople: 'याद दिलाने वाली कॉल शुरू करने के लिए माता-पिता को जोड़ें।',

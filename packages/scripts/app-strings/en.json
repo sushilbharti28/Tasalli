@@ -249,7 +249,8 @@
       "calling": "Calling now",
       "confirmed": "Confirmed {{time}}",
       "missed": "Missed",
-      "skipped_paused": "Paused"
+      "skipped_paused": "Paused",
+      "cancelled": "Stopped"
     },
     "via": {
       "key": "pressed 1",

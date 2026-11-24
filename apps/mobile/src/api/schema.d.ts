@@ -652,6 +652,68 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/doses/{doseId}/remind": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doseId: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * One extra reminder call for this dose (counts toward the 6 calls per number per day cap)
+         * @description Only for doses that are missed or upcoming, and only for people who are consented, not paused and not blocked. Another account's dose returns 404.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    doseId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Queued */
+                202: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Dose not missed/upcoming, person not consented, or number blocked (code: dose_not_remindable | not_consented | number_blocked) */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Daily call cap reached */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/doses/{doseId}/calls": {
         parameters: {
             query?: never;
@@ -794,6 +856,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/subscription/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cancel the subscription. Access continues until the end of the paid period. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Subscription"];
+                    };
+                };
+                /** @description Nothing to cancel */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/devices": {
         parameters: {
             query?: never;
@@ -857,6 +962,54 @@ export interface paths {
             responses: {
                 /** @description Next action for the call */
                 200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/webhooks/billing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Billing events (HMAC-SHA256 signature over the raw body in the X-Signature header; idempotent by event id). Used by the fake billing provider. */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK (applied */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad payload */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Bad signature */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
@@ -974,8 +1127,10 @@ export interface components {
             colourSecondary?: string;
             /** @enum {string} */
             shape?: "round" | "oval" | "long" | "square";
-            /** @enum {string} */
-            /** @description v1.6: three sizes (older rai/dal/matar/badam/bigger were migrated) */
+            /**
+             * @description v1.6: three sizes (older rai/dal/matar/badam/bigger were migrated)
+             * @enum {string}
+             */
             size?: "very_small" | "small" | "large";
             /** @enum {string} */
             marking?: "plain" | "line" | "letters" | "unknown";
@@ -1003,6 +1158,7 @@ export interface components {
             stripName: string;
             strengthText?: string;
             spokenName: string;
+            /** @description v1.6: required look fields by kind (400 when missing). tablet: colourPrimary, shape, size, keptIn. capsule: colourPrimary, size, keptIn. syrup: keptIn, packColour. A strip (keptIn=strip) also needs packColour. other: none. */
             appearance?: components["schemas"]["Appearance"];
             numberLabel?: number | null;
             sayPrintedName?: boolean;
@@ -1026,7 +1182,7 @@ export interface components {
             lookAlike?: components["schemas"]["LookAlikeConflict"][];
         };
         /** @enum {string} */
-        DoseStatus: "upcoming" | "calling" | "confirmed" | "missed" | "skipped_paused";
+        DoseStatus: "upcoming" | "calling" | "confirmed" | "missed" | "skipped_paused" | "cancelled";
         Dose: {
             id?: string;
             medicineId?: string;
@@ -1059,6 +1215,15 @@ export interface components {
             trialEndsAt?: string | null;
             /** Format: date-time */
             currentPeriodEnd?: string | null;
+            /** Format: date-time */
+            pastDueSince?: string | null;
+            /** @description May schedule reminders now: trialing, active, past_due for at most 3 days, or cancelled until the paid period ends */
+            entitled?: boolean;
+            /**
+             * Format: date-time
+             * @description past_due_since + 3 days, while past_due
+             */
+            graceEndsAt?: string | null;
         };
     };
     responses: never;

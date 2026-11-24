@@ -164,7 +164,7 @@ const en = {
     title: 'Today',
     week: 'This week: {{done}} of {{total}} doses confirmed',
     empty: 'No doses today.',
-    status: { upcoming: 'Upcoming', calling: 'Calling now', confirmed: 'Confirmed {{time}}', missed: 'Missed', skipped_paused: 'Paused' },
+    status: { upcoming: 'Upcoming', calling: 'Calling now', confirmed: 'Confirmed {{time}}', missed: 'Missed', skipped_paused: 'Paused', cancelled: 'Stopped' },
     via: { key: 'pressed 1', speech: 'said yes', manual: 'marked by you' },
     markTaken: 'Mark as taken',
     noPeople: 'Add a parent to start reminder calls.',
