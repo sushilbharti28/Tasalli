@@ -15,5 +15,5 @@ if [[ "$has_calls" == "t" && "${FORCE:-}" != "1" ]]; then
   echo "target already has a calls table; set FORCE=1 to restore over it" >&2
   exit 3
 fi
-pg_restore --dbname="$TARGET_DATABASE_URL" --no-owner --no-privileges --clean --if-exists --exit-on-error "$file"
+"${PG_BIN}pg_restore" --dbname="$TARGET_DATABASE_URL" --no-owner --no-privileges --clean --if-exists --exit-on-error "$file"
 echo "restored $file"
