@@ -97,6 +97,12 @@ describe('medicines, look-alike, doses, consent gating', () => {
     await addMed(tablet({ kind: 'syrup', appearance: { shape: 'round' } })).expect(400);
   });
 
+  it('a syrup can carry its label colour in colourPrimary (what the app sends)', async () => {
+    const r = await addMed({ kind: 'syrup', stripName: 'Cremaffin', spokenName: 'Pet wali', appearance: { keptIn: 'bottle', packColour: 'brown', capColour: 'red', colourPrimary: 'white' },
+      schedules: [{ localTime: '21:00', amountText: '1 chammach (5 ml)', food: 'after' }] }).expect(201);
+    expect(r.body.medicine.appearance.colourPrimary).toBe('white');
+  });
+
   it('v1.6: the look the call describes is required by kind (the app form already asks for it)', async () => {
     const look = { colourPrimary: 'white', shape: 'round', size: 'small', keptIn: 'strip', packColour: 'green' };
     const without = (k: string) => Object.fromEntries(Object.entries(look).filter(([x]) => x !== k));

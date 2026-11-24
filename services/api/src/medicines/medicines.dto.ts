@@ -60,6 +60,7 @@ export const REQUIRED_FOR_KIND: Record<(typeof KINDS)[number], (keyof Appearance
 export const NOT_FOR_KIND: Record<(typeof KINDS)[number], (keyof AppearanceDto)[]> = {
   tablet: ['colourSecondary', 'capColour'],
   capsule: ['capColour'],
-  syrup: ['colourPrimary', 'colourSecondary', 'shape', 'size', 'marking'],
+  // colourPrimary is allowed for a syrup: the app sends the bottle's label colour there (appearance only, rule 2).
+  syrup: ['colourSecondary', 'shape', 'size', 'marking'],
   other: [],
 };
