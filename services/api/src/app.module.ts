@@ -15,6 +15,7 @@ import { CLOCK, SystemClock } from './common/clock';
 import { AppConfig, CONFIG, loadConfig } from './config';
 import { Db } from './db/db.service';
 import { ApiEventsWorker } from './doses/api-events.worker';
+import { AlertsWorker } from './alerts/alerts.worker';
 import { DoseGenerator } from './doses/dose-generator.service';
 import { DosesController } from './doses/doses.controller';
 import { DosesService } from './doses/doses.service';
@@ -45,7 +46,7 @@ export class AppModule {
       { provide: MEDICINE_NAME_SOURCE, useClass: SeedMedicineNameSource },
       { provide: APP_GUARD, useClass: AuthGuard },
       Db, AuditService, OtpStore, SessionService, UsersService, EventsService,
-      PeopleService, MedicinesService, DoseGenerator, DosesService, ApiEventsWorker,
+      PeopleService, MedicinesService, DoseGenerator, DosesService, ApiEventsWorker, AlertsWorker,
     ];
     return {
       module: AppModule,
