@@ -13,6 +13,7 @@ const PALETTE: Record<DoseStatus, { fg: string; bg: string }> = {
   confirmed: { fg: colors.confirmed, bg: colors.confirmedSoft },
   missed: { fg: colors.missed, bg: colors.missedSoft },
   skipped_paused: { fg: colors.upcoming, bg: colors.upcomingSoft },
+  cancelled: { fg: colors.upcoming, bg: colors.upcomingSoft }, // the family stopped the medicine
 };
 
 export function StatusBadge({ dose, timeZone }: { dose: Dose; timeZone: string }) {

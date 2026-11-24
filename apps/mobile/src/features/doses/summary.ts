@@ -47,11 +47,12 @@ export const STATUS_ICON: Record<DoseStatus, string> = {
   confirmed: '✓',
   missed: '✕',
   skipped_paused: '‖',
+  cancelled: '–',
 };
 
 /** Manual "mark as taken" is offered for doses that are not yet confirmed and not in the future. */
 export function canMarkTaken(d: Dose, nowMs = Date.now()): boolean {
-  if (d.status === 'confirmed' || d.status === 'skipped_paused') return false;
+  if (d.status === 'confirmed' || d.status === 'skipped_paused' || d.status === 'cancelled') return false; // a stopped medicine cannot be marked taken
   if (d.status === 'upcoming') return !!d.dueAt && new Date(d.dueAt).getTime() <= nowMs;
   return true;
 }

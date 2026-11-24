@@ -249,7 +249,8 @@
       "calling": "अभी कॉल हो रही है",
       "confirmed": "{{time}} पर पक्की",
       "missed": "छूट गई",
-      "skipped_paused": "रुकी हुई"
+      "skipped_paused": "रुकी हुई",
+      "cancelled": "बंद की गई"
     },
     "via": {
       "key": "1 दबाया",
