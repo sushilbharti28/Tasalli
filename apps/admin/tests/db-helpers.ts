@@ -5,8 +5,19 @@ import { SEED_SQL } from './fixtures';
 
 export const TEST_DB_NAME = 'tasalli_admin_test';
 
+/**
+ * A connection that may create and drop databases. TEST_DATABASE_ADMIN_URL if set; otherwise the same server and user as
+ * every other package's tests (TEST_DATABASE_URL, which CI provides), on the `postgres` database; otherwise the
+ * docker-compose user. (The old default user `admin_test` existed nowhere, so these tests failed in CI.)
+ */
 export function adminUrl(): string {
-  return process.env.TEST_DATABASE_ADMIN_URL ?? 'postgres://admin_test:admin_test@localhost:5432/postgres';
+  if (process.env.TEST_DATABASE_ADMIN_URL) return process.env.TEST_DATABASE_ADMIN_URL;
+  if (process.env.TEST_DATABASE_URL) {
+    const u = new URL(process.env.TEST_DATABASE_URL);
+    u.pathname = '/postgres';
+    return u.toString();
+  }
+  return 'postgres://tasalli:tasalli@localhost:5432/postgres';
 }
 
 export function testDbUrl(): string {

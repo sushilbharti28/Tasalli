@@ -209,7 +209,23 @@ export async function searchFamilies(query: string, opts: { limit?: number; db?:
 // ---------------------------------------------------------------------------
 // Family detail
 
-function toPersonSummary(r: Record<string, any>): PersonSummary {
+/** The person columns read by toPersonSummary (PERSON_COLUMNS). */
+interface PersonDbRow {
+  id: string;
+  nickname: string;
+  full_name: string | null;
+  is_self: boolean;
+  phone_e164: string;
+  language: string;
+  time_zone: string;
+  consent: ConsentState;
+  consent_at: Date | null;
+  paused: boolean;
+  blocked: boolean;
+  deleted_at: Date | null;
+}
+
+function toPersonSummary(r: PersonDbRow): PersonSummary {
   return {
     id: r.id,
     nickname: r.nickname,
