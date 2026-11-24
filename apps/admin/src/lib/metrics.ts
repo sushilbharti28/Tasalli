@@ -212,7 +212,7 @@ export async function getPilotMetrics(opts: { now?: Date; days?: number; db?: Po
   ]);
 
   const c = conf.rows[0];
-  const daily = (rows: any[]): DailyPoint[] =>
+  const daily = (rows: Array<{ day: string; n: number; d: number }>): DailyPoint[] =>
     rows.map((r) => ({ day: r.day, numerator: r.n, denominator: r.d, rate: r.d > 0 ? r.n / r.d : null }));
   const cp = cpd.rows[0];
 

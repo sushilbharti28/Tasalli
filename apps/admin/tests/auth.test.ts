@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { signSession, verifySession } from '@/lib/session';
 import { checkCredentials, hashPassword, isLockedOut, recordFailure } from '@/lib/password';
 
-const SECRET = 'test-secret-that-is-at-least-32-characters-long';
+const SECRET = 'test-secret-that-is-at-least-32-characters-long'; // gitleaks:allow (test-only value, not a real secret)
 
 beforeEach(() => {
   process.env.ADMIN_EMAIL = 'Founder@Example.com';

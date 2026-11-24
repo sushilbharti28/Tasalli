@@ -1,9 +1,12 @@
 # syntax=docker/dockerfile:1.7
-# Multi-stage image for a Node 20 workspace service (services/api, services/call-engine).
+# Image for a Node 20 workspace service (services/api, services/call-engine).
 # Build from the repository root:
 #   docker build -f infra/docker/service.Dockerfile --build-arg PACKAGE=@tasalli/api --build-arg PACKAGE_DIR=services/api -t tasalli-api .
-# The service must have a `build` script that emits to `dist/`, and start with
-# `node dist/main.js` (override with --build-arg ENTRY=dist/other.js).
+#
+# The services run TypeScript directly (the API with @swc-node/register, the call engine with tsx) and the
+# workspace packages they use (@tasalli/contracts, scripts, integrations) point at their .ts sources. So the
+# image installs the service and its workspace dependencies and runs the package's own `start` script, exactly
+# as `pnpm --filter <package> start` does locally. There is no compile step and no dist/ folder.
 
 ARG NODE_IMAGE=node:20-alpine
 
@@ -12,31 +15,29 @@ ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH CI=true
 RUN corepack enable
 WORKDIR /repo
 
-# ---- deps + build -------------------------------------------------------
-FROM base AS build
+# ---- install --------------------------------------------------------------
+FROM base AS deps
 ARG PACKAGE
 ARG PACKAGE_DIR
 RUN test -n "$PACKAGE" && test -n "$PACKAGE_DIR" || (echo "PACKAGE and PACKAGE_DIR build args are required" && exit 1)
 COPY . .
 # Frozen install when the lockfile matches; otherwise fall back (see lockfile policy).
+# The service and every workspace package it depends on; dev dependencies stay (tsx / swc run the sources).
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
     pnpm install --frozen-lockfile --filter "${PACKAGE}..." \
     || pnpm install --no-frozen-lockfile --filter "${PACKAGE}..."
-# Build the service and every workspace package it depends on.
-RUN pnpm --filter "${PACKAGE}..." --if-present run build
-# Self-contained production folder: package.json, prod node_modules, workspace deps.
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
-    pnpm --filter "${PACKAGE}" deploy --prod /out \
-    && rm -rf /out/dist && cp -r "${PACKAGE_DIR}/dist" /out/dist
+# Fail the build now, not at start-up, if the service's TypeScript does not compile.
+RUN pnpm --filter "${PACKAGE}" --if-present run typecheck
 
-# ---- runtime ------------------------------------------------------------
+# ---- runtime ----------------------------------------------------------------
 FROM ${NODE_IMAGE} AS runtime
-ARG ENTRY=dist/main.js
-ENV NODE_ENV=production TZ=UTC ENTRY=${ENTRY}
+ARG PACKAGE_DIR
+ENV NODE_ENV=production TZ=UTC
 RUN apk add --no-cache tini
-WORKDIR /app
-COPY --from=build --chown=node:node /out /app
+COPY --from=deps --chown=node:node /repo /repo
+WORKDIR /repo/${PACKAGE_DIR}
 USER node
 EXPOSE 3000
 ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["sh", "-c", "exec node \"$ENTRY\""]
+# The package's own start script (node -r @swc-node/register src/main.ts, or tsx src/main.ts).
+CMD ["npm", "run", "--silent", "start"]
