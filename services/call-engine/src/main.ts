@@ -48,17 +48,29 @@ export async function start() {
     recordings,
     store, queue, provider, audio, speech, sessions: redis ? new RedisSessionStore(redis) : new MemorySessionStore(),
     scripts: new ScriptLibrary(env.SCRIPTS_DIR || DEFAULT_SCRIPTS_DIR, log), clock: systemClock, log,
-    config: defaultConfig({ callerId: env.CALLER_ID || env.TWILIO_FROM_NUMBER || '+910000000000', publicBaseUrl: base }),
+    config: defaultConfig({ callerId: env.CALLER_ID || env.TWILIO_FROM_NUMBER || '+910000000000', publicBaseUrl: base,
+      // The provider plan's limits (Twilio starts at 1 call per second). Calls wait on our side instead of failing at the provider.
+      maxCallsPerSecond: positiveInt(env.MAX_CALLS_PER_SECOND, 1), maxConcurrentCalls: positiveInt(env.MAX_CONCURRENT_CALLS, 20) }),
   });
   if (queue instanceof BullQueues) {
     queue.startWorker((n, data) => engine.handleJob(n, data), log);
     await queue.ensurePlanAllSchedule();
+    await queue.ensureSweepSchedule();
   } else {
     queue.setHandler((n, data) => engine.handleJob(n, data));
     setInterval(() => void queue.runDue().catch((e) => log.error('job error', { err: String(e) })), 1000);
+    setInterval(() => void engine.handleJob('calls.sweep', {}).catch((e) => log.error('sweep error', { err: String(e) })), 5 * 60_000);
   }
+  // Heartbeat: a dose that runs late while the engine was up is still called; after real downtime it is reported as missed.
+  void engine.heartbeat();
+  setInterval(() => void engine.heartbeat().catch((e) => log.error('heartbeat error', { err: String(e) })), 30_000);
 
   createWebhookServer(engine, provider, base, log, { storage: recStorage, readToken: env.RECORDINGS_READ_TOKEN }).listen(port, () => log.info('call-engine listening', { port, provider: provider.name }));
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) void start();
+
+function positiveInt(v: string | undefined, fallback: number): number {
+  const n = Number(v);
+  return Number.isInteger(n) && n > 0 ? n : fallback;
+}

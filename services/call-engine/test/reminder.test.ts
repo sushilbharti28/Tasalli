@@ -255,14 +255,15 @@ describe('reminder flow', () => {
     expect(w.provider.callsTo(PARENT)).toHaveLength(0);
   });
 
-  it('a dose far past due (service down) is missed with a too_late alert, not called', async () => {
+  it('a dose far past due (service down) is missed, not called; the family gets one service_outage alert (v1.7)', async () => {
     const w = world();
     w.med('Amlodac', '09:00');
     await planned(w);
     w.clock.set('2026-03-10T05:30:00Z'); // 11:00 IST
     await w.settle();
+    await w.advance(3);
     expect(w.provider.callsTo(PARENT)).toHaveLength(0);
-    expect(w.queue.alerts[0]!.job.reason).toBe('too_late');
+    expect(w.queue.alerts.map((a) => a.job.reason)).toEqual(['service_outage']);
   });
 
   it('provider outage on placeCall is retried like an unanswered call', async () => {

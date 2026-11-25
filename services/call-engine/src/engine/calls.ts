@@ -3,7 +3,8 @@ import type { CallStep, PlaceCallRequest } from '@tasalli/contracts';
 import { CONSENT_KEYS, REMINDER_KEYS, RULES } from '../contracts-values.js';
 import { speakNumbers, scriptOf } from '../scripts/spoken-numbers.js';
 import { presencePrompt, buildReminderSteps, describeMedicineIds, newMedicineIds, relationPhrase, line, personName, childName } from '../scripts/builder.js';
-import { localDay } from '../scheduler/time.js';
+import { localDay, stillMatches } from '../scheduler/time.js';
+import { acquireDialSlot, reserveForFirstCalls } from './dispatch.js';
 import type { CallSession } from '../flows/session.js';
 import type { PersonRow } from '../types.js';
 import { ownerEntitled } from './billing.js';
@@ -27,12 +28,16 @@ type PlaceOutcome = 'placed' | 'capped' | 'blocked' | 'failed';
 
 /** Cap + block check, call row, provider call. Phone lock makes the 6/day cap race-free (rule 5). */
 async function place(d: Deps, o: { person: PersonRow | null; to: string; zone: string; purpose: 'consent' | 'reminder' | 'test';
-  groupId: string | null; attempt: number; language: PersonRow['language']; session: Omit<CallSession, 'callId' | 'to' | 'purpose' | 'language'> }): Promise<PlaceOutcome> {
+  groupId: string | null; attempt: number; language: PersonRow['language']; session: Omit<CallSession, 'callId' | 'to' | 'purpose' | 'language'>;
+  /** v1.7: calls of the daily cap kept free for first calls still to come today (retries only). */
+  reserve?: number }): Promise<PlaceOutcome> {
+  // v1.7 dial limiter: wait for a slot within the provider plan's calls per second and concurrent calls.
+  await acquireDialSlot(d);
   const now = d.clock.now();
   const gate = await d.store.transaction(async (tx) => {
     await tx.lockPhone(o.to);
     if (await tx.isBlocked(o.to)) return { out: 'blocked' as const };
-    if (o.purpose !== 'test' && await tx.countCallsToPhoneSince(o.to, localDay(now, o.zone).start) >= RULES.maxCallsPerNumberPerDay) {
+    if (o.purpose !== 'test' && await tx.countCallsToPhoneSince(o.to, localDay(now, o.zone).start) + (o.reserve ?? 0) >= RULES.maxCallsPerNumberPerDay) {
       return { out: 'capped' as const };
     }
     const row = await tx.insertCall({ personId: o.person?.id ?? null, purpose: o.purpose, callGroupId: o.groupId, attempt: o.attempt,
@@ -62,7 +67,7 @@ const blank = { unclearCount: 0, repeats: 0, steps: 0, keypadOnly: false, respon
 
 /** Reminder call for a dose group. attemptCode = encodeAttempt(cycle, n). */
 export async function placeReminder(d: Deps, groupId: string, attemptCode: number): Promise<void> {
-  const details = (await d.store.getGroupDetails(groupId)).filter((x) => x.dose.status === 'calling' || x.dose.status === 'upcoming');
+  let details = (await d.store.getGroupDetails(groupId)).filter((x) => x.dose.status === 'calling' || x.dose.status === 'upcoming');
   if (details.length === 0) return; // confirmed in the app meanwhile, or closed
   const person = await d.store.getPerson(details[0]!.dose.personId);
   if (!person) return;
@@ -84,6 +89,12 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   }
 
   const now = d.clock.now();
+  // v1.7: a retry also covers doses of the same food timing that have just come due (or are due within 15 minutes),
+  // so the parent gets one call instead of a retry at 08:20 and a new call at 08:30.
+  if (decodeAttempt(attemptCode).n > 0) {
+    const merged = await mergeDueDoses(d, person, groupId, details[0]!.schedule.food, now);
+    if (merged > 0) details = (await d.store.getGroupDetails(groupId)).filter((x) => x.dose.status === 'calling' || x.dose.status === 'upcoming');
+  }
   const day = localDay(now, person.timeZone);
   const lang = callLanguage(d, person.language, person.id);
   const pack = d.scripts.get(lang);
@@ -101,13 +112,32 @@ export async function placeReminder(d: Deps, groupId: string, attemptCode: numbe
   const steps = buildReminderSteps({ ...base, mode, describeMedicineIds: describe, newMedicineIds: newMedicineIds(base.items, now) });
   const reminder = { items: details.map((x, i) => ({ doseId: x.dose.id, first: steps.items[i]!.first, full: steps.items[i]!.full })),
     index: 0, outcomes: {}, heard: {}, retryLeft: decodeAttempt(attemptCode).n < RULES.retryCount };
-  const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode,
+  // v1.7 (founder decision): a retry only uses calls of the 6/day cap that later doses' first calls do not need.
+  const reserve = await reserveForFirstCalls(d, person.phone, person.timeZone, attemptCode);
+  const out = await place(d, { person, to: person.phone, zone: person.timeZone, purpose: 'reminder', groupId, attempt: attemptCode, reserve,
     language: lang, session: steps.presence
       ? { ...blank, mainText: presencePrompt(steps.greeting, steps.presence), fullText: steps.items[0]!.full, reminder, presence: { state: 'pending' as const, asks: 0, text: steps.presenceRetry, next: steps.opening } }
       : { ...blank, mainText: presencePrompt(steps.greeting, steps.opening), fullText: steps.items[0]!.full, reminder } });
   if (out === 'capped') return void await stop('missed', 'daily_cap');
   if (out === 'blocked') return void await stop('skipped_paused');
   if (out === 'failed') await afterNoConfirmation(d, groupId, attemptCode);
+}
+
+/** v1.7: add this person's upcoming, ungrouped doses with the same food timing due from 30 minutes ago to 15 minutes ahead. */
+async function mergeDueDoses(d: Deps, person: PersonRow, groupId: string, food: string, now: Date): Promise<number> {
+  return d.store.transaction(async (tx) => {
+    await tx.lockPerson(person.id);
+    const window = await tx.listDoses(person.id, new Date(now.getTime() - RULES.groupWindowMinutes * MINUTE), new Date(now.getTime() + 15 * MINUTE));
+    const ids: string[] = [];
+    for (const dose of window) {
+      if (dose.status !== 'upcoming' || dose.callGroupId) continue;
+      const sched = await tx.getSchedule(dose.scheduleId);
+      const med = sched ? await tx.getMedicine(sched.medicineId) : null;
+      if (!sched || !med?.active || sched.food !== food || !stillMatches(sched, person.timeZone, dose.dueAt)) continue;
+      ids.push(dose.id);
+    }
+    return ids.length ? (await tx.assignGroup(ids, groupId)).length : 0;
+  });
 }
 
 /** Unanswered, busy, failed, or hung up without confirming: retry 10 minutes later, or give up. */

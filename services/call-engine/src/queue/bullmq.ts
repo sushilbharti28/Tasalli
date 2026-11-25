@@ -29,6 +29,10 @@ export class BullQueues implements JobQueue, AlertSink {
   async ensurePlanAllSchedule(everyMs = 3600_000): Promise<void> {
     await this.engine.upsertJobScheduler('plan-all', { every: everyMs }, { name: 'schedule.plan_all', data: {} });
   }
+  /** v1.7: finish stale calls and never-dialled groups every 5 minutes. */
+  async ensureSweepSchedule(everyMs = 5 * 60_000): Promise<void> {
+    await this.engine.upsertJobScheduler('calls-sweep', { every: everyMs }, { name: 'calls.sweep', data: {} });
+  }
 
   startWorker(handle: (name: EngineJobName, data: unknown) => Promise<void>, log: Logger, concurrency = 20): Worker {
     const worker = new Worker(CALL_ENGINE_QUEUE, async (job) => handle(job.name as EngineJobName, job.data), {

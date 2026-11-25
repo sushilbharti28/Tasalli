@@ -217,8 +217,29 @@ export class PgStore implements Store {
   async listCallsForGroup(groupId: string) {
     return (await this.q(`select * from calls where call_group_id = $1 order by created_at, attempt`, [groupId])).map(mapCall);
   }
-  async listCallsForPerson(personId: string, purpose: CallRow['purpose']) {
-    return (await this.q(`select * from calls where person_id = $1 and purpose = $2 order by created_at`, [personId, purpose])).map(mapCall);
+  async listCallsForPerson(personId: string, purpose: CallRow['purpose'], since?: Date) {
+    return (await this.q(`select * from calls where person_id = $1 and purpose = $2 and created_at >= coalesce($3::timestamptz, '-infinity')
+      order by created_at`, [personId, purpose, since ?? null])).map(mapCall);
+  }
+  async countUpcomingSlotsForPhone(phone: string, from: Date, to: Date) {
+    const [r] = await this.q(
+      `select count(distinct (d.person_id, floor(extract(epoch from d.due_at) / 1800), s.food))::int as n
+         from doses d join people p on p.id = d.person_id join schedules s on s.id = d.schedule_id
+        where p.phone_e164 = $1 and d.status = 'upcoming' and d.call_group_id is null and d.due_at >= $2 and d.due_at < $3`, [phone, from, to]);
+    return r!.n as number;
+  }
+  async countLiveCalls(since: Date) {
+    const [r] = await this.q(`select count(*)::int as n from calls where ended_at is null and created_at >= $1`, [since]);
+    return r!.n as number;
+  }
+  async listStaleCalls(before: Date) {
+    return (await this.q(`select * from calls where ended_at is null and created_at < $1 order by created_at`, [before])).map(mapCall);
+  }
+  async listOrphanGroups(before: Date) {
+    return (await this.q(
+      `select distinct d.call_group_id as g from doses d
+        where d.status = 'calling' and d.call_group_id is not null and d.due_at < $1
+          and not exists (select 1 from calls c where c.call_group_id = d.call_group_id)`, [before])).map((r) => r.g as string);
   }
   async countCallsToPhoneSince(phone: string, since: Date) {
     const [r] = await this.q(
