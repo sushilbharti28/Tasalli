@@ -2,7 +2,7 @@ import { RULES } from '../contracts-values.js';
 import { MINUTE } from '../clock.js';
 import { jobId } from '../queue/jobs.js';
 import { localDay, nextLocalHour, occurrences, stillMatches } from '../scheduler/time.js';
-import type { PersonRow } from '../types.js';
+import { sameCallKind, type PersonRow } from '../types.js';
 import { alertFor, newGroupId, placeReminder } from './calls.js';
 import { engineWasUp, queueOutageAlert } from './dispatch.js';
 import { DateTime } from 'luxon';
@@ -122,7 +122,7 @@ export async function doseDue(d: Deps, doseId: string): Promise<void> {
       const med = sched ? await tx.getMedicine(sched.medicineId) : null;
       // Edited or removed since planning: the old dose must not be spoken.
       if (!sched || !med?.active || !stillMatches(sched, person.timeZone, dose.dueAt)) continue;
-      if (sched.food !== firstSchedule?.food) continue; // same time window AND same food timing in one call
+      if (!sameCallKind(sched, firstSchedule)) continue; // same time window AND same food timing and meal in one call
       ids.push(dose.id);
     }
     return ids.length ? tx.assignGroup(ids, groupId) : [];

@@ -68,7 +68,7 @@ export class MemoryStore implements Store {
   }
   addSchedule(s: Partial<ScheduleRow> & { medicineId: string; localTime: string; amountText: string }): ScheduleRow {
     const row: ScheduleRow = {
-      id: randomUUID(), food: 'any', daysOfWeek: [1, 2, 3, 4, 5, 6, 7], startDate: '2000-01-01', endDate: null, ...s,
+      id: randomUUID(), food: 'any', meal: null, daysOfWeek: [1, 2, 3, 4, 5, 6, 7], startDate: '2000-01-01', endDate: null, ...s,
     };
     this.state.schedules.set(row.id, row);
     return row;
@@ -298,8 +298,8 @@ export class MemoryStore implements Store {
     const slots = new Set<string>();
     for (const d of this.state.doses.values()) {
       if (!people.has(d.personId) || d.status !== 'upcoming' || d.callGroupId || d.dueAt < from || d.dueAt >= to) continue;
-      const food = this.state.schedules.get(d.scheduleId)?.food ?? 'any';
-      slots.add(`${d.personId}|${Math.floor(d.dueAt.getTime() / 1_800_000)}|${food}`);
+      const s = this.state.schedules.get(d.scheduleId);
+      slots.add(`${d.personId}|${Math.floor(d.dueAt.getTime() / 1_800_000)}|${s?.food ?? 'any'}|${s?.meal ?? ''}`);
     }
     return slots.size;
   }
