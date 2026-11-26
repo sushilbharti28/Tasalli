@@ -1,10 +1,11 @@
 import { IsBoolean, IsIn, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { CALL_LANGUAGES as CALL_LANGUAGE_INFO } from '@tasalli/contracts';
 import { IsE164Phone, IsIanaTimeZone, IsNotBlank } from '../common/validators';
 
 export const CALL_LANGUAGES = ['hi', 'en', 'bn', 'mr', 'ta', 'te'] as const;
 export type CallLanguage = (typeof CALL_LANGUAGES)[number];
-/** Hindi only for now (founder decision, v1.1). The enum stays; the API narrows it. */
-export const SUPPORTED_NEW_LANGUAGES: readonly CallLanguage[] = ['hi'];
+/** Languages new people can be set to: those marked available in packages/contracts (GET /call-languages serves the same list). */
+export const SUPPORTED_NEW_LANGUAGES: readonly CallLanguage[] = CALL_LANGUAGE_INFO.filter((l) => l.status === 'available').map((l) => l.code);
 export const CAN_READ = ['yes', 'no', 'not_sure'] as const;
 
 export class PersonCreateDto {

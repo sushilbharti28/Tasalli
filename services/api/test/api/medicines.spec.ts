@@ -36,6 +36,20 @@ describe('medicines, look-alike, doses, consent gating', () => {
   const doses = async (from = '2026-11-20', to = '2026-11-27') =>
     (await h.http().get(`/people/${personId}/doses?from=${from}&to=${to}`).set(auth(token)).expect(200)).body as any[];
 
+  it('meal: stored and returned; a time outside the meal window is refused; custom times keep meal null', async () => {
+    const r = (await addMed(tablet({ schedules: [
+      { localTime: '08:00', amountText: '1 tablet', food: 'before', meal: 'breakfast' },
+      { localTime: '21:00', amountText: '1 tablet', food: 'after', meal: 'dinner' },
+      { localTime: '06:00', amountText: '1 tablet', food: 'before' },
+    ] })).expect(201)).body;
+    const med = r.medicine ?? r;
+    expect(med.schedules.map((s: any) => [s.localTime, s.meal])).toEqual(expect.arrayContaining([['08:00', 'breakfast'], ['21:00', 'dinner'], ['06:00', null]]));
+    const bad = await addMed(tablet({ stripName: 'Other', schedules: [{ localTime: '20:00', amountText: '1 tablet', food: 'before', meal: 'breakfast' }] })).expect(400);
+    expect(bad.body.code).toBe('outside_meal_window');
+    await addMed(tablet({ stripName: 'Other', schedules: [{ localTime: '09:00', amountText: '1 tablet', food: 'after', meal: 'brunch' }] })).expect(400);
+    await addMed(tablet({ stripName: 'Late', schedules: [{ localTime: '00:30', amountText: '1 tablet', food: 'any', meal: 'bedtime' }] })).expect(201);
+  });
+
   it('creates no doses before consent, and none for a blocked number even after', async () => {
     await addMed(tablet()).expect(201);
     expect(await doses()).toHaveLength(0);
