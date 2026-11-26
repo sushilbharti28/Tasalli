@@ -70,7 +70,7 @@ export class PgStore implements Store {
   }
   async setPersonConsent(personId: string, state: ConsentState, at: Date) {
     await this.q(
-      `update people set consent = $2, consent_at = case when $2 = 'consented' then $3::timestamptz else consent_at end where id = $1`,
+      `update people set consent = $2::consent_state, consent_at = case when $2::consent_state = 'consented' then $3::timestamptz else consent_at end where id = $1`,
       [personId, state, at]);
   }
   async insertConsentEvent(e: { personId: string; result: ConsentEventResult; via: ConsentEventVia; callId: string | null }) {
