@@ -40,6 +40,11 @@ paths:
       summary: Update name, time zone, app language
       requestBody: { content: { application/json: { schema: { $ref: '#/components/schemas/UserUpdate' } } } }
       responses: { '200': { description: OK } }
+  /call-languages:
+    get:
+      security: []
+      summary: Call languages and whether each is available yet. The app builds its language picker from this list, so a new language turns on without an app update.
+      responses: { '200': { description: OK, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/CallLanguageInfo' } } } } } }
   /people:
     get:
       summary: People this account sends calls to
@@ -49,6 +54,7 @@ paths:
       requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/PersonCreate' } } } }
       responses:
         '201': { description: Created, content: { application/json: { schema: { $ref: '#/components/schemas/Person' } } } }
+        '400': { description: 'Invalid fields, or a call language that is not available yet (see /call-languages)' }
         '409': { description: Limit reached, or number is blocked }
   /people/{personId}:
     parameters: [ { $ref: '#/components/parameters/personId' } ]
@@ -136,6 +142,15 @@ components:
     User: { type: object, properties: { id: { type: string }, phone: { type: string }, name: { type: string }, timeZone: { type: string }, locale: { type: string, enum: [en, hi] } } }
     UserUpdate: { type: object, properties: { name: { type: string }, timeZone: { type: string }, locale: { type: string, enum: [en, hi] } } }
     CallLanguage: { type: string, enum: [hi, en, bn, mr, ta, te] }
+    CallLanguageInfo:
+      type: object
+      required: [code, nativeName, englishName, status]
+      properties:
+        code: { $ref: '#/components/schemas/CallLanguage' }
+        nativeName: { type: string, example: हिन्दी }
+        englishName: { type: string, example: Hindi }
+        status: { type: string, enum: [available, coming_soon] }
+    Meal: { type: string, enum: [breakfast, lunch, dinner, bedtime], description: 'Allowed local times (inclusive): breakfast 05:00-11:30, lunch 11:00-16:00, dinner 16:15-23:30, bedtime 20:00-02:00. See MEAL_WINDOWS in packages/contracts.' }
     ConsentState: { type: string, enum: [pending, consented, declined, opted_out] }
     Person:
       type: object
@@ -182,6 +197,10 @@ components:
         localTime: { type: string, example: '09:00' }
         amountText: { type: string, description: Verbatim as the family entered it }
         food: { type: string, enum: [before, after, with, any] }
+        meal:
+          allOf: [{ $ref: '#/components/schemas/Meal' }]
+          nullable: true
+          description: 'The meal the family picked; the call names it ("nashte se pehle"). 400 when localTime is outside the meal window. Null or missing = a custom time; the call then names the meal from the hour.'
         daysOfWeek: { type: array, items: { type: integer, minimum: 1, maximum: 7 } }
         startDate: { type: string, format: date }
         endDate: { type: string, format: date, nullable: true }
