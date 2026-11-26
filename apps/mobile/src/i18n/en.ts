@@ -51,6 +51,8 @@ const en = {
     fullName: 'Full name',
     fullNameHint: 'Calls greet them by this name: "Namaste … ji"',
     phone: 'Their phone number',
+    phoneIndia: 'Their mobile number (+91)',
+    indiaOnly: 'Reminder calls go to Indian mobile numbers (+91) for now.',
     language: 'Call language',
     timeZone: 'Their time zone',
     canRead: 'Can they read the name printed on a medicine strip?',
@@ -237,7 +239,7 @@ const en = {
     skip: 'Skip',
     next: 'Next',
     getStarted: 'Get started',
-    trust: 'Calls in Hindi · Any phone · Data stays in India',
+    trust: 'Calls in your language · Any phone · Data stays in India',
     sceneOf: 'Part {{n}} of {{total}}',
     worry: {
       thought1: 'Did Papa take his BP tablet today?',
@@ -350,6 +352,7 @@ const en = {
     },
     food: { before: 'Before food', after: 'After food', any: 'Any time' },
     phone: {
+      prefixA11y: 'India, +91',
       say: 'Last step: we call {{label}} once to ask if they agree.',
       q: "What is {{label}}'s mobile number?",
       submit: 'Call {{label}} for consent',

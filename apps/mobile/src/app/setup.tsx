@@ -41,7 +41,7 @@ import {
   type SlotKey,
 } from '@/features/onboarding/setup';
 import { canStep, stepTime, type MealWindow } from '@/lib/meals';
-import { COUNTRY_CODES, toE164 } from '@/lib/phone';
+import { CALL_COUNTRY_CODE, toCallableE164 } from '@/lib/phone';
 import { rememberPhone } from '@/lib/storage';
 import { displayHhmm } from '@/lib/time';
 import { usePeople } from '@/people/PeopleContext';
@@ -57,7 +57,6 @@ export default function Setup() {
   const { reload, select } = usePeople();
   const [draft, setDraft] = useState<SetupDraft | null>(null);
   const [languages, setLanguages] = useState<CallLanguageInfo[]>(FALLBACK_LANGUAGES);
-  const [cc, setCc] = useState('+91');
   const [local, setLocal] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -91,7 +90,7 @@ export default function Setup() {
     update({ step: q });
   };
   const back = () => index > 0 && goTo(steps[index - 1]!);
-  const phone = toE164(cc, local);
+  const phone = toCallableE164(local);
   const lastForSelf = !loved && step === 'when';
 
   async function save() {
@@ -306,28 +305,23 @@ export default function Setup() {
           <>
             <Guide text={t('setup.phone.say', { label })} />
             <Title text={t('setup.phone.q', { label })} />
-            <View style={s.chips}>
-              {COUNTRY_CODES.map((x) => (
-                <Pill
-                  key={x.code}
-                  text={x.code}
-                  a11y={`${x.label} ${x.code}`}
-                  picked={cc === x.code}
-                  onPress={() => setCc(x.code)}
-                />
-              ))}
-            </View>
             <View style={s.field}>
               <Text style={s.label}>{t('person.phone')}</Text>
-              <TextInput
-                value={local}
-                onChangeText={setLocal}
-                keyboardType="phone-pad"
-                maxLength={15}
-                accessibilityLabel={t('person.phone')}
-                style={s.input}
-                testID="setup-phone"
-              />
+              <View style={{ flexDirection: 'row', gap: space.sm }}>
+                <View style={s.prefix} accessibilityLabel={t('setup.phone.prefixA11y')}>
+                  <Text style={s.prefixText}>{CALL_COUNTRY_CODE}</Text>
+                </View>
+                <TextInput
+                  value={local}
+                  onChangeText={setLocal}
+                  keyboardType="phone-pad"
+                  maxLength={12}
+                  accessibilityLabel={t('person.phone')}
+                  style={[s.input, { flex: 1 }]}
+                  testID="setup-phone"
+                />
+              </View>
+              <Text style={s.hint}>{t('person.indiaOnly')}</Text>
             </View>
             <Text style={s.hint}>{t('person.consentNote', { name: label })}</Text>
           </>
@@ -721,6 +715,15 @@ const s = StyleSheet.create({
   check: { color: c.hi, fontSize: 18, fontWeight: '700' },
   field: { gap: 6 },
   label: { color: c.soft, fontSize: 14 },
+  prefix: {
+    minHeight: 52,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: c.line,
+  },
+  prefixText: { color: c.soft, fontSize: 18, fontWeight: '600' },
   input: {
     minHeight: 52,
     borderWidth: 2,

@@ -5,10 +5,19 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { api, unwrap } from '@/api/client';
 import { useAuth } from '@/auth/AuthContext';
-import { AppText, Button, Card, ChipGroup, ErrorText, Field, LoadError, Loading, Screen } from '@/components/ui';
+import {
+  AppText,
+  Button,
+  Card,
+  ErrorText,
+  Field,
+  LoadError,
+  Loading,
+  Screen,
+} from '@/components/ui';
 import { consentView, noteConsentCall, type ConsentView } from '@/features/consent/state';
 import { useAsync } from '@/hooks/useAsync';
-import { COUNTRY_CODES, toE164 } from '@/lib/phone';
+import { toCallableE164 } from '@/lib/phone';
 import { forgetPerson, rememberPhone } from '@/lib/storage';
 import { usePeople } from '@/people/PeopleContext';
 import { colors, space } from '@/theme';
@@ -29,27 +38,58 @@ export default function ConsentStatus() {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [changing, setChanging] = useState(false);
-  const [cc, setCc] = useState('+91');
   const [local, setLocal] = useState('');
 
-  const { data: person, error, reload } = useAsync(() => unwrap(api.GET('/people/{personId}', { params: { path: { personId: id } } })), [id], {
-    pollMs: 4000,
-  });
+  const {
+    data: person,
+    error,
+    reload,
+  } = useAsync(
+    () => unwrap(api.GET('/people/{personId}', { params: { path: { personId: id } } })),
+    [id],
+    {
+      pollMs: 4000,
+    },
+  );
 
-  if (error) return <Screen><LoadError onRetry={reload} /></Screen>;
-  if (!person) return <Screen><Loading /></Screen>;
+  if (error)
+    return (
+      <Screen>
+        <LoadError onRetry={reload} />
+      </Screen>
+    );
+  if (!person)
+    return (
+      <Screen>
+        <Loading />
+      </Screen>
+    );
 
   const view = consentView(person);
   const name = person.nickname ?? '';
   const look = LOOK[view];
-  const titleKey = { calling: 'consent.calling', waiting: 'consent.waiting', confirmed: 'consent.confirmed', declined: 'consent.declined', opted_out: 'consent.optedOut' }[view];
-  const hintKey = { calling: 'consent.callingHint', waiting: 'consent.waitingHint', confirmed: 'consent.confirmedHint', declined: 'consent.declinedHint', opted_out: 'consent.optedOutHint' }[view];
+  const titleKey = {
+    calling: 'consent.calling',
+    waiting: 'consent.waiting',
+    confirmed: 'consent.confirmed',
+    declined: 'consent.declined',
+    opted_out: 'consent.optedOut',
+  }[view];
+  const hintKey = {
+    calling: 'consent.callingHint',
+    waiting: 'consent.waitingHint',
+    confirmed: 'consent.confirmedHint',
+    declined: 'consent.declinedHint',
+    opted_out: 'consent.optedOutHint',
+  }[view];
 
   async function retry() {
     setBusy(true);
     setMsg(null);
     try {
-      const { response } = await api.POST('/people/{personId}/consent-call', { params: { path: { personId: id } } });
+      const { response } = await api.POST('/people/{personId}/consent-call', {
+        params: { path: { personId: id } },
+      });
       if (response.ok) noteConsentCall(id);
       else if (response.status !== 409) setMsg(t('common.error'));
       await reload();
@@ -60,7 +100,7 @@ export default function ConsentStatus() {
 
   /** No phone field in PersonUpdate yet: replace the (unconsented) person with the new number. */
   async function changeNumber() {
-    const phone = toE164(cc, local);
+    const phone = toCallableE164(local);
     if (!phone) return setMsg(t('signIn.invalidPhone'));
     setBusy(true);
     setMsg(null);
@@ -76,7 +116,8 @@ export default function ConsentStatus() {
           canReadStrip: person!.canReadStrip,
         },
       });
-      if (!response.ok || !data?.id) return setMsg(response.status === 409 ? t('person.blocked') : t('common.error'));
+      if (!response.ok || !data?.id)
+        return setMsg(response.status === 409 ? t('person.blocked') : t('common.error'));
       await api.DELETE('/people/{personId}', { params: { path: { personId: id } } });
       await forgetPerson(id);
       await rememberPhone(data.id, phone);
@@ -92,7 +133,10 @@ export default function ConsentStatus() {
   return (
     <Screen testID="consent">
       <Stack.Screen options={{ title: t('consent.title', { name }) }} />
-      <Card style={{ backgroundColor: look.bg, borderColor: look.fg, borderWidth: 2 }} testID={`consent-${view}`}>
+      <Card
+        style={{ backgroundColor: look.bg, borderColor: look.fg, borderWidth: 2 }}
+        testID={`consent-${view}`}
+      >
         <AppText variant="hero" style={{ color: look.fg }} accessibilityElementsHidden>
           {look.icon}
         </AppText>
@@ -111,19 +155,49 @@ export default function ConsentStatus() {
 
       <View style={{ gap: space.sm }}>
         {view === 'confirmed' ? (
-          <Button title={t('consent.addMedicine')} onPress={() => router.replace({ pathname: '/person/[id]/medicine/new', params: { id } })} testID="add-first-medicine" />
+          <Button
+            title={t('consent.addMedicine')}
+            onPress={() =>
+              router.replace({ pathname: '/person/[id]/medicine/new', params: { id } })
+            }
+            testID="add-first-medicine"
+          />
         ) : null}
-        {view === 'waiting' || view === 'declined' ? <Button title={t('consent.retry')} onPress={retry} loading={busy} testID="consent-retry" /> : null}
+        {view === 'waiting' || view === 'declined' ? (
+          <Button
+            title={t('consent.retry')}
+            onPress={retry}
+            loading={busy}
+            testID="consent-retry"
+          />
+        ) : null}
         {view !== 'confirmed' ? (
           changing ? (
             <Card>
-              <ChipGroup label={t('signIn.country')} options={COUNTRY_CODES.map((c) => c.code)} value={cc} onChange={setCc} labelOf={(c) => c} />
-              <Field label={t('consent.newNumber')} value={local} onChangeText={setLocal} keyboardType="phone-pad" maxLength={15} testID="new-number" />
-              <Button title={t('common.save')} onPress={changeNumber} loading={busy} testID="save-number" />
+              <Field
+                label={t('consent.newNumber')}
+                hint={t('person.indiaOnly')}
+                value={local}
+                onChangeText={setLocal}
+                keyboardType="phone-pad"
+                maxLength={15}
+                testID="new-number"
+              />
+              <Button
+                title={t('common.save')}
+                onPress={changeNumber}
+                loading={busy}
+                testID="save-number"
+              />
               <Button kind="link" title={t('common.cancel')} onPress={() => setChanging(false)} />
             </Card>
           ) : (
-            <Button kind="secondary" title={t('consent.changeNumber')} onPress={() => setChanging(true)} testID="change-number" />
+            <Button
+              kind="secondary"
+              title={t('consent.changeNumber')}
+              onPress={() => setChanging(true)}
+              testID="change-number"
+            />
           )
         ) : null}
       </View>
