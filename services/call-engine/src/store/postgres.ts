@@ -214,6 +214,10 @@ export class PgStore implements Store {
     if (sets.length === 0) return;
     await this.q(`update calls set ${sets.join(', ')} where id = $1`, params);
   }
+  async getCallByProviderCallId(providerCallId: string) {
+    const [r] = await this.q(`select * from calls where provider_call_id = $1`, [providerCallId]);
+    return r ? mapCall(r) : null;
+  }
   async listCallsForGroup(groupId: string) {
     return (await this.q(`select * from calls where call_group_id = $1 order by created_at, attempt`, [groupId])).map(mapCall);
   }

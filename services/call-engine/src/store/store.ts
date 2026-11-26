@@ -79,6 +79,8 @@ export interface Store {
 
   insertCall(row: NewCall, at: Date): Promise<CallRow>;
   getCall(id: string): Promise<CallRow | null>;
+  /** Our call for a provider's call id (Exotel Voicebot stream start). */
+  getCallByProviderCallId(providerCallId: string): Promise<CallRow | null>;
   updateCall(id: string, patch: CallPatch): Promise<void>;
   listCallsForGroup(groupId: string): Promise<CallRow[]>;
   /** Calls of this person and purpose, oldest first; only those created at or after `since` when given (keeps the query bounded). */
