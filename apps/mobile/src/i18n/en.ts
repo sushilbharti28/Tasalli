@@ -18,7 +18,7 @@ const en = {
   },
   tabs: { today: 'Today', history: 'History', plans: 'Plans', settings: 'Settings' },
   signIn: {
-    title: 'Medicine reminder calls for your parents',
+    title: 'Medicine reminder calls for you and your loved ones',
     subtitle: 'Sign in with your mobile number',
     country: 'Country code',
     phone: 'Mobile number',
