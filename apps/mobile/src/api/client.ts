@@ -20,14 +20,18 @@ export function setUnauthorizedHandler(fn: (() => void) | null) {
   onUnauthorized = fn;
 }
 
-const auth: Middleware = {
+/** Path of a URL without `new URL()` (React Native's URL does not implement `pathname`). */
+export const pathOf = (url: string) => url.replace(/^[a-z]+:\/\/[^/]+/i, '').split(/[?#]/)[0] || '/';
+
+export const auth: Middleware = {
   onRequest({ request }) {
     if (authToken) request.headers.set('Authorization', `Bearer ${authToken}`);
     return request;
   },
+  // Returns nothing: the response is only inspected. openapi-fetch treats a returned value as a replacement and, on a
+  // device, refuses the fetch() response object itself ("must return new Response()"), which broke every real API call.
   onResponse({ response, request }) {
-    if (response.status === 401 && !new URL(request.url).pathname.startsWith('/auth/')) onUnauthorized?.();
-    return response;
+    if (response.status === 401 && !pathOf(request.url).startsWith('/auth/')) onUnauthorized?.();
   },
 };
 
