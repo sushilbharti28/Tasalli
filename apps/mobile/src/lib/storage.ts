@@ -30,6 +30,8 @@ export const KEYS = {
   personPhones: 'tasalli.personPhones',
   /** Optional medicine photos: local file URIs, never uploaded. */
   medicinePhotos: 'tasalli.medicinePhotos',
+  /** Set once the first-run story has been watched or skipped. */
+  storySeen: 'tasalli.storySeen',
 } as const;
 
 export async function getJson<T>(key: string, fallback: T): Promise<T> {

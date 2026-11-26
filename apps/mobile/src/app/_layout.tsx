@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { AuthProvider, useAuth } from '@/auth/AuthContext';
 import { PeopleProvider } from '@/people/PeopleContext';
+import { StoryProvider, useStory } from '@/features/onboarding/StoryContext';
 import { Loading } from '@/components/ui';
 import { configureNotificationHandler, doseIdFrom, registerForPush } from '@/notifications/register';
 import { colors } from '@/theme';
@@ -19,7 +20,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <AuthProvider>
-        <RootNavigator />
+        <StoryProvider>
+          <RootNavigator />
+        </StoryProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
@@ -27,9 +30,10 @@ export default function RootLayout() {
 
 function RootNavigator() {
   const { ready, token } = useAuth();
+  const story = useStory();
   const { t } = useTranslation();
 
-  if (!ready) {
+  if (!ready || !story.loaded) {
     return (
       <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center' }}>
         <Loading />
@@ -47,6 +51,9 @@ function RootNavigator() {
         headerShadowVisible: false,
       }}
     >
+      <Stack.Protected guard={!token && !story.seen}>
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
+      </Stack.Protected>
       <Stack.Protected guard={!token}>
         <Stack.Screen name="sign-in" options={{ headerShown: false }} />
       </Stack.Protected>
