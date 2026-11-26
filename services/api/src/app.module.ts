@@ -19,6 +19,7 @@ import { AlertsWorker } from './alerts/alerts.worker';
 import { DoseGenerator } from './doses/dose-generator.service';
 import { DosesController } from './doses/doses.controller';
 import { DosesService } from './doses/doses.service';
+import { CallLanguagesController } from './health/call-languages.controller';
 import { HealthController } from './health/health.controller';
 import { MEDICINE_NAME_SOURCE, SeedMedicineNameSource } from './medicines/medicine-names';
 import { MedicinesController } from './medicines/medicines.controller';
@@ -51,7 +52,7 @@ export class AppModule {
     return {
       module: AppModule,
       controllers: [
-        HealthController, AuthController, MeController, PeopleController, MedicinesController,
+        HealthController, CallLanguagesController, AuthController, MeController, PeopleController, MedicinesController,
         DosesController, TestCallController, SubscriptionController, BillingWebhookController,
       ],
       providers,

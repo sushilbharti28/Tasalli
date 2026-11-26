@@ -80,6 +80,11 @@ describe('auth, people, consent', () => {
     await h.http().post('/people').set(auth(a)).send({ isSelf: false, nickname: 'x', fullName: 'Ramesh Sharma', language: 'hi' }).expect(400);
     await h.http().post('/people').set(auth(a)).send(P(1, { timeZone: 'Mars/Base' })).expect(400);
     await h.http().post('/people').set(auth(a)).send(P(1, { language: 'fr' })).expect(400);
+    const soon = await h.http().post('/people').set(auth(a)).send(P(1, { language: 'mr' })).expect(400); // coming soon
+    expect(soon.body.code).toBe('language_not_supported');
+    const langs = (await h.http().get('/call-languages').expect(200)).body; // public: the app reads it before sign-in too
+    expect(langs.find((l: any) => l.code === 'hi')).toMatchObject({ nativeName: 'हिन्दी', status: 'available' });
+    expect(langs.filter((l: any) => l.status === 'coming_soon')).toHaveLength(5);
     await h.http().post('/people').set(auth(a)).send(P(1, { extra: 1 })).expect(400);
   });
 

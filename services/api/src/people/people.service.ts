@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { RULES } from '@tasalli/contracts';
+import { CALL_LANGUAGES, RULES } from '@tasalli/contracts';
 import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../common/decorators';
 import { Clock, CLOCK } from '../common/clock';
@@ -48,7 +48,7 @@ function snapshot(p: PersonRow) {
 
 function assertLanguageSupported(language: string) {
   if (!(SUPPORTED_NEW_LANGUAGES as readonly string[]).includes(language)) {
-    throw new BadRequestException({ statusCode: 400, code: 'language_not_supported', message: 'Only Hindi (hi) is supported right now' });
+    throw new BadRequestException({ statusCode: 400, code: 'language_not_supported', message: `Calls in this language are coming soon. Available now: ${CALL_LANGUAGES.filter((l) => l.status === 'available').map((l) => l.englishName).join(', ')}` });
   }
 }
 

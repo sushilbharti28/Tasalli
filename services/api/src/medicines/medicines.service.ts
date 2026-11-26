@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { isInMealWindow, type Meal } from '@tasalli/contracts';
 import { DateTime } from 'luxon';
 import { AuditService } from '../audit/audit.service';
 import { AuthUser } from '../common/decorators';
@@ -40,12 +41,13 @@ export interface ScheduleRow {
   local_time: string; // 'HH:MM:SS'
   amount_text: string;
   food: 'before' | 'after' | 'with' | 'any';
+  meal: Meal | null;
   days_of_week: number[];
   start_date: string;
   end_date: string | null;
 }
 
-const SCHEDULE_COLUMNS = `id, medicine_id, local_time::text, amount_text, food, days_of_week, start_date::text, end_date::text`;
+const SCHEDULE_COLUMNS = `id, medicine_id, local_time::text, amount_text, food, meal, days_of_week, start_date::text, end_date::text`;
 const ALL_DAYS = [1, 2, 3, 4, 5, 6, 7];
 
 export function medicineToApi(m: MedicineRow, schedules: ScheduleRow[]) {
@@ -74,6 +76,7 @@ export function medicineToApi(m: MedicineRow, schedules: ScheduleRow[]) {
       localTime: s.local_time.slice(0, 5),
       amountText: s.amount_text,
       food: s.food,
+      meal: s.meal,
       daysOfWeek: s.days_of_week,
       startDate: s.start_date,
       endDate: s.end_date,
@@ -106,6 +109,7 @@ interface NormalisedSchedule {
   localTime: string;
   amountText: string;
   food: string;
+  meal: Meal | null;
   daysOfWeek: number[];
   startDate: string;
   /** False when the app left startDate out (then it defaults to the person's today). */
@@ -172,10 +176,15 @@ export class MedicinesService {
       if (!DateTime.fromISO(startDate).isValid) throw new BadRequestException('startDate is not a real date');
       if (s.endDate && !DateTime.fromISO(s.endDate).isValid) throw new BadRequestException('endDate is not a real date');
       if (s.endDate && s.endDate < startDate) throw new BadRequestException('endDate is before startDate');
+      const meal = s.meal ?? null;
+      if (meal && !isInMealWindow(meal, s.localTime)) {
+        throw new BadRequestException({ statusCode: 400, code: 'outside_meal_window', message: `${s.localTime} is outside the ${meal} times` });
+      }
       return {
         localTime: s.localTime,
         amountText: s.amountText,
         food: s.food,
+        meal,
         daysOfWeek: [...(s.daysOfWeek ?? ALL_DAYS)].sort(),
         startDate,
         startDateGiven: s.startDate !== undefined,
@@ -207,9 +216,9 @@ export class MedicinesService {
   private async insertSchedules(q: Queryable, medicineId: string, schedules: NormalisedSchedule[]) {
     for (const s of schedules) {
       await q.query(
-        `insert into schedules (medicine_id, local_time, amount_text, food, days_of_week, start_date, end_date)
-         values ($1, $2, $3, $4, $5, $6, $7)`,
-        [medicineId, s.localTime, s.amountText, s.food, s.daysOfWeek, s.startDate, s.endDate],
+        `insert into schedules (medicine_id, local_time, amount_text, food, meal, days_of_week, start_date, end_date)
+         values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [medicineId, s.localTime, s.amountText, s.food, s.meal, s.daysOfWeek, s.startDate, s.endDate],
       );
     }
   }
@@ -260,6 +269,7 @@ export class MedicinesService {
         e.local_time.slice(0, 5) === w.localTime &&
         e.amount_text === w.amountText &&
         e.food === w.food &&
+        (e.meal ?? null) === w.meal &&
         JSON.stringify([...e.days_of_week].sort()) === JSON.stringify(w.daysOfWeek) &&
         (e.end_date ?? null) === w.endDate &&
         (!w.startDateGiven || e.start_date === w.startDate);

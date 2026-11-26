@@ -3,6 +3,7 @@ import {
   ArrayMaxSize, ArrayMinSize, ArrayUnique, IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, Matches,
   Max, MaxLength, Min, MinLength, ValidateNested,
 } from 'class-validator';
+import { MEALS, type Meal } from '@tasalli/contracts';
 import { IsNotBlank } from '../common/validators';
 
 export const KINDS = ['tablet', 'capsule', 'syrup', 'other'] as const;
@@ -25,6 +26,8 @@ export class ScheduleInputDto {
   /** Verbatim as the family entered it (safety rule 1): never parsed or changed. */
   @IsString() @IsNotBlank() @MaxLength(60) amountText: string;
   @IsIn(['before', 'after', 'with', 'any']) food: 'before' | 'after' | 'with' | 'any';
+  /** The meal the family picked (v1.8); localTime must sit in its window. Null or missing = a custom time. */
+  @IsOptional() @IsIn(MEALS as Meal[]) meal?: Meal | null;
   @IsOptional() @IsArray() @ArrayMinSize(1) @ArrayUnique() @IsInt({ each: true }) @Min(1, { each: true }) @Max(7, { each: true })
   daysOfWeek?: number[];
   @IsOptional() @Matches(DATE, { message: 'startDate must be YYYY-MM-DD' }) startDate?: string;
