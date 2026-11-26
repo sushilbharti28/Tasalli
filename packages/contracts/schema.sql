@@ -97,6 +97,7 @@ create table schedules (
   local_time     time not null,                   -- in people.time_zone
   amount_text    text not null,                   -- "1 tablet", "1 chammach (5 ml)": verbatim
   food           text not null check (food in ('before','after','with','any')),
+  meal           text check (meal in ('breakfast','lunch','dinner','bedtime')),  -- the meal the family picked; null = a custom time (meal is then read from the hour)
   days_of_week   int[] not null default '{1,2,3,4,5,6,7}',  -- ISO 1=Mon
   start_date     date not null,
   end_date       date,                            -- null = ongoing
