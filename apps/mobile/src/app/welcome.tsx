@@ -19,6 +19,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from 'react-i18next';
 import { useStory } from '@/features/onboarding/StoryContext';
+import { onboarding } from '@/features/onboarding/palette';
 import {
   autoNext,
   BLANK,
@@ -33,21 +34,7 @@ import {
 } from '@/features/onboarding/story';
 import { radius, space, touch } from '@/theme';
 
-/** Story palette from the prototype: deep teal ground, warm yellow highlight. Text pairs pass AA. */
-const c = {
-  ground: '#0F3B35',
-  ink: '#FFFFFF',
-  soft: '#CFE6E0',
-  hi: '#FFD166',
-  onHi: '#1F1A05',
-  card: '#FFFFFF',
-  cardInk: '#17302B',
-  cardMuted: '#4E6862',
-  handset: '#23302D',
-  key: '#3A4A46',
-  display: '#B9E4D3',
-  displayInk: '#12302A',
-};
+const c = onboarding;
 const TICK = 100;
 
 export default function Welcome() {

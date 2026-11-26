@@ -160,6 +160,42 @@ export interface paths {
         };
         trace?: never;
     };
+    "/call-languages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Call languages and whether each is available yet. The app builds its language picker from this list, so a new language turns on without an app update. */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["CallLanguageInfo"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/people": {
         parameters: {
             query?: never;
@@ -211,6 +247,13 @@ export interface paths {
                     content: {
                         "application/json": components["schemas"]["Person"];
                     };
+                };
+                /** @description Invalid fields, or a call language that is not available yet (see /call-languages) */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
                 };
                 /** @description Limit reached */
                 409: {
@@ -1081,6 +1124,20 @@ export interface components {
         };
         /** @enum {string} */
         CallLanguage: "hi" | "en" | "bn" | "mr" | "ta" | "te";
+        CallLanguageInfo: {
+            code: components["schemas"]["CallLanguage"];
+            /** @example हिन्दी */
+            nativeName: string;
+            /** @example Hindi */
+            englishName: string;
+            /** @enum {string} */
+            status: "available" | "coming_soon";
+        };
+        /**
+         * @description Allowed local times (inclusive): breakfast 05:00-11:30, lunch 11:00-16:00, dinner 16:15-23:30, bedtime 20:00-02:00. See MEAL_WINDOWS in packages/contracts.
+         * @enum {string}
+         */
+        Meal: "breakfast" | "lunch" | "dinner" | "bedtime";
         /** @enum {string} */
         ConsentState: "pending" | "consented" | "declined" | "opted_out";
         Person: {
@@ -1147,6 +1204,8 @@ export interface components {
             amountText: string;
             /** @enum {string} */
             food: "before" | "after" | "with" | "any";
+            /** @description The meal the family picked; the call names it ("nashte se pehle"). 400 when localTime is outside the meal window. Null or missing = a custom time; the call then names the meal from the hour. */
+            meal?: components["schemas"]["Meal"] | null;
             daysOfWeek?: number[];
             /** Format: date */
             startDate?: string;
