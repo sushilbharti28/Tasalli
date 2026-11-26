@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { api } from '@/api/client';
-import { CALL_LANGUAGES, type CallLanguage, type CanReadStrip } from '@/api/types';
+import { AVAILABLE_CALL_LANGUAGES, type CallLanguage, type CanReadStrip } from '@/api/types';
 import { AppText, Button, Card, ChipGroup, ErrorText, Field, Screen, Tile } from '@/components/ui';
 import { COUNTRY_CODES, toE164 } from '@/lib/phone';
 import { rememberPhone } from '@/lib/storage';
@@ -74,7 +74,7 @@ export default function AddPerson() {
     );
   }
 
-  const nameForNote = nickname.trim() || t('person.parent');
+  const self = isSelf === true;
 
   return (
     <Screen
@@ -93,18 +93,19 @@ export default function AddPerson() {
       ) : null}
       {errors.who ? <ErrorText>{errors.who}</ErrorText> : null}
 
-      <Field label={t('person.nickname')} hint={t('person.nicknameHint')} value={nickname} onChangeText={setNickname} error={errors.nickname} testID="nickname" />
-      <Field label={t('person.fullName')} hint={t('person.fullNameHint')} value={fullName} onChangeText={setFullName} error={errors.fullName} autoComplete="name" testID="full-name" />
+      <Field label={t(self ? 'person.nicknameSelf' : 'person.nickname')} hint={t(self ? 'person.nicknameHintSelf' : 'person.nicknameHint')} value={nickname} onChangeText={setNickname} error={errors.nickname} testID="nickname" />
+      <Field label={t('person.fullName')} hint={t(self ? 'person.fullNameHintSelf' : 'person.fullNameHint')} value={fullName} onChangeText={setFullName} error={errors.fullName} autoComplete="name" testID="full-name" />
       {isSelf === false ? (
         <>
           <ChipGroup label={t('signIn.country')} options={COUNTRY_CODES.map((c) => c.code)} value={cc} onChange={setCc} labelOf={(c) => c} />
           <Field label={t('person.phone')} value={local} onChangeText={setLocal} keyboardType="phone-pad" maxLength={15} error={errors.phone} testID="person-phone" />
         </>
       ) : null}
-      <ChipGroup label={t('person.language')} options={CALL_LANGUAGES} value={language} onChange={setLanguage} labelOf={(l) => t(`lang.${l}`)} testIDPrefix="lang" />
-      <ChipGroup label={t('person.timeZone')} options={TIME_ZONES} value={timeZone} onChange={setTimeZone} labelOf={(z) => z.replace('_', ' ')} />
+      <ChipGroup label={t('person.language')} options={AVAILABLE_CALL_LANGUAGES} value={language} onChange={setLanguage} labelOf={(l) => t(`lang.${l}`)} testIDPrefix="lang" />
+      <AppText variant="muted">{t('person.moreLanguagesSoon')}</AppText>
+      <ChipGroup label={t(self ? 'person.timeZoneSelf' : 'person.timeZone')} options={TIME_ZONES} value={timeZone} onChange={setTimeZone} labelOf={(z) => z.replace('_', ' ')} />
       <ChipGroup
-        label={t('person.canRead')}
+        label={t(self ? 'person.canReadSelf' : 'person.canRead')}
         options={['yes', 'no', 'not_sure'] as CanReadStrip[]}
         value={canReadStrip}
         onChange={setCanReadStrip}
@@ -114,7 +115,7 @@ export default function AddPerson() {
       />
       {isSelf === false ? (
         <Card>
-          <AppText>{t('person.consentNote', { name: nameForNote })}</AppText>
+          <AppText>{nickname.trim() ? t('person.consentNote', { name: nickname.trim() }) : t('person.consentNoteNoName')}</AppText>
         </Card>
       ) : null}
     </Screen>

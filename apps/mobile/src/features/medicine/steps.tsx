@@ -416,10 +416,10 @@ export function describeLooks(d: MedicineDraft, t: TFunction): string {
   }
 }
 
-export function previewFor(draft: MedicineDraft, person: Person, childName: string, toCreate: () => import('@/api/types').MedicineCreate | null) {
+export function previewFor(draft: MedicineDraft, person: Person, toCreate: () => import('@/api/types').MedicineCreate | null) {
   const m = toCreate();
   if (!m) return '';
-  return buildPreviewText({ medicine: m, personName: person.nickname ?? '', childName, language: (person.language ?? 'hi') as CallLanguage });
+  return buildPreviewText({ medicine: m, fullName: person.fullName ?? '', language: (person.language ?? 'hi') as CallLanguage });
 }
 
 const styles = StyleSheet.create({

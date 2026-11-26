@@ -60,7 +60,7 @@ export default function Settings() {
         {people.map((p) => (
           <Card key={p.id}>
             <AppText style={{ fontWeight: '700' }}>{p.nickname}</AppText>
-            <Toggle label={t('settings.pause', { name: p.nickname })} hint={t('settings.pauseHint')} value={!!p.paused} onChange={(v) => void setPaused(p.id!, v)} testID={`pause-${p.nickname}`} />
+            <Toggle label={p.isSelf ? t('settings.pauseSelf') : t('settings.pause', { name: p.nickname })} hint={t('settings.pauseHint')} value={!!p.paused} onChange={(v) => void setPaused(p.id!, v)} testID={`pause-${p.nickname}`} />
             <Button kind="danger" title={t('settings.deletePerson', { name: p.nickname })} onPress={() => confirmDelete(p.id!, p.nickname ?? '')} />
           </Card>
         ))}
