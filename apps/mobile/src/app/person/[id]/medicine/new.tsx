@@ -131,7 +131,7 @@ export default function AddMedicine() {
         <CheckStep
           {...stepProps}
           goTo={(s) => setStep(s)}
-          previewText={previewFor(d, person, user?.name ?? '', () => candidate)}
+          previewText={previewFor(d, person, () => candidate)}
           conflicts={conflicts}
           others={meds}
         />

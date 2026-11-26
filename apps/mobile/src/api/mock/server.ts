@@ -344,7 +344,7 @@ route('GET', '/medicines/:id/preview', ({ params }) => {
   const m = db.medicines.find((x) => x.id === params[0]);
   if (!m) return empty(404);
   const p = personOr404(m.personId)!;
-  const text = buildPreviewText({ medicine: m, personName: p.nickname ?? '', childName: db.user?.name ?? '', language: p.language ?? 'hi' });
+  const text = buildPreviewText({ medicine: m, fullName: p.fullName ?? '', language: p.language ?? 'hi' });
   return json(200, { text, audioUrl: '' });
 });
 route('GET', '/medicine-names', ({ query }) => {

@@ -24,3 +24,5 @@ export type CanReadStrip = NonNullable<Person['canReadStrip']>;
 export type PlanId = 'one_parent' | 'two_parents' | 'family_yearly';
 
 export const CALL_LANGUAGES: CallLanguage[] = ['hi', 'en', 'bn', 'mr', 'ta', 'te'];
+/** Languages calls can be made in today (the API serves the same list at GET /call-languages). Hindi only for now. */
+export const AVAILABLE_CALL_LANGUAGES: CallLanguage[] = ['hi'];

@@ -40,8 +40,8 @@
   },
   "person": {
     "addTitle": "Who should get the calls?",
-    "parent": "A parent or relative",
-    "parentHint": "We call them first to ask if they agree",
+    "parent": "Someone I care for",
+    "parentHint": "Papa, Maa, a relative. We take their consent first.",
     "self": "Myself",
     "selfHint": "Calls come to your own number",
     "nickname": "What do you call them?",
@@ -63,7 +63,14 @@
     "medicines": "Medicines",
     "addMedicine": "Add a medicine",
     "noMedicines": "No medicines yet.",
-    "addPerson": "Add a person"
+    "addPerson": "Add a person",
+    "nicknameSelf": "What should the app call you?",
+    "nicknameHintSelf": "For example Me, or your first name",
+    "fullNameHintSelf": "Calls greet you by this name: \"Namaste … ji\"",
+    "timeZoneSelf": "Your time zone",
+    "canReadSelf": "Can you read the name printed on a medicine strip?",
+    "moreLanguagesSoon": "More call languages are coming soon.",
+    "consentNoteNoName": "Next, we call them once to ask if they agree. They say \"haan\" or press 1. Nothing is scheduled until they agree."
   },
   "lang": {
     "hi": "Hindi",
@@ -258,7 +265,7 @@
       "manual": "marked by you"
     },
     "markTaken": "Mark as taken",
-    "noPeople": "Add a parent to start reminder calls.",
+    "noPeople": "Add yourself or someone you care for to start reminder calls.",
     "consentPending": "Waiting for {{name}} to agree. No calls until then."
   },
   "missed": {
@@ -295,8 +302,8 @@
     "trial": "Free trial: {{days}} days left",
     "trialEnded": "Your free trial has ended",
     "active": "Current plan: {{plan}}",
-    "one_parent": "One parent",
-    "two_parents": "Both parents",
+    "one_parent": "One person",
+    "two_parents": "Two people",
     "family_yearly": "Family, yearly",
     "perMonth": "/month",
     "perYear": "/year",
@@ -322,7 +329,8 @@
     "deleteConfirm": "This removes {{name}}, their medicines and call history. This cannot be undone.",
     "delete": "Delete",
     "signOut": "Sign out",
-    "privacy": "Your family's health data is stored in India and deleted on request."
+    "privacy": "Health data is stored in India and deleted on request.",
+    "pauseSelf": "Pause my calls"
   },
   "push": {
     "channel": "Missed doses"

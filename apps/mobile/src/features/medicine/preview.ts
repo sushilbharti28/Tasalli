@@ -16,40 +16,37 @@ const HI_SIZE: Record<string, string> = { very_small: 'bahut chhoti si', small: 
 const HI_SHAPE: Record<string, string> = { round: 'gol', oval: 'andaakaar', long: 'lambi', square: 'chaukor' };
 const HI_KIND: Record<string, string> = { tablet: 'goli', capsule: 'capsule', syrup: 'syrup', other: 'dawai' };
 const HI_FOOD: Record<string, string> = { before: 'khane se pehle', after: 'khane ke baad', with: 'khane ke saath', any: '' };
-const EN_FOOD: Record<string, string> = { before: 'before food', after: 'after food', with: 'with food', any: '' };
 
 export interface PreviewInput {
   medicine: MedicineCreate;
-  personName: string;
-  childName: string;
+  /** The person's full name; calls greet them by its first word ("Namaste Ramesh ji"), never by the nickname. */
+  fullName: string;
   language: CallLanguage;
   scheduleIndex?: number;
 }
 
-export function buildPreviewText({ medicine: m, personName, childName, language, scheduleIndex = 0 }: PreviewInput): string {
+/**
+ * v1.8: mirrors the one-medicine-at-a-time call (services/call-engine, Hindi v1.6 wording): greeting, who is calling,
+ * the medicine with its name and look, then the question. Only Hindi calls exist today; other languages show the same.
+ */
+export function buildPreviewText({ medicine: m, fullName, scheduleIndex = 0 }: PreviewInput): string {
   const s = m.schedules[scheduleIndex] ?? m.schedules[0];
   const a = m.appearance ?? {};
-  const amount = s?.amountText ?? '';
-  const extra = m.extraInstruction ? ` ${m.extraInstruction}` : '';
-  if (language === 'hi') {
-    const looks = [a.size && HI_SIZE[a.size], a.colourPrimary && (HI_COLOUR[a.colourPrimary] ?? a.colourPrimary), a.shape && HI_SHAPE[a.shape], HI_KIND[m.kind]]
-      .filter(Boolean)
-      .join(' ');
-    const pack =
-      a.keptIn === 'strip' && a.packColour
-        ? `, ${HI_COLOUR[a.packColour] ?? a.packColour} patte se`
-        : m.kind === 'syrup' && a.packColour
-          ? `, ${HI_COLOUR[a.packColour] ?? a.packColour} bottle wali${a.capColour ? `, ${HI_COLOUR[a.capColour] ?? a.capColour} dhakkan` : ''}`
-          : '';
-    const dis = m.numberLabel != null ? `, ${m.numberLabel} number wali` : m.sayPrintedName ? `, jis patte par ${spell(m.stripName)} likha hai` : '';
-    const food = s ? HI_FOOD[s.food] : '';
-    return `Namaste ${personName} ji, ${childName} ki taraf se dawai ka samay. ${m.spokenName}: ${amount}${looks ? `, ${looks}` : ''}${pack}${dis}.${food ? ` ${food}.` : ''}${extra} Dawai le lein, phir boliye "le li", ya 1 dabaiye.`;
-  }
-  const looks = [a.colourPrimary, a.shape, m.kind === 'other' ? '' : m.kind].filter(Boolean).join(' ');
-  const pack = a.keptIn === 'strip' && a.packColour ? `, from the ${a.packColour} strip` : '';
-  const dis = m.numberLabel != null ? `, the one marked number ${m.numberLabel}` : m.sayPrintedName ? `, the strip that says ${spell(m.stripName)}` : '';
-  const food = s ? EN_FOOD[s.food] : '';
-  return `Namaste ${personName} ji, medicine time, from ${childName}. ${m.spokenName}: ${amount}${looks ? `, ${looks}` : ''}${pack}${dis}.${food ? ` ${food}.` : ''}${extra} After taking it, say "le li" or press 1.`;
+  const first = fullName.trim().split(/\s+/)[0] ?? '';
+  const colour = (c?: string) => (c ? (HI_COLOUR[c] ?? c) : '');
+  const look =
+    m.kind === 'tablet' || m.kind === 'capsule'
+      ? ` Yeh ek ${[a.size && HI_SIZE[a.size], colour(a.colourPrimary), m.kind === 'tablet' && a.shape ? HI_SHAPE[a.shape] : ''].filter(Boolean).join(' ')} ${HI_KIND[m.kind]} hai.`
+      : '';
+  const pack =
+    a.keptIn === 'strip' && a.packColour ? ` Iska patta ${colour(a.packColour)} hai.`
+      : a.keptIn === 'bottle' && a.packColour ? ` Iski bottle ${colour(a.packColour)} hai.`
+        : a.keptIn === 'loose' ? ' Yeh dibbe mein khuli rakhi hai.' : '';
+  const dis = m.numberLabel != null ? ` Iske patte par ${m.numberLabel} number likha hai.` : m.sayPrintedName ? ` Iske patte par ${spell(m.stripName)} likha hai.` : '';
+  const food = s && HI_FOOD[s.food] ? ` ${HI_FOOD[s.food]}.` : '';
+  const extra = m.extraInstruction ? ` ${m.extraInstruction}.` : '';
+  const strength = m.strengthText ? ` ${m.strengthText}` : '';
+  return `Namaste ${first} ji. Hum Tasalli app se bol rahe hain. Aapki dawai, ${s?.amountText ?? ''} ${m.stripName}${strength} ki hai. Ise aap ${m.spokenName} kehte hain.${look}${pack}${dis}${food}${extra} Dawai lene ke baad, "haan" boliye, ya 1 dabaiye.`;
 }
 
 /** "Amlodac" -> "A-M-L-O-D-A-C" (letters of the printed name, as in docs/call-scripts.md). */
