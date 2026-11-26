@@ -81,7 +81,19 @@ export interface Store {
   getCall(id: string): Promise<CallRow | null>;
   updateCall(id: string, patch: CallPatch): Promise<void>;
   listCallsForGroup(groupId: string): Promise<CallRow[]>;
-  listCallsForPerson(personId: string, purpose: CallRow['purpose']): Promise<CallRow[]>;
+  /** Calls of this person and purpose, oldest first; only those created at or after `since` when given (keeps the query bounded). */
+  listCallsForPerson(personId: string, purpose: CallRow['purpose'], since?: Date): Promise<CallRow[]>;
+  /**
+   * Scheduling (v1.7): how many first calls are still to come for this phone in [from, to): distinct 30-minute windows and
+   * food timings of upcoming, ungrouped doses of every person with this number. Retries leave this many calls of the daily cap free.
+   */
+  countUpcomingSlotsForPhone(phone: string, from: Date, to: Date): Promise<number>;
+  /** Calls not ended yet, created at or after `since` (dial limiter: concurrent calls). */
+  countLiveCalls(since: Date): Promise<number>;
+  /** Calls still open (no end) that were created before `before`: lost status webhooks or crashes (sweeper). */
+  listStaleCalls(before: Date): Promise<CallRow[]>;
+  /** Groups whose doses are 'calling', due before `before`, with no call row at all (crash between grouping and dialling). */
+  listOrphanGroups(before: Date): Promise<string[]>;
   /** Calls placed (or being placed) to people with this number since `since`, across all accounts. */
   countCallsToPhoneSince(phone: string, since: Date): Promise<number>;
   /**

@@ -286,8 +286,32 @@ export class MemoryStore implements Store {
   async listCallsForGroup(groupId: string) {
     return this.allCalls().filter((c) => c.callGroupId === groupId).map((c) => copy(c)!);
   }
-  async listCallsForPerson(personId: string, purpose: CallRow['purpose']) {
-    return this.allCalls().filter((c) => c.personId === personId && c.purpose === purpose).map((c) => copy(c)!);
+  async listCallsForPerson(personId: string, purpose: CallRow['purpose'], since?: Date) {
+    return this.allCalls().filter((c) => c.personId === personId && c.purpose === purpose && (!since || c.createdAt >= since)).map((c) => copy(c)!);
+  }
+  async countUpcomingSlotsForPhone(phone: string, from: Date, to: Date) {
+    const people = new Set([...this.state.people.values()].filter((p) => p.phone === phone).map((p) => p.id));
+    const slots = new Set<string>();
+    for (const d of this.state.doses.values()) {
+      if (!people.has(d.personId) || d.status !== 'upcoming' || d.callGroupId || d.dueAt < from || d.dueAt >= to) continue;
+      const food = this.state.schedules.get(d.scheduleId)?.food ?? 'any';
+      slots.add(`${d.personId}|${Math.floor(d.dueAt.getTime() / 1_800_000)}|${food}`);
+    }
+    return slots.size;
+  }
+  async countLiveCalls(since: Date) {
+    return [...this.state.calls.values()].filter((c) => !c.endedAt && c.createdAt >= since).length;
+  }
+  async listStaleCalls(before: Date) {
+    return this.allCalls().filter((c) => !c.endedAt && c.createdAt < before).map((c) => copy(c)!);
+  }
+  async listOrphanGroups(before: Date) {
+    const withCalls = new Set([...this.state.calls.values()].map((c) => c.callGroupId).filter(Boolean));
+    const out = new Set<string>();
+    for (const d of this.state.doses.values()) {
+      if (d.status === 'calling' && d.callGroupId && d.dueAt < before && !withCalls.has(d.callGroupId)) out.add(d.callGroupId);
+    }
+    return [...out];
   }
   async countCallsToPhoneSince(phone: string, since: Date) {
     const ids = new Set([...this.state.people.values()].filter((p) => p.phone === phone).map((p) => p.id));

@@ -21,6 +21,13 @@ export interface EngineConfig {
   /** The first medicine of a reminder call waits a little longer: the parent has only just picked up. */
   firstListenSeconds: number;
   testCallsPerDay: number;
+  /** Dial limiter (v1.7): the provider plan's calls per second and concurrent calls. MAX_CALLS_PER_SECOND / MAX_CONCURRENT_CALLS. */
+  maxCallsPerSecond: number;
+  maxConcurrentCalls: number;
+  /** Longest a call waits for a dial slot before it is dialled anyway (a dose is never dropped by the limiter). */
+  dialWaitMaxMs: number;
+  /** A dose processed late while the engine was up (busy, not down) is still called up to this many minutes after its time. */
+  backlogMaxMinutes: number;
 }
 
 export interface Deps {
@@ -34,12 +41,16 @@ export interface Deps {
   clock: Clock;
   log: Logger;
   config: EngineConfig;
+  /** Waiting in the dial limiter. Default: a real timer. */
+  sleep?: (ms: number) => Promise<void>;
   /** Recordings are copied to `storage` (India) and removed from the provider with `client`. Absent: recording webhooks are ignored. */
   recordings?: { storage: RecordingStorage; client: RecordingClient };
 }
 
 export const defaultConfig = (over: Partial<EngineConfig> = {}): EngineConfig => ({
-  callerId: '+910000000000', publicBaseUrl: 'http://localhost:8080', listenSeconds: 6, firstListenSeconds: 8, testCallsPerDay: 3, ...over,
+  callerId: '+910000000000', publicBaseUrl: 'http://localhost:8080', listenSeconds: 6, firstListenSeconds: 8, testCallsPerDay: 3,
+  // Unlimited unless set: production reads the provider plan's limits from the environment (main.ts).
+  maxCallsPerSecond: 1_000_000, maxConcurrentCalls: 1_000_000, dialWaitMaxMs: 20 * 60_000, backlogMaxMinutes: 90, ...over,
 });
 
 /** attempt = cycle * 3 + n, where n counts calls inside a cycle (0 first call, 1 and 2 retries). */

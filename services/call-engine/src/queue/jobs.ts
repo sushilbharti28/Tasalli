@@ -28,7 +28,11 @@ export interface EngineJobs {
   /** Internal: retry an unanswered consent call. */
   'consent.retry': { personId: string; attempt: number };
   /** Internal: 20:00 in the parent's time zone: emit the evening_summary alert for that local date. */
-  'summary.evening': { personId: string; localDate: string };
+  'summary.evening': { personId: string; localDate: string; /** v1.7: planned time (ISO); a job planned for an older time is skipped. */ at?: string };
+  /** Internal (v1.7): one alert for the doses a person missed while the engine was down. */
+  'outage.alert': { personId: string; localDate: string };
+  /** Internal (v1.7, every 5 min): finish stale calls and never-dialled groups. */
+  'calls.sweep': Record<string, never>;
   /** Recording-completed webhook: copy the audio to our storage in India, size-check it, then delete it from Twilio. Idempotent per recordingSid. */
   'recording.fetch': { callId: string; recordingSid: string; recordingUrl: string };
 }

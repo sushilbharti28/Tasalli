@@ -1,6 +1,6 @@
 # Tasalli architecture: HLD, LLD, scale and known risks
 
-Status: 24 Nov 2026, after PRs #100 to #105. Owner: lead. Read with `CLAUDE.md` and `docs/handover.md`.
+Status: 25 Nov 2026. Section 4.1 to 4.4, 4.6 and the evening summary are addressed by v1.7 (see 4.0). Owner: lead. Read with `CLAUDE.md` and `docs/handover.md`.
 
 Numbers marked *estimate* come from the code and the test calls, not from load tests (there are none yet).
 
@@ -212,6 +212,19 @@ What is **not** a bottleneck at these sizes: CPU for TwiML (a few ms per webhook
 ---
 
 ## 4. Scheduling issues (current behaviour, ranked)
+
+### 4.0 Addressed in v1.7 (25 Nov 2026)
+| Issue | Now |
+| --- | --- |
+| 4.1 peak pile-up, false "missed" | Dial limiter (`MAX_CALLS_PER_SECOND`, `MAX_CONCURRENT_CALLS`); a late dose is still called if the engine was up (heartbeat), up to 90 minutes |
+| 4.2 cap vs retries | Retries only use calls later first calls do not need (`countUpcomingSlotsForPhone`) |
+| 4.3 retry collisions | A retry takes along same-food doses due within 15 minutes |
+| 4.4 stuck `calling` | Sweeper every 5 minutes: stale calls closed and retried, never-dialled groups retried. A provider status lookup is still to come (Exotel) |
+| 4.6 outage storm | One `service_outage` alert per person |
+| 4.7 evening summary | 60 minutes after the last dose, between 20:00 and 23:30 |
+| Unbounded call history read | The live-call check reads only the last 15 minutes |
+
+Still open: 4.5 (two dose generators), the multi-instance engine (in-memory webhook lock), Redis job retention.
 
 ### 4.1 Peak-hour pile-up turns into false "missed" alerts — **high**
 Most doses share a few clock times. With limited CPS or channels, calls queue up. `doseDue` marks a dose `missed` (and alerts the family) once it's more than 30 minutes past the due time. That rule was written for engine downtime, but it also fires when the engine is simply backlogged.

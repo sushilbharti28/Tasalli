@@ -2,6 +2,7 @@ import type { CallEvent, NextAction } from '@tasalli/contracts';
 import type { CallRow } from '../types.js';
 import type { EngineJobName, EngineJobs } from '../queue/jobs.js';
 import { afterNoConfirmation, consentUnanswered, placeConsent, placeReminder, placeTest } from './calls.js';
+import { heartbeat, outageAlert, sweep } from './dispatch.js';
 import { type Deps, decodeAttempt, encodeAttempt } from './deps.js';
 import { handleInput } from './flows.js';
 import { doseDue, doseRemind, eveningSummary, planAll, planPerson } from './scheduler.js';
@@ -44,11 +45,21 @@ export class Engine {
       case 'dose.remind': return doseRemind(d, (data as EngineJobs['dose.remind']).doseId);
       case 'summary.evening': {
         const j = data as EngineJobs['summary.evening'];
-        return eveningSummary(d, j.personId, j.localDate);
+        return eveningSummary(d, j.personId, j.localDate, j.at);
       }
       case 'recording.fetch': return fetchRecording(d, data as EngineJobs['recording.fetch']);
       case 'test.call': return placeTest(d, (data as EngineJobs['test.call']).userId);
+      case 'outage.alert': {
+        const j = data as EngineJobs['outage.alert'];
+        return outageAlert(d, j.personId, j.localDate);
+      }
+      case 'calls.sweep': return void (await sweep(d));
     }
+  }
+
+  /** Called every 30 s by main: lets a late dose tell "engine was down" from "engine was busy" (v1.7). */
+  heartbeat(): Promise<void> {
+    return heartbeat(this.d);
   }
 
   /** Per-call serialisation so concurrent duplicate webhooks see each other's results. */
