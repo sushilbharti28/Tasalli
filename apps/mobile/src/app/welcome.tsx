@@ -429,18 +429,11 @@ function Know({ t, reduce }: { t: number; reduce: boolean }) {
   const { t: tr } = useTranslation();
   const items = [
     {
-      icon: '✓',
-      bg: '#D9F6E9',
-      fg: '#127A4A',
-      title: tr('story.know.n1'),
-      sub: tr('story.know.n1Sub'),
-    },
-    {
       icon: '!',
       bg: '#FFECD6',
       fg: '#A35A00',
-      title: tr('story.know.n2'),
-      sub: tr('story.know.n2Sub'),
+      title: tr('story.know.missed'),
+      sub: tr('story.know.missedSub'),
     },
   ];
   return (

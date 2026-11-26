@@ -265,14 +265,12 @@ const en = {
       sub: 'A friendly call in their language, on any phone. No smartphone needed.',
     },
     know: {
-      time: '9:02',
-      n1: 'Papa took his BP tablet',
-      n1Sub: '9:02 AM · said "haan" on the call',
-      n2: 'Papa missed his 9 PM tablet',
-      n2Sub: 'Tap to call him yourself',
+      time: '9:30',
+      missed: 'Papa missed his 9 PM tablet',
+      missedSub: 'Tap to call him yourself',
       title: "You'll ",
       titleHi: 'always know',
-      sub: 'Taken or missed: right on your phone.',
+      sub: 'If a dose is missed, you hear from us right away.',
     },
   },
   setup: {
