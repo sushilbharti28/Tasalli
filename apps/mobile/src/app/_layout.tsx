@@ -110,7 +110,9 @@ function Routes({
       <Stack.Protected guard={!signedIn && !storySeen}>
         <Stack.Screen name="welcome" options={{ headerShown: false }} />
       </Stack.Protected>
-      <Stack.Protected guard={!signedIn}>
+      {/* Sign-in opens only after the story. When "/" is locked, expo-router falls back to the first open screen by
+          file name ("sign-in" sorts before "welcome"), so leaving both open skipped the story on a fresh install. */}
+      <Stack.Protected guard={!signedIn && storySeen}>
         <Stack.Screen name="sign-in" options={{ headerShown: false }} />
       </Stack.Protected>
       <Stack.Protected guard={signedIn && needsSetup}>
