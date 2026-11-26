@@ -18,6 +18,13 @@ const en = {
   },
   tabs: { today: 'Today', history: 'History', plans: 'Plans', settings: 'Settings' },
   signIn: {
+    say: "We'll text you a 6-digit code. We never share your number.",
+    numberTitle: 'Your mobile number',
+    countryA11y: 'Country code {{code}}. Tap to change',
+    codeSay: 'Sent to {{phone}}.',
+    codeHint: 'Signs you in as soon as the last digit is in.',
+    resendIn: 'Resend code in {{time}}',
+    resend: 'Resend code',
     title: 'Medicine reminder calls for you and your loved ones',
     subtitle: 'Sign in with your mobile number',
     country: 'Country code',
