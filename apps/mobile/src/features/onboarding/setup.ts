@@ -56,7 +56,9 @@ export interface ExtraTime {
 export const MAX_TIMES = 6;
 export const STEP_MINUTES = 15;
 export const RELATIONS = ['papa', 'maa', 'dadi', 'dada', 'nani', 'nana'] as const;
-export type Relation = (typeof RELATIONS)[number];
+export type Relation = (typeof RELATIONS)[number] | 'other';
+/** Longest family word the family can type with "Other" (e.g. Chacha, Bua, Mausi). */
+export const CUSTOM_RELATION_MAX = 20;
 
 export const QUESTIONS = ['who', 'name', 'lang', 'when'] as const;
 export type Question = (typeof QUESTIONS)[number] | 'phone';
@@ -66,6 +68,8 @@ export interface SetupDraft {
   who: Who | null;
   name: string;
   rel: Relation | null;
+  /** The family's own word when `rel` is 'other'. */
+  relCustom: string;
   lang: CallLanguage;
   /** Picked meal slots and their time. */
   slots: Partial<Record<SlotKey, string>>;
@@ -77,6 +81,7 @@ export const EMPTY_DRAFT: SetupDraft = {
   who: null,
   name: '',
   rel: null,
+  relCustom: '',
   lang: 'hi',
   slots: {},
   extra: [],
@@ -158,6 +163,16 @@ export function dayTimes(d: Pick<SetupDraft, 'slots' | 'extra'>): DayTime[] {
   }));
   const extra = d.extra.map((x) => ({ time: x.time, food: x.food, meal: null }));
   return [...meal, ...extra].sort((a, b) => dayOrder(a.time) - dayOrder(b.time));
+}
+
+/** What the family calls them: a chip's word, their own word, or null (then the questions use "<first name> ji"). */
+export function relationLabel(
+  d: Pick<SetupDraft, 'rel' | 'relCustom'>,
+  chipLabel: (r: Exclude<Relation, 'other'>) => string,
+): string | null {
+  if (!d.rel) return null;
+  if (d.rel === 'other') return d.relCustom.trim().replace(/\s+/g, ' ') || null;
+  return chipLabel(d.rel);
 }
 
 /** The API body. The calls greet by the full name; the relation word (or first name) is the family's label. */

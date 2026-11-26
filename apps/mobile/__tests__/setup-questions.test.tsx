@@ -206,6 +206,30 @@ describe('setup screen', () => {
     expect(takeAfterSetup()).toEqual({ pathname: '/person/[id]/consent', params: { id: p.id } });
   });
 
+  it('takes their own family word with "Other", and falls back to the name when it is left empty', async () => {
+    await mount();
+    await press('who-loved');
+    await fireEvent.changeText(screen.getByTestId('setup-name'), 'Suresh Kumar');
+    expect(screen.queryByTestId('rel-custom')).toBeNull();
+    await press('rel-other');
+    await press('setup-next');
+    expect(screen.getByText("Which language should Suresh ji's calls be in?")).toBeTruthy();
+    await press('setup-back');
+    await fireEvent.changeText(screen.getByTestId('rel-custom'), '  Chacha ');
+    await press('setup-next');
+    expect(screen.getByText("Which language should Chacha's calls be in?")).toBeTruthy();
+    await press('setup-next');
+    await press('slot-ab');
+    await press('setup-next');
+    await fireEvent.changeText(screen.getByTestId('setup-phone'), '9876543210');
+    await press('setup-next');
+    await act(async () => {});
+    expect(mockControl.db.people[0]).toMatchObject({
+      nickname: 'Chacha',
+      fullName: 'Suresh Kumar',
+    });
+  });
+
   it('keeps the answers when the app is closed and reopened', async () => {
     await mount();
     await press('who-loved');
