@@ -23,7 +23,9 @@ import {
   nextExtraId,
   PAIRS,
   personBody,
+  CUSTOM_RELATION_MAX,
   RELATIONS,
+  relationLabel,
   rememberTimes,
   saveDraft,
   setAfterSetup,
@@ -81,7 +83,8 @@ export default function Setup() {
   const index = steps.indexOf(step);
   const loved = draft.who !== 'me';
   const firstName = draft.name.trim().split(/\s+/)[0] ?? '';
-  const label = draft.rel ? t(`setup.rel.${draft.rel}`) : t('setup.ji', { name: firstName });
+  const relLabel = relationLabel(draft, (r) => t(`setup.rel.${r}`));
+  const label = relLabel ?? t('setup.ji', { name: firstName });
   const update = (patch: Partial<SetupDraft>) => setDraft((d) => (d ? { ...d, ...patch } : d));
   const goTo = (q: Question) => {
     setError(null);
@@ -96,11 +99,7 @@ export default function Setup() {
     setBusy(true);
     setError(null);
     try {
-      const body = personBody(
-        draft,
-        draft.rel ? t(`setup.rel.${draft.rel}`) : null,
-        phone ?? undefined,
-      );
+      const body = personBody(draft, relLabel, phone ?? undefined);
       const { data, response } = await api.POST('/people', { body });
       if (response.status === 409) return setError(t('person.blocked'));
       if (!response.ok || !data?.id) return setError(t('common.error'));
@@ -231,7 +230,27 @@ export default function Setup() {
                       testID={`rel-${r}`}
                     />
                   ))}
+                  <Pill
+                    text={t('setup.name.relOther')}
+                    picked={draft.rel === 'other'}
+                    onPress={() => update({ rel: draft.rel === 'other' ? null : 'other' })}
+                    testID="rel-other"
+                  />
                 </View>
+                {draft.rel === 'other' ? (
+                  <TextInput
+                    value={draft.relCustom}
+                    onChangeText={(relCustom) => update({ relCustom })}
+                    placeholder={t('setup.name.relOtherPlaceholder')}
+                    placeholderTextColor="rgba(255,255,255,0.45)"
+                    maxLength={CUSTOM_RELATION_MAX}
+                    autoCapitalize="words"
+                    autoFocus
+                    accessibilityLabel={t('setup.name.relOtherLabel')}
+                    style={s.input}
+                    testID="rel-custom"
+                  />
+                ) : null}
               </View>
             ) : null}
           </>

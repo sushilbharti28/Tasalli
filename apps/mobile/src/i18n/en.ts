@@ -300,6 +300,9 @@ const en = {
       placeholderLoved: 'Type their name',
       placeholderSelf: 'Type your name',
       relLabel: 'You call them (optional)',
+      relOther: 'Other',
+      relOtherLabel: 'What do you call them?',
+      relOtherPlaceholder: 'e.g. Chacha, Bua, Mausi',
     },
     rel: { papa: 'Papa', maa: 'Maa', dadi: 'Dadi', dada: 'Dada', nani: 'Nani', nana: 'Nana' },
     lang: {

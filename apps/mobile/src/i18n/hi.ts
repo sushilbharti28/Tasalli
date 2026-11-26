@@ -303,6 +303,9 @@ const hi: Messages = {
       placeholderLoved: 'उनका नाम लिखें',
       placeholderSelf: 'अपना नाम लिखें',
       relLabel: 'आप उन्हें क्या बुलाते हैं (ज़रूरी नहीं)',
+      relOther: 'कुछ और',
+      relOtherLabel: 'आप उन्हें क्या बुलाते हैं?',
+      relOtherPlaceholder: 'जैसे चाचा, बुआ, मौसी',
     },
     rel: { papa: 'पापा', maa: 'माँ', dadi: 'दादी', dada: 'दादा', nani: 'नानी', nana: 'नाना' },
     lang: {
