@@ -283,6 +283,10 @@ export class MemoryStore implements Store {
     }
     Object.assign(c, patch);
   }
+  async getCallByProviderCallId(providerCallId: string) {
+    const c = this.allCalls().find((x) => x.providerCallId === providerCallId);
+    return c ? copy(c)! : null;
+  }
   async listCallsForGroup(groupId: string) {
     return this.allCalls().filter((c) => c.callGroupId === groupId).map((c) => copy(c)!);
   }

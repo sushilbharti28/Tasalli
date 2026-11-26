@@ -8,12 +8,15 @@ import { Engine } from './engine/engine.js';
 import { LocalFsRecordingStorage } from './recordings/storage.js';
 import { TwilioRecordingClient } from './recordings/twilio-client.js';
 import { buildTwilio } from './providers/twilio-factory.js';
+import { SayUrls } from './providers/twilio.js';
 import { createWebhookServer } from './server.js';
 import { MemorySessionStore, RedisSessionStore } from './flows/session.js';
 import { createLogger } from './log.js';
 import { FakeProvider } from './providers/fake-telephony.js';
 import { FakeSpeech } from './providers/fake-speech.js';
 import { BullQueues } from './queue/bullmq.js';
+import { ExotelProvider } from './providers/exotel.js';
+import { attachExotelVoicebot } from './providers/exotel-server.js';
 import { MemoryQueue } from './queue/memory.js';
 import { loadRootEnv } from './env.js';
 import { DEFAULT_SCRIPTS_DIR, ScriptLibrary } from './scripts/loader.js';
@@ -31,8 +34,17 @@ export async function start() {
   const speech = new FakeSpeech();
   let provider: TelephonyProvider;
   let audio: AudioSource;
+  let exotel: ExotelProvider | null = null;
   if (env.TELEPHONY_PROVIDER === 'twilio') {
     ({ provider, audio } = buildTwilio(env));
+  } else if (env.TELEPHONY_PROVIDER === 'exotel') {
+    // Exotel has no built-in speech: the Voicebot bridge speaks and listens through SpeechProvider. Until a real speech
+    // provider is chosen (Sarvam / Google / Deepgram, see docs/exotel-onboarding.md), FakeSpeech makes calls silent.
+    exotel = new ExotelProvider({ accountSid: env.EXOTEL_ACCOUNT_SID ?? '', apiKey: env.EXOTEL_API_KEY ?? '', apiToken: env.EXOTEL_API_TOKEN ?? '',
+      subdomain: env.EXOTEL_SUBDOMAIN ?? '', appId: env.EXOTEL_APP_ID ?? '', publicBaseUrl: base, webhookSecret: env.EXOTEL_WEBHOOK_SECRET ?? '' });
+    provider = exotel;
+    audio = new SayUrls();
+    if (speech.name === 'fake') log.warn('TELEPHONY_PROVIDER=exotel with fake speech: calls will be silent and hear nothing');
   } else {
     provider = new FakeProvider(env.FAKE_WEBHOOK_SECRET ?? 'dev-secret', systemClock);
     audio = new AudioCache(speech, new LocalFsAudioStorage(env.AUDIO_DIR ?? join(process.cwd(), '.audio'), `${base}/audio`));
@@ -65,7 +77,9 @@ export async function start() {
   void engine.heartbeat();
   setInterval(() => void engine.heartbeat().catch((e) => log.error('heartbeat error', { err: String(e) })), 30_000);
 
-  createWebhookServer(engine, provider, base, log, { storage: recStorage, readToken: env.RECORDINGS_READ_TOKEN }).listen(port, () => log.info('call-engine listening', { port, provider: provider.name }));
+  const server = createWebhookServer(engine, provider, base, log, { storage: recStorage, readToken: env.RECORDINGS_READ_TOKEN });
+  if (exotel) attachExotelVoicebot(server, { engine, provider: exotel, store, speech, log, secret: env.EXOTEL_WEBHOOK_SECRET ?? '' });
+  server.listen(port, () => log.info('call-engine listening', { port, provider: provider.name }));
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) void start();

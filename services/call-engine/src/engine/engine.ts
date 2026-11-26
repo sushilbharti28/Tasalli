@@ -84,6 +84,15 @@ export class Engine {
       d.log.error('webhook parse failed', { err: (err as Error).message });
       return plain(400, 'bad request');
     }
+    return this.handleEvent(ev);
+  }
+
+  /**
+   * Apply one verified call event (from a webhook, or from the Exotel Voicebot bridge, which hears the parent itself).
+   * De-duplicated (rule 6) and serialised per call.
+   */
+  async handleEvent(ev: CallEvent): Promise<HttpResult> {
+    const { d } = this;
     return this.locked(ev.callId, async () => {
       const call = await d.store.getCall(ev.callId);
       const first = await d.store.recordWebhookEvent(d.provider.name, ev.eventId, d.clock.now());
