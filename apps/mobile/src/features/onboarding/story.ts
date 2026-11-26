@@ -12,7 +12,8 @@ export const DWELL: Record<SceneKey, number> = { worry: 5200, call: 10500, know:
 /** Worry scene: when each thought bubble pops in. */
 export const THOUGHT_AT = [900, 2400] as const;
 /** Know scene: when each notification drops in. */
-export const NOTIFY_AT = [600, 2200, 3600] as const;
+/** Only final results are notified (taken, missed), never a retry in progress. */
+export const NOTIFY_AT = [600, 2200] as const;
 
 /** Call scene: the phone rings, connects, Tasalli speaks, then Papa answers. */
 export const CALL = {

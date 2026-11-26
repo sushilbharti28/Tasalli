@@ -436,18 +436,11 @@ function Know({ t, reduce }: { t: number; reduce: boolean }) {
       sub: tr('story.know.n1Sub'),
     },
     {
-      icon: '☎',
-      bg: '#E3EEFC',
-      fg: '#2A5BB8',
-      title: tr('story.know.n2'),
-      sub: tr('story.know.n2Sub'),
-    },
-    {
       icon: '!',
       bg: '#FFECD6',
       fg: '#A35A00',
-      title: tr('story.know.n3'),
-      sub: tr('story.know.n3Sub'),
+      title: tr('story.know.n2'),
+      sub: tr('story.know.n2Sub'),
     },
   ];
   return (
