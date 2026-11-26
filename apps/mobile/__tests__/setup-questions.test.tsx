@@ -16,6 +16,7 @@ import {
 } from '@/features/onboarding/setup';
 import { canStep, inWindow, MEAL_WINDOWS, stepTime } from '@/lib/meals';
 import { KEYS, removeItem } from '@/lib/storage';
+import { toCallableE164 } from '@/lib/phone';
 import { MEAL_WINDOWS as CONTRACT_WINDOWS } from '../../../packages/contracts/src/meals';
 
 jest.mock('react-native-safe-area-context', () => {
@@ -228,6 +229,24 @@ describe('setup screen', () => {
       nickname: 'Chacha',
       fullName: 'Suresh Kumar',
     });
+  });
+
+  it('only takes Indian mobile numbers for a loved one', async () => {
+    expect(toCallableE164('98765 43210')).toBe('+919876543210');
+    expect(toCallableE164('+44 7911 123456')).toBeNull(); // a pasted UK number is refused
+    await mount();
+    await press('who-loved');
+    await fireEvent.changeText(screen.getByTestId('setup-name'), 'Ramesh');
+    await press('setup-next');
+    await press('setup-next');
+    await press('slot-ab');
+    await press('setup-next');
+    expect(screen.getByText('+91')).toBeTruthy();
+    expect(
+      screen.getByText('Reminder calls go to Indian mobile numbers (+91) for now.'),
+    ).toBeTruthy();
+    await fireEvent.changeText(screen.getByTestId('setup-phone'), '12345 67890');
+    expect(disabled('setup-next')).toBe(true);
   });
 
   it('keeps the answers when the app is closed and reopened', async () => {

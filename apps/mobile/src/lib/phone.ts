@@ -9,6 +9,17 @@ export const COUNTRY_CODES = [
   { code: '+61', label: 'Australia' },
 ] as const;
 
+/**
+ * Reminder calls go to Indian numbers only for now (founder, 27 Nov 2026), so a loved one's number is always +91.
+ * Signing in still accepts every code in COUNTRY_CODES (children abroad).
+ */
+export const CALL_COUNTRY_CODE = '+91';
+
+/** A loved one's number: +91 plus the 10 digits typed. Null when it is not a valid Indian mobile number. */
+export function toCallableE164(local: string): string | null {
+  return toE164(CALL_COUNTRY_CODE, local);
+}
+
 /** Build an E.164 number from a country code and the digits the user typed. */
 export function toE164(countryCode: string, local: string): string | null {
   const digits = local.replace(/\D/g, '').replace(/^0+/, '');
