@@ -45,6 +45,7 @@ import { CALL_COUNTRY_CODE, toCallableE164 } from '@/lib/phone';
 import { rememberPhone } from '@/lib/storage';
 import { displayHhmm } from '@/lib/time';
 import { usePeople } from '@/people/PeopleContext';
+import { Guide, Title } from '@/components/dark';
 import { radius, space, touch } from '@/theme';
 
 /** Used when GET /call-languages can't be reached: Hindi is the only language calls can use today. */
@@ -559,27 +560,6 @@ function TimeStepper({
   );
 }
 
-function Guide({ text }: { text: string }) {
-  return (
-    <View style={s.guide}>
-      <View style={s.face} importantForAccessibility="no-hide-descendants">
-        <Text style={s.faceText}>t</Text>
-      </View>
-      <View style={s.say}>
-        <Text style={s.sayText}>{text}</Text>
-      </View>
-    </View>
-  );
-}
-
-function Title({ text }: { text: string }) {
-  return (
-    <Text style={s.q} accessibilityRole="header">
-      {text}
-    </Text>
-  );
-}
-
 function Option({
   icon,
   title,
@@ -668,26 +648,6 @@ const s = StyleSheet.create({
   },
   fill: { height: 6, borderRadius: 3, backgroundColor: c.hi },
   body: { paddingHorizontal: 22, paddingTop: space.md, paddingBottom: space.xl, gap: space.md },
-  guide: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
-  face: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: c.hi,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  faceText: { color: c.onHi, fontSize: 18, fontWeight: '700' },
-  say: {
-    flex: 1,
-    backgroundColor: c.card,
-    borderRadius: 18,
-    borderTopLeftRadius: 4,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-  },
-  sayText: { color: c.cardInk, fontSize: 15, lineHeight: 21, fontWeight: '500' },
-  q: { color: c.ink, fontSize: 24, lineHeight: 29, fontWeight: '700', marginTop: 2 },
   hint: { color: c.soft, fontSize: 14, lineHeight: 20 },
   picked: { borderColor: c.hi, backgroundColor: c.picked },
   opt: {
