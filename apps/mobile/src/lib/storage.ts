@@ -32,6 +32,10 @@ export const KEYS = {
   medicinePhotos: 'tasalli.medicinePhotos',
   /** Set once the first-run story has been watched or skipped. */
   storySeen: 'tasalli.storySeen',
+  /** Answers to the setup questions while the person is not saved yet. */
+  setupDraft: 'tasalli.setupDraft',
+  /** Meal times picked during setup, per person id, offered when adding a medicine. */
+  mealTimes: 'tasalli.mealTimes',
 } as const;
 
 export async function getJson<T>(key: string, fallback: T): Promise<T> {

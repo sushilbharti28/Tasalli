@@ -7,10 +7,12 @@
  * - Any phone; any 6-digit OTP signs in, except "000000" (wrong code).
  * - A new parent is "calling" for consent, then consents after CONSENT_DELAY_MS.
  *   Numbers ending 0000 decline; numbers ending 9999 press 9 (opted_out).
+ * - Signing in with a number ending 1111 starts a new account with nobody added (shows the setup questions).
  * - Doses are generated from medicine schedules in the parent's time zone.
  */
 import type {
   CallAttempt,
+  CallLanguageInfo,
   Dose,
   Medicine,
   MedicineCreate,
@@ -26,6 +28,16 @@ import { addDays, dateInZone, isoWeekday, zonedTimeToUtc } from '@/lib/time';
 
 export const CONSENT_DELAY_MS = 6000;
 const MAX_PEOPLE = 4;
+
+/** Same list the API serves (packages/contracts/src/languages.ts). */
+export const MOCK_CALL_LANGUAGES: CallLanguageInfo[] = [
+  { code: 'hi', nativeName: 'हिन्दी', englishName: 'Hindi', status: 'available' },
+  { code: 'en', nativeName: 'English', englishName: 'English', status: 'coming_soon' },
+  { code: 'mr', nativeName: 'मराठी', englishName: 'Marathi', status: 'coming_soon' },
+  { code: 'bn', nativeName: 'বাংলা', englishName: 'Bengali', status: 'coming_soon' },
+  { code: 'ta', nativeName: 'தமிழ்', englishName: 'Tamil', status: 'coming_soon' },
+  { code: 'te', nativeName: 'తెలుగు', englishName: 'Telugu', status: 'coming_soon' },
+];
 
 type MockPerson = Person & { id: string; phone: string; consentRequestedAt: number; createdAt: string };
 type MockMedicine = Medicine & { id: string; personId: string; createdAt: string };
@@ -88,6 +100,7 @@ function seed(phone: string) {
     trialEndsAt: new Date(t + 5 * 86400000).toISOString(),
     currentPeriodEnd: null,
   };
+  if (phone.endsWith('1111')) return; // a brand-new account: the app opens the setup questions
   const startDate = addDays(dateInZone(new Date(t), 'Asia/Kolkata'), -40);
   const papa: MockPerson = {
     id: uuid(),
@@ -265,12 +278,15 @@ route('PATCH', '/me', ({ body }) => {
   db.user = { ...db.user!, ...body };
   return json(200, db.user);
 });
+route('GET', '/call-languages', () => json(200, MOCK_CALL_LANGUAGES));
 route('GET', '/people', () => json(200, db.people.map(publicPerson)));
 route('POST', '/people', ({ body }) => {
   const b = body as PersonCreate;
   if (db.people.length >= MAX_PEOPLE) return json(409, { message: 'limit' });
   const phone = b.isSelf ? db.user!.phone! : b.phone ?? '';
   if (!b.isSelf && !/^\+\d{8,15}$/.test(phone)) return json(400, { message: 'bad phone' });
+  if (!MOCK_CALL_LANGUAGES.some((l) => l.code === b.language && l.status === 'available'))
+    return json(400, { message: 'language not available' });
   const p: MockPerson = {
     id: uuid(),
     isSelf: b.isSelf,

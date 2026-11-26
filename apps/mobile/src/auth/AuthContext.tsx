@@ -25,6 +25,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setUser(null);
     await removeItem(KEYS.token);
+    await removeItem(KEYS.setupDraft); // the next account starts its own setup
   }, []);
 
   useEffect(() => {
