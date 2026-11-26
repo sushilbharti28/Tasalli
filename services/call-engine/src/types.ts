@@ -71,9 +71,16 @@ export interface ScheduleRow {
   localTime: string; // 'HH:MM' or 'HH:MM:SS' in the person's time zone
   amountText: string;
   food: 'before' | 'after' | 'with' | 'any';
+  /** v1.8: the meal the family picked; the call names it. Null = a custom time (meal read from the hour). */
+  meal?: 'breakfast' | 'lunch' | 'dinner' | 'bedtime' | null;
   daysOfWeek: number[]; // ISO 1=Mon..7=Sun
   startDate: string; // YYYY-MM-DD (person's local date)
   endDate: string | null;
+}
+
+/** Doses share a call only when both the food rule and the meal match (and the time window, checked by the caller). */
+export function sameCallKind(a: Pick<ScheduleRow, 'food' | 'meal'>, b: Pick<ScheduleRow, 'food' | 'meal'> | undefined | null): boolean {
+  return !!b && a.food === b.food && (a.meal ?? null) === (b.meal ?? null);
 }
 
 export interface DoseRow {

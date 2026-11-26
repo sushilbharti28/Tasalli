@@ -309,6 +309,17 @@ describe('test-reminder medicines and wording placeholders', () => {
     }
     expect(open(3, 'after', 13).opening).toMatch(/^Theek hai\. Hum ek-ek karke dawai batate hain\./);
   });
+
+  it('v1.8: the meal the family picked wins over the hour; bedtime is said as the night', async () => {
+    const { mealPhrase } = await import('../src/scripts/builder.js');
+    const { BUILTIN_TEMPLATES } = await import('../src/scripts/templates.js');
+    const t = BUILTIN_TEMPLATES.hi!;
+    expect(mealPhrase(t, 'before', 10, 'lunch')).toBe('dopahar ke khane se pehle'); // 10:30 "before lunch" is not breakfast
+    expect(mealPhrase(t, 'after', 16, 'dinner')).toBe('raat ke khane ke baad');
+    expect(mealPhrase(t, 'any', 22, 'bedtime')).toBe('raat ki');
+    expect(mealPhrase(t, 'before', 1, 'bedtime')).toBe('raat ki');
+    expect(mealPhrase(t, 'before', 8, null)).toBe('nashte se pehle'); // custom time: from the hour, as before
+  });
 });
 
 describe('grouping by food timing', () => {
@@ -332,6 +343,21 @@ describe('grouping by food timing', () => {
     expect(second).toMatch(/nashte se pehle/);
     expect(second).toMatch(/Sugar wali/);
     expect(Object.values(status(w))).toEqual(['confirmed', 'confirmed', 'confirmed']);
+  });
+
+  it('v1.8: same time and food but a different meal go in separate calls (11:15 after breakfast vs before lunch)', async () => {
+    const w = world(undefined, { presence: true });
+    w.med('BP wali', '09:00', {}, w.mom);
+    w.med('Sugar wali', '09:00', {}, w.mom);
+    const [a, b] = [...w.store.state.schedules.values()];
+    Object.assign(a!, { food: 'after', meal: 'breakfast' });
+    Object.assign(b!, { food: 'after', meal: 'lunch' });
+    w.provider.script(PARENT, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }] }, { answer: 'answered', inputs: [{ key: '1' }, { key: '1' }] });
+    await planned(w);
+    await w.advance(5);
+    expect(w.provider.callsTo(PARENT)).toHaveLength(2);
+    expect(w.playedText(0).join(' ')).toMatch(/nashte ke baad/);
+    expect(w.playedText(1).join(' ')).toMatch(/dopahar ke khane ke baad/);
   });
 });
 

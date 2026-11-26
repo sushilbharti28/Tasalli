@@ -228,11 +228,15 @@ export function relationPhrase(t: ScriptTemplates, rel: CallerRelation | null | 
   return (rel && t.reminder.step_relations?.[rel as keyof ScriptTemplates['reminder']['step_relations']]) || '';
 }
 
-/** {meal_phrase}: "dopahar ke khane ke baad" for food rules, "dopahar ki" when the dose has no food rule. */
-export function mealPhrase(t: ScriptTemplates, food: ScheduleRow['food'], hour: number): string {
+/**
+ * {meal_phrase}: "dopahar ke khane ke baad" for food rules, "dopahar ki" when the dose has no food rule.
+ * v1.8: the meal the family picked wins over the hour; bedtime is said as the night ("raat ki").
+ */
+export function mealPhrase(t: ScriptTemplates, food: ScheduleRow['food'], hour: number, picked?: ScheduleRow['meal']): string {
   const r = t.reminder;
+  if (picked === 'bedtime') return r.step_day_part.night;
   if (food === 'any') return r.step_day_part[hour < 11 ? 'morning' : hour < 16 ? 'afternoon' : hour < 19 ? 'evening' : 'night'];
-  const meal = r.step_meals[hour < 11 ? 'breakfast' : hour < 16 ? 'lunch' : 'dinner'];
+  const meal = r.step_meals[picked ?? (hour < 11 ? 'breakfast' : hour < 16 ? 'lunch' : 'dinner')];
   return `${meal} ${r.step_food_rel[food]}`;
 }
 
@@ -247,7 +251,7 @@ export function buildReminderSteps(input: ReminderScriptInput): ReminderSteps {
   const person_name = personName(t, input.person);
   const count = input.items.length;
   const count_word = r.step_count_words[count - 1] ?? String(count);
-  const meal_phrase = mealPhrase(t, input.items[0]?.schedule.food ?? 'any', input.localHour);
+  const meal_phrase = mealPhrase(t, input.items[0]?.schedule.food ?? 'any', input.localHour, input.items[0]?.schedule.meal);
   const seenNumbers = new Set(input.announcedTodayMedicineIds);
   const items = input.items.map((it, i) => {
     const m = it.medicine;

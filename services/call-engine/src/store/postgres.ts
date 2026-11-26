@@ -89,7 +89,7 @@ export class PgStore implements Store {
   async listActiveSchedules(personId: string) {
     const rows = await this.q(
       `select s.id as s_id, s.medicine_id as s_medicine_id, to_char(s.local_time, 'HH24:MI:SS') as s_local_time,
-              s.amount_text as s_amount_text, s.food as s_food, s.days_of_week as s_days_of_week,
+              s.amount_text as s_amount_text, s.food as s_food, s.meal as s_meal, s.days_of_week as s_days_of_week,
               to_char(s.start_date, 'YYYY-MM-DD') as s_start_date, to_char(s.end_date, 'YYYY-MM-DD') as s_end_date, m.*
          from schedules s join medicines m on m.id = s.medicine_id
         where m.person_id = $1 and m.active`, [personId]);
@@ -98,7 +98,7 @@ export class PgStore implements Store {
   async getSchedule(id: string) {
     const [r] = await this.q(
       `select id as s_id, medicine_id as s_medicine_id, to_char(local_time, 'HH24:MI:SS') as s_local_time,
-              amount_text as s_amount_text, food as s_food, days_of_week as s_days_of_week,
+              amount_text as s_amount_text, food as s_food, meal as s_meal, days_of_week as s_days_of_week,
               to_char(start_date, 'YYYY-MM-DD') as s_start_date, to_char(end_date, 'YYYY-MM-DD') as s_end_date
          from schedules where id = $1`, [id]);
     return r ? mapSchedulePrefixed(r) : null;
@@ -147,7 +147,7 @@ export class PgStore implements Store {
               d.status as d_status, d.confirmed_at as d_confirmed_at, d.confirmed_via as d_confirmed_via,
               d.call_group_id as d_call_group_id,
               s.id as s_id, s.medicine_id as s_medicine_id, to_char(s.local_time, 'HH24:MI:SS') as s_local_time,
-              s.amount_text as s_amount_text, s.food as s_food, s.days_of_week as s_days_of_week,
+              s.amount_text as s_amount_text, s.food as s_food, s.meal as s_meal, s.days_of_week as s_days_of_week,
               to_char(s.start_date, 'YYYY-MM-DD') as s_start_date, to_char(s.end_date, 'YYYY-MM-DD') as s_end_date, m.*
          from doses d join schedules s on s.id = d.schedule_id join medicines m on m.id = s.medicine_id
         where d.call_group_id = $1 order by d.due_at, m.created_at`, [groupId]);
@@ -227,7 +227,7 @@ export class PgStore implements Store {
   }
   async countUpcomingSlotsForPhone(phone: string, from: Date, to: Date) {
     const [r] = await this.q(
-      `select count(distinct (d.person_id, floor(extract(epoch from d.due_at) / 1800), s.food))::int as n
+      `select count(distinct (d.person_id, floor(extract(epoch from d.due_at) / 1800), s.food, s.meal))::int as n
          from doses d join people p on p.id = d.person_id join schedules s on s.id = d.schedule_id
         where p.phone_e164 = $1 and d.status = 'upcoming' and d.call_group_id is null and d.due_at >= $2 and d.due_at < $3`, [phone, from, to]);
     return r!.n as number;
@@ -297,7 +297,7 @@ function mapMedicine(r: Row): MedicineRow {
 
 function mapSchedulePrefixed(r: Row): ScheduleRow {
   return {
-    id: r.s_id, medicineId: r.s_medicine_id, localTime: r.s_local_time, amountText: r.s_amount_text, food: r.s_food,
+    id: r.s_id, medicineId: r.s_medicine_id, localTime: r.s_local_time, amountText: r.s_amount_text, food: r.s_food, meal: r.s_meal ?? null,
     daysOfWeek: (r.s_days_of_week as number[]).map(Number), startDate: r.s_start_date, endDate: r.s_end_date,
   };
 }

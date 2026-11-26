@@ -35,7 +35,7 @@ describe.skipIf(!url)('PgStore: every method against Postgres', () => {
     id.person = await one(`insert into people (owner_user_id, is_self, nickname, full_name, phone_e164, language, time_zone)
       values ($1, false, 'Papa', 'Ramesh Sharma', $2, 'hi', 'Asia/Kolkata') returning id`, [id.user, PHONE]);
     id.med = await one(`insert into medicines (person_id, created_by_user_id, kind, strip_name, spoken_name) values ($1, $2, 'tablet', 'Telma 40', 'BP wali') returning id`, [id.person, id.user]);
-    id.sched = await one(`insert into schedules (medicine_id, local_time, amount_text, food, start_date) values ($1, '09:00', '1 goli', 'after', '2026-01-01') returning id`, [id.med]);
+    id.sched = await one(`insert into schedules (medicine_id, local_time, amount_text, food, meal, start_date) values ($1, '09:00', '1 goli', 'after', 'breakfast', '2026-01-01') returning id`, [id.med]);
   });
 
   afterAll(async () => {
@@ -62,7 +62,7 @@ describe.skipIf(!url)('PgStore: every method against Postgres', () => {
 
   it('schedules, doses, grouping, confirming and closing', async () => {
     expect((await store.listActiveSchedules(id.person!))[0]!.medicine.spokenName).toBe('BP wali');
-    expect((await store.getSchedule(id.sched!))!.food).toBe('after');
+    expect(await store.getSchedule(id.sched!)).toMatchObject({ food: 'after', meal: 'breakfast' });
     expect((await store.getMedicine(id.med!))!.stripName).toBe('Telma 40');
     const at = (iso: string) => new Date(iso);
     await store.insertDoses([1, 2, 3, 4, 5].map((d) => ({ scheduleId: id.sched!, personId: id.person!, dueAt: at(`2026-03-1${d}T03:30:00Z`) })));
